@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 紫区座位 - 已选 -->
+  <!-- 绿色边框 -->
+  <rect x="2" y="2" width="28" height="28" rx="4" fill="none" stroke="#22C55E" stroke-width="3"/>
+  <!-- 椅背 -->
+  <rect x="6" y="4" width="20" height="14" rx="3" fill="#8B5CF6"/>
+  <!-- 椅座 -->
+  <rect x="4" y="18" width="24" height="8" rx="2" fill="#7C3AED"/>
+  <!-- 勾选 -->
+  <path d="M10 15 L14 19 L22 11" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

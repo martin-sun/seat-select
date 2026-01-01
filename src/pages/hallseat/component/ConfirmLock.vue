@@ -106,11 +106,6 @@ export default {
       const checkNum = 2 + this.selectedSeat.length - 1
       const gRowBasic = element.gRow
       const gColBasic = element.gCol
-      let otherLoveSeatIndex = element.otherLoveSeatIndex
-      if (otherLoveSeatIndex != null) {
-        // 如果是情侣座 不检测
-        return true
-      }
       // 检查座位左侧
       let left = this.checkSeatDirection(gRowBasic, gColBasic, checkNum, '-')
       // 如果左侧已经检查出是靠着过道直接 返回true
@@ -135,7 +130,7 @@ export default {
     checkSeatDirection: function (gRowBasic, gColBasic, checkNum, direction) {
       // 空位个数
       let emptySeat = 0
-      let x = 1 // 检查位置 只允许在x的位置出现过道,已售,维修
+      let x = 1 // 检查位置 只允许在x的位置出现过道,已售,锁定
       for (let i = 1; i <= checkNum; i++) {
         let iter // 根据 gRow gCol direction 找出检查座位左边按顺序排列的checkNum
         if (direction === '-') {
@@ -145,27 +140,27 @@ export default {
         }
         if (x === i) {
           if (iter === undefined) {
-          // 过道
+            // 过道
             return 'special'
           }
-          if (iter.nowIcon === iter.soldedIcon || iter.nowIcon === iter.fixIcon) {
-          // 已售或者维修
+          if (iter.status === 'sold' || iter.status === 'locked') {
+            // 已售或者锁定
             return 'special'
           }
           if (iter.nowIcon === iter.selectedIcon) {
-          // 已选 顺延一位
+            // 已选 顺延一位
             x++
             continue
           }
         } else {
           if (iter === undefined) {
-          // 过道
+            // 过道
             return 'fail'
           }
-          if (iter.nowIcon === iter.soldedIcon ||
-              iter.nowIcon === iter.fixIcon ||
+          if (iter.status === 'sold' ||
+              iter.status === 'locked' ||
               iter.nowIcon === iter.selectedIcon) {
-          // 已售或者维修
+            // 已售、锁定或已选
             return 'fail'
           }
         }
