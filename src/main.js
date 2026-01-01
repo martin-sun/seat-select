@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import './assets/css/tailwind.css'
 import './assets/css/custom.css'
 import { post, get, patch, put } from './http'
@@ -20,4 +21,5 @@ app.config.globalProperties.$patch = patch
 app.config.globalProperties.$put = put
 
 app.use(router)
+app.use(i18n)
 app.mount('#app')

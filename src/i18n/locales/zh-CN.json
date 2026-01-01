@@ -1,0 +1,124 @@
+{
+  "common": {
+    "confirm": "确认",
+    "cancel": "取消",
+    "back": "返回",
+    "retry": "重试",
+    "loading": "加载中...",
+    "total": "合计",
+    "copy": "复制",
+    "submit": "提交",
+    "logout": "退出"
+  },
+  "header": {
+    "seatSelection": "选择座位",
+    "myOrders": "查询订单",
+    "reservationDetails": "预订详情",
+    "zoomIn": "放大",
+    "zoomOut": "缩小"
+  },
+  "seatArea": {
+    "stage": "Stage",
+    "entranceExit": "Entrance|and Exit",
+    "entrance": "Entrance",
+    "andExit": "and Exit",
+    "row": "排",
+    "seat": "座"
+  },
+  "quickSelect": {
+    "title": "快速选座:",
+    "singleSeat": "1人座",
+    "doubleSeat": "2人座",
+    "tripleSeat": "3人座",
+    "quadSeat": "4人座"
+  },
+  "confirmLock": {
+    "confirmSeat": "确认选座"
+  },
+  "bookingForm": {
+    "title": "确认预订",
+    "selectedSeats": "已选座位：",
+    "totalAmount": "总计：",
+    "name": "称呼",
+    "phone": "手机号",
+    "email": "E-transfer 邮箱",
+    "namePlaceholder": "请输入您的称呼",
+    "phonePlaceholder": "请输入手机号",
+    "emailPlaceholder": "用于接收付款确认的邮箱",
+    "emailHint": "请确保此邮箱与您发送 E-transfer 的邮箱一致",
+    "confirmBooking": "确认预订",
+    "submitting": "提交中...",
+    "paymentNotice1": "预订后请在 24小时内 完成 E-transfer 付款",
+    "paymentNotice2": "超时未付款，座位将自动释放",
+    "required": "*"
+  },
+  "selectedTab": {
+    "selected": "已选 ({count})"
+  },
+  "myOrders": {
+    "title": "查询订单",
+    "enterEmail": "输入您的邮箱",
+    "emailHint": "请输入预订时使用的 E-transfer 邮箱",
+    "emailPlaceholder": "your@email.com",
+    "sendLink": "发送登录链接",
+    "sending": "发送中...",
+    "linkSent": "登录链接已发送！",
+    "emailSentTo": "我们已向 {email} 发送了登录链接",
+    "checkInbox": "请查看您的收件箱，如未收到请检查垃圾邮件文件夹",
+    "resend": "重新发送",
+    "resendCooldown": "重新发送 ({time})",
+    "noOrders": "暂无订单记录",
+    "seatLockUntil": "座位锁定至: {time}",
+    "event": "活动"
+  },
+  "reservation": {
+    "title": "预订详情",
+    "seatInfo": "座位信息",
+    "totalAmount": "总金额：",
+    "paymentInstructions": "E-Transfer 付款说明",
+    "step1": "打开您的银行 App 或网上银行",
+    "step2": "选择 Interac e-Transfer 发送",
+    "step3": "收款人邮箱：",
+    "step4Amount": "金额：",
+    "step5Note": "备注中请填写：",
+    "paymentWaiting": "付款后系统将自动确认，请耐心等待",
+    "contactSupport": "如有问题请联系客服",
+    "reservationInfo": "预订信息",
+    "bookingId": "预订编号：",
+    "customerName": "称呼：",
+    "customerPhone": "手机：",
+    "customerEmail": "邮箱：",
+    "bookingTime": "预订时间：",
+    "backToSelect": "返回选座",
+    "remainingTime": "剩余支付时间："
+  },
+  "status": {
+    "pending": "待支付",
+    "paid": "已支付",
+    "expired": "已过期",
+    "cancelled": "已取消",
+    "unknown": "未知"
+  },
+  "alerts": {
+    "selectAtLeast": "请至少选择一个座位~",
+    "noEmptySeat": "请不要留下空位~",
+    "lockFailed": "锁座失败了~,金额为0",
+    "maxSeats": "最多只能选择{max}个座位哦~",
+    "noSuitableSeat": "没有合适的座位~",
+    "enterName": "请输入您的称呼",
+    "enterPhone": "请输入手机号",
+    "enterEmail": "请输入邮箱",
+    "bookingFailed": "预订失败，请稍后重试",
+    "reservationNotFound": "预订编号不存在",
+    "loadFailed": "加载预订信息失败",
+    "sendLinkFailed": "发送登录链接失败，请稍后重试",
+    "loadOrdersFailed": "加载订单失败",
+    "emailCopied": "邮箱已复制到剪贴板",
+    "copyFailed": "复制失败，请手动复制"
+  },
+  "time": {
+    "hoursMinutesLater": "{hours}小时{minutes}分钟后",
+    "minutesLater": "{minutes}分钟后",
+    "expired": "已过期"
+  }
+}

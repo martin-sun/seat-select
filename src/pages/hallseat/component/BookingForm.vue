@@ -3,60 +3,60 @@
     <div class="booking-modal">
       <!-- 头部 -->
       <div class="modal-header">
-        <h2 class="text-lg font-bold">确认预订</h2>
+        <h2 class="text-lg font-bold">{{ $t('bookingForm.title') }}</h2>
         <button @click="close" class="close-btn">&times;</button>
       </div>
 
       <!-- 座位信息 -->
       <div class="seat-summary">
-        <div class="text-sm text-gray-600 mb-2">已选座位：</div>
+        <div class="text-sm text-gray-600 mb-2">{{ $t('bookingForm.selectedSeats') }}</div>
         <div class="flex flex-wrap gap-2">
           <span v-for="seat in selectedSeats" :key="seat.id" class="seat-tag">
-            {{ seat.row }}排{{ seat.col }}座
+            {{ $t('seatArea.row') }} {{ seat.row }} {{ $t('seatArea.seat') }} {{ seat.col }}
           </span>
         </div>
         <div class="total-price">
-          总计：<span class="text-primary font-bold text-xl">¥{{ totalPrice }}</span>
+          {{ $t('bookingForm.totalAmount') }}<span class="text-primary font-bold text-xl">${{ totalPrice }}</span>
         </div>
       </div>
 
       <!-- 表单 -->
       <form @submit.prevent="submitBooking" class="booking-form">
         <div class="form-group">
-          <label for="name">称呼 <span class="text-red-500">*</span></label>
+          <label for="name">{{ $t('bookingForm.name') }} <span class="text-red-500">{{ $t('bookingForm.required') }}</span></label>
           <input
             id="name"
             v-model="form.name"
             type="text"
-            placeholder="请输入您的称呼"
+            :placeholder="$t('bookingForm.namePlaceholder')"
             required
             class="form-input"
           />
         </div>
 
         <div class="form-group">
-          <label for="phone">手机号 <span class="text-red-500">*</span></label>
+          <label for="phone">{{ $t('bookingForm.phone') }} <span class="text-red-500">{{ $t('bookingForm.required') }}</span></label>
           <input
             id="phone"
             v-model="form.phone"
             type="tel"
-            placeholder="请输入手机号"
+            :placeholder="$t('bookingForm.phonePlaceholder')"
             required
             class="form-input"
           />
         </div>
 
         <div class="form-group">
-          <label for="email">E-transfer 邮箱 <span class="text-red-500">*</span></label>
+          <label for="email">{{ $t('bookingForm.email') }} <span class="text-red-500">{{ $t('bookingForm.required') }}</span></label>
           <input
             id="email"
             v-model="form.email"
             type="email"
-            placeholder="用于接收付款确认的邮箱"
+            :placeholder="$t('bookingForm.emailPlaceholder')"
             required
             class="form-input"
           />
-          <p class="text-xs text-gray-500 mt-1">请确保此邮箱与您发送 E-transfer 的邮箱一致</p>
+          <p class="text-xs text-gray-500 mt-1">{{ $t('bookingForm.emailHint') }}</p>
         </div>
 
         <!-- 错误提示 -->
@@ -70,15 +70,15 @@
           :disabled="submitting"
           class="submit-btn"
         >
-          <span v-if="submitting">提交中...</span>
-          <span v-else>确认预订</span>
+          <span v-if="submitting">{{ $t('bookingForm.submitting') }}</span>
+          <span v-else>{{ $t('bookingForm.confirmBooking') }}</span>
         </button>
       </form>
 
       <!-- 提示信息 -->
       <div class="notice">
-        <p>预订后请在 <strong>24小时内</strong> 完成 E-transfer 付款</p>
-        <p>超时未付款，座位将自动释放</p>
+        <p><strong>{{ $t('bookingForm.paymentNotice1') }}</strong></p>
+        <p>{{ $t('bookingForm.paymentNotice2') }}</p>
       </div>
     </div>
   </div>
@@ -127,15 +127,15 @@ export default {
     async submitBooking () {
       // 验证表单
       if (!this.form.name.trim()) {
-        this.error = '请输入您的称呼'
+        this.error = this.$t('alerts.enterName')
         return
       }
       if (!this.form.phone.trim()) {
-        this.error = '请输入手机号'
+        this.error = this.$t('alerts.enterPhone')
         return
       }
       if (!this.form.email.trim()) {
-        this.error = '请输入邮箱'
+        this.error = this.$t('alerts.enterEmail')
         return
       }
 
@@ -157,15 +157,16 @@ export default {
         console.log('预订成功:', reservation)
 
         // 跳转到预订状态页面
+        const lang = this.$route.params.lang || 'zh'
         this.$router.push({
           name: 'ReservationStatus',
-          params: { id: reservation.id }
+          params: { lang, id: reservation.id }
         })
 
         this.$emit('success', reservation)
       } catch (err) {
         console.error('预订失败:', err)
-        this.error = err.message || '预订失败，请稍后重试'
+        this.error = err.message || this.$t('alerts.bookingFailed')
       } finally {
         this.submitting = false
       }

@@ -2,19 +2,19 @@
   <div class="reservation-page">
     <!-- 头部 -->
     <header class="header">
-      <h1>预订详情</h1>
+      <h1>{{ $t('reservation.title') }}</h1>
     </header>
 
     <!-- 加载中 -->
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <p>加载中...</p>
+      <p>{{ $t('common.loading') }}</p>
     </div>
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="loadReservation" class="retry-btn">重试</button>
+      <button @click="loadReservation" class="retry-btn">{{ $t('common.retry') }}</button>
     </div>
 
     <!-- 预订详情 -->
@@ -24,97 +24,97 @@
         <div class="status-icon">{{ statusIcon }}</div>
         <div class="status-text">{{ statusText }}</div>
         <div v-if="reservation.status === 'pending'" class="countdown">
-          <span>剩余支付时间：</span>
+          <span>{{ $t('reservation.remainingTime') }}</span>
           <span class="countdown-time">{{ countdownText }}</span>
         </div>
       </div>
 
       <!-- 座位信息 -->
       <div class="info-card">
-        <h3>座位信息</h3>
+        <h3>{{ $t('reservation.seatInfo') }}</h3>
         <div class="seats-list">
           <span v-for="seat in seats" :key="seat.id" class="seat-tag">
-            {{ seat.row }}排{{ seat.col }}座
+            {{ $t('seatArea.row') }} {{ seat.row }} {{ $t('seatArea.seat') }} {{ seat.col }}
           </span>
         </div>
         <div class="total-amount">
-          总金额：<span class="amount">¥{{ reservation.total_amount }}</span>
+          {{ $t('reservation.totalAmount') }}<span class="amount">${{ reservation.total_amount }}</span>
         </div>
       </div>
 
       <!-- 支付说明 (仅待支付状态显示) -->
       <div v-if="reservation.status === 'pending'" class="payment-card">
-        <h3>E-Transfer 付款说明</h3>
+        <h3>{{ $t('reservation.paymentInstructions') }}</h3>
         <div class="payment-steps">
           <div class="step">
             <div class="step-num">1</div>
             <div class="step-content">
-              <p>打开您的银行 App 或网上银行</p>
+              <p>{{ $t('reservation.step1') }}</p>
             </div>
           </div>
           <div class="step">
             <div class="step-num">2</div>
             <div class="step-content">
-              <p>选择 Interac e-Transfer 发送</p>
+              <p>{{ $t('reservation.step2') }}</p>
             </div>
           </div>
           <div class="step">
             <div class="step-num">3</div>
             <div class="step-content">
-              <p>收款人邮箱：</p>
+              <p>{{ $t('reservation.step3') }}</p>
               <div class="email-box">
                 <span class="email">{{ etransferEmail }}</span>
-                <button @click="copyEmail" class="copy-btn">复制</button>
+                <button @click="copyEmail" class="copy-btn">{{ $t('common.copy') }}</button>
               </div>
             </div>
           </div>
           <div class="step">
             <div class="step-num">4</div>
             <div class="step-content">
-              <p>金额：<strong>¥{{ reservation.total_amount }}</strong></p>
+              <p>{{ $t('reservation.step4Amount') }}<strong>${{ reservation.total_amount }}</strong></p>
             </div>
           </div>
           <div class="step">
             <div class="step-num">5</div>
             <div class="step-content">
-              <p>备注中请填写：<strong>{{ reservation.id.substring(0, 8) }}</strong></p>
+              <p>{{ $t('reservation.step5Note') }}<strong>{{ reservation.customer_phone }}</strong></p>
             </div>
           </div>
         </div>
         <div class="payment-notice">
-          <p>付款后系统将自动确认，请耐心等待</p>
-          <p>如有问题请联系客服</p>
+          <p>{{ $t('reservation.paymentWaiting') }}</p>
+          <p>{{ $t('reservation.contactSupport') }}</p>
         </div>
       </div>
 
       <!-- 客户信息 -->
       <div class="info-card">
-        <h3>预订信息</h3>
+        <h3>{{ $t('reservation.reservationInfo') }}</h3>
         <div class="info-row">
-          <span class="label">预订编号：</span>
+          <span class="label">{{ $t('reservation.bookingId') }}</span>
           <span class="value">{{ reservation.id.substring(0, 8).toUpperCase() }}</span>
         </div>
         <div class="info-row">
-          <span class="label">称呼：</span>
+          <span class="label">{{ $t('reservation.customerName') }}</span>
           <span class="value">{{ reservation.customer_name }}</span>
         </div>
         <div class="info-row">
-          <span class="label">手机：</span>
+          <span class="label">{{ $t('reservation.customerPhone') }}</span>
           <span class="value">{{ reservation.customer_phone }}</span>
         </div>
         <div class="info-row">
-          <span class="label">邮箱：</span>
+          <span class="label">{{ $t('reservation.customerEmail') }}</span>
           <span class="value">{{ reservation.customer_email }}</span>
         </div>
         <div class="info-row">
-          <span class="label">预订时间：</span>
+          <span class="label">{{ $t('reservation.bookingTime') }}</span>
           <span class="value">{{ formatDate(reservation.created_at) }}</span>
         </div>
       </div>
 
       <!-- 返回按钮 -->
       <div class="actions">
-        <button @click="goBack" class="back-btn">返回选座</button>
+        <button @click="goBack" class="back-btn">{{ $t('reservation.backToSelect') }}</button>
       </div>
     </div>
   </div>
@@ -160,13 +160,7 @@ export default {
     },
     statusText () {
       if (!this.reservation) return ''
-      const textMap = {
-        pending: '待支付',
-        paid: '已支付',
-        expired: '已过期',
-        cancelled: '已取消'
-      }
-      return textMap[this.reservation.status] || '未知状态'
+      return this.$t(`status.${this.reservation.status}`) || this.$t('status.unknown')
     },
     countdownText () {
       if (!this.countdown || this.countdown <= 0) return '00:00:00'
@@ -195,7 +189,7 @@ export default {
       try {
         const reservationId = this.$route.params.id
         if (!reservationId) {
-          throw new Error('预订编号不存在')
+          throw new Error(this.$t('alerts.reservationNotFound'))
         }
 
         const reservation = await getReservation(reservationId)
@@ -213,7 +207,7 @@ export default {
         }
       } catch (err) {
         console.error('加载预订失败:', err)
-        this.error = err.message || '加载预订信息失败'
+        this.error = err.message || this.$t('alerts.loadFailed')
       } finally {
         this.loading = false
       }
@@ -271,13 +265,14 @@ export default {
     },
     copyEmail () {
       navigator.clipboard.writeText(this.etransferEmail).then(() => {
-        alert('邮箱已复制到剪贴板')
+        alert(this.$t('alerts.emailCopied'))
       }).catch(() => {
-        alert('复制失败，请手动复制')
+        alert(this.$t('alerts.copyFailed'))
       })
     },
     goBack () {
-      this.$router.push('/')
+      const lang = this.$route.params.lang || 'zh'
+      this.$router.push(`/${lang}`)
     }
   }
 }

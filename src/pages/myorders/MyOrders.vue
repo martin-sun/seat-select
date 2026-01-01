@@ -7,7 +7,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h1>查询订单</h1>
+      <h1>{{ $t('myOrders.title') }}</h1>
       <div class="spacer"></div>
     </header>
 
@@ -20,12 +20,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
             </svg>
           </div>
-          <h2>输入您的邮箱</h2>
-          <p class="hint">请输入预订时使用的 E-transfer 邮箱</p>
+          <h2>{{ $t('myOrders.enterEmail') }}</h2>
+          <p class="hint">{{ $t('myOrders.emailHint') }}</p>
           <input
             v-model="email"
             type="email"
-            placeholder="your@email.com"
+            :placeholder="$t('myOrders.emailPlaceholder')"
             class="input-field"
             @keyup.enter="sendOtp"
           />
@@ -34,7 +34,7 @@
             :disabled="sending || !isValidEmail"
             class="submit-btn"
           >
-            {{ sending ? '发送中...' : '发送登录链接' }}
+            {{ sending ? $t('myOrders.sending') : $t('myOrders.sendLink') }}
           </button>
           <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
@@ -48,22 +48,22 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h2>登录链接已发送！</h2>
-          <p class="hint">我们已向 <strong>{{ email }}</strong> 发送了登录链接</p>
+          <h2>{{ $t('myOrders.linkSent') }}</h2>
+          <p class="hint">{{ $t('myOrders.emailSentTo', { email: email }) }}</p>
           <div class="email-notice">
             <svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
-            <span>请查看您的收件箱，如未收到请检查垃圾邮件文件夹</span>
+            <span>{{ $t('myOrders.checkInbox') }}</span>
           </div>
           <button
             @click="resendOtp"
             :disabled="resendCooldown > 0 || sending"
             class="submit-btn resend-btn"
           >
-            <template v-if="sending">发送中...</template>
-            <template v-else-if="resendCooldown > 0">重新发送 ({{ formattedCooldown }})</template>
-            <template v-else>重新发送</template>
+            <template v-if="sending">{{ $t('myOrders.sending') }}</template>
+            <template v-else-if="resendCooldown > 0">{{ $t('myOrders.resendCooldown', { time: formattedCooldown }) }}</template>
+            <template v-else>{{ $t('myOrders.resend') }}</template>
           </button>
           <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
@@ -73,19 +73,19 @@
       <div v-if="step === 'orders'" class="orders-container">
         <div class="user-info">
           <span>{{ email }}</span>
-          <button @click="logout" class="logout-btn">退出</button>
+          <button @click="logout" class="logout-btn">{{ $t('common.logout') }}</button>
         </div>
 
         <div v-if="loading" class="loading-state">
           <div class="spinner"></div>
-          <p>加载中...</p>
+          <p>{{ $t('common.loading') }}</p>
         </div>
 
         <div v-else-if="reservations.length === 0" class="empty-state">
           <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
           </svg>
-          <p>暂无订单记录</p>
+          <p>{{ $t('myOrders.noOrders') }}</p>
         </div>
 
         <div v-else class="orders-list">
@@ -103,11 +103,11 @@
             </div>
             <div class="order-body">
               <div class="order-event">
-                {{ reservation.events?.name || '活动' }}
+                {{ reservation.events?.name || $t('myOrders.event') }}
               </div>
               <div class="order-seats">
                 <span v-for="rs in reservation.reservation_seats" :key="rs.seat_id" class="seat-tag">
-                  {{ rs.seats?.zone }} - {{ rs.seats?.row }}排{{ rs.seats?.col }}座
+                  {{ rs.seats?.zone }} - {{ $t('seatArea.row') }} {{ rs.seats?.row }} {{ $t('seatArea.seat') }} {{ rs.seats?.col }}
                 </span>
               </div>
               <!-- 待支付订单显示锁定截止时间 -->
@@ -115,7 +115,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>座位锁定至: {{ formatExpiry(reservation.expires_at) }}</span>
+                <span>{{ $t('myOrders.seatLockUntil', { time: formatExpiry(reservation.expires_at) }) }}</span>
               </div>
               <div class="order-footer">
                 <span class="order-amount">${{ reservation.total_amount }}</span>
@@ -191,7 +191,7 @@ export default {
         this.step = 'email-sent'
         this.startCooldown()
       } catch (err) {
-        this.error = err.message || '发送登录链接失败，请稍后重试'
+        this.error = err.message || this.$t('alerts.sendLinkFailed')
       } finally {
         this.sending = false
       }
@@ -216,7 +216,7 @@ export default {
         this.reservations = await getReservationsByEmail(this.email)
       } catch (err) {
         console.error('加载订单失败:', err)
-        this.error = '加载订单失败'
+        this.error = this.$t('alerts.loadOrdersFailed')
       } finally {
         this.loading = false
       }
@@ -238,10 +238,12 @@ export default {
       this.error = null
     },
     viewOrder (id) {
-      this.$router.push({ name: 'ReservationStatus', params: { id } })
+      const lang = this.$route.params.lang || 'zh'
+      this.$router.push({ name: 'ReservationStatus', params: { lang, id } })
     },
     goBack () {
-      this.$router.push('/')
+      const lang = this.$route.params.lang || 'zh'
+      this.$router.push(`/${lang}`)
     },
     async resendOtp () {
       if (this.resendCooldown > 0 || this.sending) return
@@ -252,7 +254,7 @@ export default {
         await sendOtpToEmail(this.email)
         this.startCooldown()
       } catch (err) {
-        this.error = err.message || '发送登录链接失败，请稍后重试'
+        this.error = err.message || this.$t('alerts.sendLinkFailed')
       } finally {
         this.sending = false
       }
@@ -267,13 +269,7 @@ export default {
       return classMap[status] || ''
     },
     getStatusText (status) {
-      const textMap = {
-        pending: '待支付',
-        paid: '已支付',
-        expired: '已过期',
-        cancelled: '已取消'
-      }
-      return textMap[status] || '未知'
+      return this.$t(`status.${status}`) || this.$t('status.unknown')
     },
     formatDate (dateStr) {
       if (!dateStr) return ''
@@ -293,7 +289,7 @@ export default {
 
       // 如果已过期
       if (diff <= 0) {
-        return '已过期'
+        return this.$t('time.expired')
       }
 
       // 计算剩余时间
@@ -301,9 +297,9 @@ export default {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
       if (hours > 0) {
-        return `${hours}小时${minutes}分钟后`
+        return this.$t('time.hoursMinutesLater', { hours, minutes })
       }
-      return `${minutes}分钟后`
+      return this.$t('time.minutesLater', { minutes })
     }
   }
 }
