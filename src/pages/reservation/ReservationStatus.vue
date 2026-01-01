@@ -241,7 +241,6 @@ export default {
             filter: `id=eq.${this.reservation.id}`
           },
           (payload) => {
-            console.log('预订状态更新:', payload)
             this.reservation = { ...this.reservation, ...payload.new }
 
             // 如果支付成功，停止倒计时
@@ -255,7 +254,9 @@ export default {
     formatDate (dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
-      return date.toLocaleString('zh-CN', {
+      // Use locale based on current i18n setting
+      const locale = this.$i18n.locale === 'zh-CN' ? 'zh-CN' : 'en-US'
+      return date.toLocaleString(locale, {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',

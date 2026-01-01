@@ -119,23 +119,69 @@ export default {
       error: null
     }
   },
+  computed: {
+    // Email validation regex
+    isValidEmail () {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(this.form.email.trim())
+    },
+    // Phone validation - accepts common formats
+    isValidPhone () {
+      // Supports: +1234567890, 123-456-7890, (123) 456-7890, 1234567890
+      const phoneRegex = /^[\d\s\-+()]{7,20}$/
+      return phoneRegex.test(this.form.phone.trim())
+    }
+  },
   methods: {
     close () {
       this.error = null
       this.$emit('close')
     },
+    // Sanitize input to prevent XSS
+    sanitizeInput (str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .trim()
+    },
+    // Validate name - letters, spaces, hyphens, apostrophes only
+    isValidName (name) {
+      const trimmed = name.trim()
+      // Allow letters (including unicode), spaces, hyphens, apostrophes, 2-50 chars
+      const nameRegex = /^[\p{L}\s\-']{2,50}$/u
+      return nameRegex.test(trimmed)
+    },
     async submitBooking () {
-      // 验证表单
+      // Validate name
       if (!this.form.name.trim()) {
         this.error = this.$t('alerts.enterName')
         return
       }
+      if (!this.isValidName(this.form.name)) {
+        this.error = this.$t('alerts.invalidName')
+        return
+      }
+
+      // Validate phone
       if (!this.form.phone.trim()) {
         this.error = this.$t('alerts.enterPhone')
         return
       }
+      if (!this.isValidPhone) {
+        this.error = this.$t('alerts.invalidPhone')
+        return
+      }
+
+      // Validate email
       if (!this.form.email.trim()) {
         this.error = this.$t('alerts.enterEmail')
+        return
+      }
+      if (!this.isValidEmail) {
+        this.error = this.$t('alerts.invalidEmail')
         return
       }
 
@@ -147,16 +193,14 @@ export default {
 
         const reservation = await createReservation({
           eventId: this.eventId,
-          customerName: this.form.name.trim(),
-          customerPhone: this.form.phone.trim(),
-          customerEmail: this.form.email.trim(),
+          customerName: this.sanitizeInput(this.form.name),
+          customerPhone: this.sanitizeInput(this.form.phone),
+          customerEmail: this.form.email.trim().toLowerCase(),
           seatIds,
           totalAmount: this.totalPrice
         })
 
-        console.log('预订成功:', reservation)
-
-        // 跳转到预订状态页面
+        // Navigate to reservation status page
         const lang = this.$route.params.lang || 'zh'
         this.$router.push({
           name: 'ReservationStatus',
@@ -165,7 +209,6 @@ export default {
 
         this.$emit('success', reservation)
       } catch (err) {
-        console.error('预订失败:', err)
         this.error = err.message || this.$t('alerts.bookingFailed')
       } finally {
         this.submitting = false
@@ -175,7 +218,7 @@ export default {
   watch: {
     visible (val) {
       if (val) {
-        // 重置表单
+        // Reset form
         this.form = { name: '', phone: '', email: '' }
         this.error = null
       }

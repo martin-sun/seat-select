@@ -1,10 +1,14 @@
-/* 最小屏幕宽度限制 - 座位选择需要足够的屏幕空间 */
+/*
+ * Mobile-friendly: Allow horizontal scroll for seat map on small screens
+ * instead of forcing a minimum width that breaks mobile layout
+ */
 html, body {
-  min-width: 768px;
+  min-width: 320px;
+  overflow-x: auto;
 }
 
 #app {
-  min-width: 768px;
+  min-width: 320px;
 }
 
 /* border-2px: High-resolution screen border solution */

@@ -31,64 +31,26 @@ export async function getEventWithSeats (eventId) {
   return { event, seats }
 }
 
-// Helper function to create a reservation
+// Helper function to create a reservation using atomic RPC
 export async function createReservation ({ eventId, customerName, customerPhone, customerEmail, seatIds, totalAmount }) {
-  // Calculate expiry time (24 hours from now)
-  const expiresAt = new Date()
-  expiresAt.setHours(expiresAt.getHours() + 24)
+  const { data, error } = await supabase.rpc('create_reservation_atomic', {
+    p_event_id: eventId,
+    p_customer_name: customerName,
+    p_customer_phone: customerPhone,
+    p_customer_email: customerEmail,
+    p_seat_ids: seatIds,
+    p_total_amount: totalAmount
+  })
 
-  // Start a transaction-like operation
-  // 1. Create reservation
-  const { data: reservation, error: reservationError } = await supabase
-    .from('reservations')
-    .insert({
-      event_id: eventId,
-      customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_email: customerEmail,
-      total_amount: totalAmount,
-      status: 'pending',
-      expires_at: expiresAt.toISOString()
-    })
-    .select()
-    .single()
+  if (error) throw error
 
-  if (reservationError) throw reservationError
-
-  // 2. Create reservation_seats entries
-  const reservationSeats = seatIds.map(seatId => ({
-    reservation_id: reservation.id,
-    seat_id: seatId
-  }))
-
-  const { error: seatsLinkError } = await supabase
-    .from('reservation_seats')
-    .insert(reservationSeats)
-
-  if (seatsLinkError) {
-    // Rollback: delete the reservation
-    await supabase.from('reservations').delete().eq('id', reservation.id)
-    throw seatsLinkError
+  if (!data.success) {
+    const err = new Error(data.error)
+    err.unavailableSeats = data.unavailable_seats
+    throw err
   }
 
-  // 3. Update seats status to 'reserved'
-  const { error: seatsUpdateError } = await supabase
-    .from('seats')
-    .update({
-      status: 'reserved',
-      reservation_id: reservation.id,
-      locked_until: expiresAt.toISOString()
-    })
-    .in('id', seatIds)
-
-  if (seatsUpdateError) {
-    // Rollback
-    await supabase.from('reservation_seats').delete().eq('reservation_id', reservation.id)
-    await supabase.from('reservations').delete().eq('id', reservation.id)
-    throw seatsUpdateError
-  }
-
-  return reservation
+  return data.reservation
 }
 
 // Helper function to get reservation by ID

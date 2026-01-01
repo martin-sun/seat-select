@@ -65,22 +65,24 @@ export default {
     LanguageSwitcher
   },
   props: {
-    showLeft: Number,
-    titleText: String,
-    rightText: String,
+    showLeft: {
+      type: Number,
+      default: 1
+    },
+    titleText: {
+      type: String,
+      required: true
+    },
+    rightText: {
+      type: String,
+      default: ''
+    },
     showZoomControls: {
       type: Boolean,
       default: false
     }
   },
-  emits: ['backHandleClick', 'zoomIn', 'zoomOut'],
-  data () {
-    return {
-
-    }
-  },
-  methods: {
-  }
+  emits: ['backHandleClick', 'zoomIn', 'zoomOut']
 }
 </script>
 

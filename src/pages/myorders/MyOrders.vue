@@ -274,7 +274,9 @@ export default {
     formatDate (dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
-      return date.toLocaleDateString('zh-CN', {
+      // Use locale based on current i18n setting
+      const locale = this.$i18n.locale === 'zh-CN' ? 'zh-CN' : 'en-US'
+      return date.toLocaleDateString(locale, {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
