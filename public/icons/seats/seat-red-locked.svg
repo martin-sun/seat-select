@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 红区座位 - 锁定 -->
+  <!-- 椅背 -->
+  <rect x="6" y="4" width="20" height="14" rx="3" fill="#9CA3AF"/>
+  <!-- 椅座 -->
+  <rect x="4" y="18" width="24" height="8" rx="2" fill="#6B7280"/>
+  <!-- 锁图标 -->
+  <rect x="12" y="14" width="8" height="6" rx="1" fill="#374151"/>
+  <path d="M13.5 14 V12 Q13.5 9 16 9 Q18.5 9 18.5 12 V14" stroke="#374151" stroke-width="2" fill="none"/>
+</svg>

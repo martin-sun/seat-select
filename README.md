@@ -101,7 +101,7 @@ npm install axios -S
 .public
 ├── index.html
 └── mock
-    └── seatLove.json(mock数据在这里)
+    └── seats.json (座位数据)
 
 .src
 ├── App.vue --(入口组件)
