@@ -102,7 +102,7 @@ export default {
       }
       let bestSeatListIndex = 0
       // 递归每排的最优座位组 找出离中心点最近的最优座位组
-      bestSeatList.reduce(function (prev, cur, index, arr) {
+      bestSeatList.reduce(function (prev, cur, index) {
         if (Array.isArray(prev)) {
           // 取中心点离 最好坐标 绝对值
           let n = Math.abs((prev[0].gCol + prev[value - 1].gCol) / 2 - _self.bestX)
@@ -332,7 +332,7 @@ export default {
     preCheckSeatMakeEmpty (arr) {
       let that = this
       // 开始计算是否留下空位 ------------ 开始
-      let result = arr.every(function (element, index, array) {
+      let result = arr.every(function (element) {
         return that.checkSeat(element, arr)
       })
       // 开始计算是否留下空位 ------------ 结束
@@ -449,8 +449,8 @@ export default {
   beforeMount () {}, // 生命周期 - 挂载之前
   beforeUpdate () {}, // 生命周期 - 更新之前
   updated () {}, // 生命周期 - 更新之后
-  beforeDestroy () {}, // 生命周期 - 销毁之前
-  destroyed () {}, // 生命周期 - 销毁完成
+  beforeUnmount () {}, // 生命周期 - 销毁之前
+  unmounted () {}, // 生命周期 - 销毁完成
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>

@@ -24,28 +24,24 @@
     :propSeatAreaWidthRem="seatAreaWidthRem" :propSeatAreaHeightRem ="seatAreaHeightRem"
     :propSeatBoxHeight="seatBoxHeight" :propMiddleLine="middleLine" :propHorizontalLine="horizontalLine" ref="seatArea">
       <!--以下为缩略座位图具名插槽 开始-->
-      <template slot="thumbnail-seat-solt">
-         <template v-for="seatItem in seatList" >
-            <div class="thumbnailSeatClass" :key="'thumbnail'+seatItem.id" :style="{height:thumbnailHeight +'rem',
+      <template #thumbnail-seat-solt>
+            <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'rem',
             width:thumbnailWidth +'rem',background: thumbnailBackgroud(seatItem),
             top:seatItem.gRow * thumbnailPositionDistin +'rem',left:seatItem.gCol * thumbnailPositionDistin +'rem'}">
             </div>
-          </template>
       </template>
       <!--以上为缩略座位图具名插槽 结束-->
       <!--以下为座位图具名插槽 开始-->
-      <template slot="seat-area-solt">
+      <template #seat-area-solt>
         <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:seatBoxHeight +'rem',
         width:seatBoxWidth +'rem',marginLeft:seatBoxCenterMargin+'rem'}">
          <!--中轴线-->
           <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'rem',left: middleLine +'rem'}"></div>
-          <template v-for="(seatItem,index) in seatList" >
-            <div class="seatClass" @click.prevent="clickSeat(index)" :key="seatItem.id" :style="{height:height +'rem',width:width +'rem',
+            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'rem',width:width +'rem',
             top:seatItem.gRow * positionDistin +'rem',left:seatItem.gCol * positionDistin +'rem'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>
             </div>
-          </template>
         </div>
       </template>
       <!--以上为座位图具名插槽 结束-->
@@ -218,8 +214,8 @@ export default {
       if (otherLoveSeatIndex !== null) {
         // 如果是情侣座位
         // 改变这些座位的图标为初始图标
-        this.$set(this.seatList[index], 'nowIcon', this.seatList[index].defautIcon)
-        this.$set(this.seatList[otherLoveSeatIndex], 'nowIcon', this.seatList[otherLoveSeatIndex].defautIcon)
+        this.seatList[index].nowIcon = this.seatList[index].defautIcon
+        this.seatList[otherLoveSeatIndex].nowIcon = this.seatList[otherLoveSeatIndex].defautIcon
         for (const key in _selectedSeatList) {
           // 移除id一样的座位
           if (_selectedSeatList[key].id === this.seatList[index].id) {
@@ -234,7 +230,7 @@ export default {
         }
       } else {
         // 改变这些座位的图标为初始图标 并 移除id一样的座位
-        this.$set(this.seatList[index], 'nowIcon', this.seatList[index].defautIcon)
+        this.seatList[index].nowIcon = this.seatList[index].defautIcon
         for (const key in _selectedSeatList) {
           if (_selectedSeatList[key].id === this.seatList[index].id) {
             _selectedSeatList.splice(key, 1)
@@ -262,8 +258,8 @@ export default {
           return
         }
         // 改变这些座位的图标为已选择图标
-        this.$set(this.seatList[index], 'nowIcon', this.seatList[index].selectedIcon)
-        this.$set(this.seatList[otherLoveSeatIndex], 'nowIcon', this.seatList[otherLoveSeatIndex].selectedIcon)
+        this.seatList[index].nowIcon = this.seatList[index].selectedIcon
+        this.seatList[otherLoveSeatIndex].nowIcon = this.seatList[otherLoveSeatIndex].selectedIcon
         // 记录 orgIndex属性 是原seatList数组中的下标值
         this.seatList[index].orgIndex = index
         this.seatList[otherLoveSeatIndex].orgIndex = otherLoveSeatIndex
@@ -277,7 +273,7 @@ export default {
           return
         }
         // 改变这些座位的图标为已选择图标
-        this.$set(this.seatList[index], 'nowIcon', this.seatList[index].selectedIcon)
+        this.seatList[index].nowIcon = this.seatList[index].selectedIcon
         // 记录 orgIndex属性 是原seatList数组中的下标值
         this.seatList[index].orgIndex = index
         // 把选择的座位放入到已选座位数组中

@@ -80,7 +80,7 @@ export default {
         return
       }
       // 开始计算是否留下空位 ------------ 开始
-      let result = _this.selectedSeat.every(function (element, index, array) {
+      let result = _this.selectedSeat.every(function (element) {
         return _this.checkSeat(element)
       })
       // 开始计算是否留下空位 ------------ 结束
@@ -189,8 +189,8 @@ export default {
   beforeUpdate () {}, // 生命周期 - 更新之前
   // 生命周期 - 更新之后
   updated () {},
-  beforeDestroy () {}, // 生命周期 - 销毁之前
-  destroyed () {}, // 生命周期 - 销毁完成
+  beforeUnmount () {}, // 生命周期 - 销毁之前
+  unmounted () {}, // 生命周期 - 销毁完成
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>

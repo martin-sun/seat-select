@@ -17,23 +17,22 @@
           <!--这里是缩略图中的所有座位放入此插槽-->
         </slot>
       </div>
-      <v-touch @pinchout="pinchout" @pinchin="pinchin" @panmove="panmove" @panstart="panstart" @panend="panend" class="box" ref="pinchAndPan"
-      :pinch-options="{ threshold: 0.09 }" :pan-options="{ threshold: 0.01 }" :style="{transform: 'scale('+scale+')',transformOrigin: transformOrigin,top:top + 'rem',left:left + 'rem',
+      <div class="box" ref="pinchAndPan"
+      @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
+      :style="{transform: 'scale('+scale+')',transformOrigin: transformOrigin,top:top + 'rem',left:left + 'rem',
       width:seatAreaWidthRem + 'rem',height:seatAreaHeightRem + 'rem'}">
         <slot name="seat-area-solt">
           <!--所有可以点击座位的数据会放入此插槽,此插槽可以缩放,拖动-->
         </slot>
-      </v-touch>
+      </div>
         <!--座位左边栏-->
       <div class="seat-tool-parent" :style="{height:seatAreaHeightRem + 'rem'}">
         <div class="seat-tool" :style="{transform: 'scale('+seatScale+')',transformOrigin: transformOriginTool,marginTop:seatToolMargin+'rem',
         fontSize:seatToolFontSize +'rem'}">
-          <template  v-for="(item, index) in seatToolArr">
-            <div class="seat-tool-item" :key="'seat-tool' + index"
+            <div v-for="(item, index) in seatToolArr" :key="'seat-tool' + index" class="seat-tool-item"
             :style="{height:seatHeightWithScale+'rem',width:seatToolWidthWithScale+'rem',lineHeight:seatHeightWithScale+'rem'}">
                 {{item}}
             </div>
-          </template>
         </div>
       </div>
     </div>
@@ -89,10 +88,55 @@ export default {
       // 触摸状态
       touchStatus: false,
       // 座位左边栏的数组
-      seatToolArr: this.propSeatToolArr
+      seatToolArr: this.propSeatToolArr,
+      // 原生触摸事件相关
+      touchStartX: 0,
+      touchStartY: 0,
+      initialPinchDistance: null
     }
   },
   methods: {
+    // 触摸事件处理 - 替代 vue-touch
+    handleTouchStart: function (ev) {
+      if (ev.touches.length === 1) {
+        // 单指触摸 - panstart
+        this.panstart(ev)
+      } else if (ev.touches.length === 2) {
+        // 双指触摸 - 记录初始距离用于缩放
+        this.initialPinchDistance = this.getPinchDistance(ev.touches)
+      }
+    },
+    handleTouchMove: function (ev) {
+      if (ev.touches.length === 1) {
+        // 单指移动 - panmove
+        const touch = ev.touches[0]
+        this.panmove({
+          deltaX: touch.clientX - this.touchStartX,
+          deltaY: touch.clientY - this.touchStartY
+        })
+      } else if (ev.touches.length === 2) {
+        // 双指移动 - pinch
+        const currentDistance = this.getPinchDistance(ev.touches)
+        if (this.initialPinchDistance) {
+          if (currentDistance > this.initialPinchDistance + 10) {
+            this.pinchout()
+            this.initialPinchDistance = currentDistance
+          } else if (currentDistance < this.initialPinchDistance - 10) {
+            this.pinchin()
+            this.initialPinchDistance = currentDistance
+          }
+        }
+      }
+    },
+    handleTouchEnd: function (ev) {
+      this.panend(ev)
+      this.initialPinchDistance = null
+    },
+    getPinchDistance: function (touches) {
+      const dx = touches[0].clientX - touches[1].clientX
+      const dy = touches[0].clientY - touches[1].clientY
+      return Math.sqrt(dx * dx + dy * dy)
+    },
     // 第一次点击座位改变放大比例
     changeScale: function () {
       if (this.maxscale === 1) {
@@ -150,10 +194,15 @@ export default {
       // 获取上次记录的xy坐标作为起点
       _this.startY = _this.top * _this.screenRem
       _this.startX = _this.left * _this.screenRem
+      // 记录触摸起始位置（用于原生触摸事件）
+      if (ev.touches && ev.touches.length > 0) {
+        _this.touchStartX = ev.touches[0].clientX
+        _this.touchStartY = ev.touches[0].clientY
+      }
       clearTimeout(_this.timer)
     },
     // 当手指拖动结束的时候
-    panend: function (ev) {
+    panend: function () {
       let _this = this
       // 优化触摸性能
       _this.touchStatus = false
