@@ -34,39 +34,36 @@
             :disabled="sending || !isValidEmail"
             class="submit-btn"
           >
-            {{ sending ? '发送中...' : '获取验证码' }}
+            {{ sending ? '发送中...' : '发送登录链接' }}
           </button>
           <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
       </div>
 
-      <!-- Step 2: OTP 验证 -->
-      <div v-if="step === 'otp'" class="step-container">
+      <!-- Step 2: 邮件已发送提示 -->
+      <div v-if="step === 'email-sent'" class="step-container">
         <div class="step-card">
-          <div class="step-icon">
-            <svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          <div class="step-icon success-icon">
+            <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h2>输入验证码</h2>
-          <p class="hint">验证码已发送至 {{ email }}</p>
-          <input
-            v-model="otpCode"
-            type="text"
-            maxlength="6"
-            placeholder="000000"
-            class="input-field otp-input"
-            @keyup.enter="verifyCode"
-          />
+          <h2>登录链接已发送！</h2>
+          <p class="hint">我们已向 <strong>{{ email }}</strong> 发送了登录链接</p>
+          <div class="email-notice">
+            <svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <span>请查看您的收件箱，如未收到请检查垃圾邮件文件夹</span>
+          </div>
           <button
-            @click="verifyCode"
-            :disabled="verifying || otpCode.length !== 6"
-            class="submit-btn"
+            @click="resendOtp"
+            :disabled="resendCooldown > 0 || sending"
+            class="submit-btn resend-btn"
           >
-            {{ verifying ? '验证中...' : '验证' }}
-          </button>
-          <button @click="resendOtp" class="link-btn">
-            重新发送验证码
+            <template v-if="sending">发送中...</template>
+            <template v-else-if="resendCooldown > 0">重新发送 ({{ formattedCooldown }})</template>
+            <template v-else>重新发送</template>
           </button>
           <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
@@ -110,11 +107,18 @@
               </div>
               <div class="order-seats">
                 <span v-for="rs in reservation.reservation_seats" :key="rs.seat_id" class="seat-tag">
-                  {{ rs.seats?.row }}排{{ rs.seats?.col }}座
+                  {{ rs.seats?.zone }} - {{ rs.seats?.row }}排{{ rs.seats?.col }}座
                 </span>
               </div>
+              <!-- 待支付订单显示锁定截止时间 -->
+              <div v-if="reservation.status === 'pending' && reservation.expires_at" class="order-expires">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>座位锁定至: {{ formatExpiry(reservation.expires_at) }}</span>
+              </div>
               <div class="order-footer">
-                <span class="order-amount">¥{{ reservation.total_amount }}</span>
+                <span class="order-amount">${{ reservation.total_amount }}</span>
                 <span class="order-date">{{ formatDate(reservation.created_at) }}</span>
               </div>
             </div>
@@ -131,26 +135,36 @@
 </template>
 
 <script>
-import { sendOtpToEmail, verifyOtp, getReservationsByEmail, signOut, getSession } from '@/supabase'
+import { sendOtpToEmail, getReservationsByEmail, signOut, getSession } from '@/supabase'
 
 export default {
   name: 'MyOrders',
   data () {
     return {
-      step: 'email', // 'email' | 'otp' | 'orders'
+      step: 'email', // 'email' | 'email-sent' | 'orders'
       email: '',
-      otpCode: '',
       reservations: [],
       sending: false,
-      verifying: false,
       loading: false,
-      error: null
+      error: null,
+      resendCooldown: 0, // 倒计时秒数
+      cooldownTimer: null // 定时器引用
     }
   },
   computed: {
     isValidEmail () {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       return emailRegex.test(this.email)
+    },
+    formattedCooldown () {
+      const minutes = Math.floor(this.resendCooldown / 60)
+      const seconds = this.resendCooldown % 60
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+  },
+  beforeUnmount () {
+    if (this.cooldownTimer) {
+      clearInterval(this.cooldownTimer)
     }
   },
   async mounted () {
@@ -174,27 +188,27 @@ export default {
       this.error = null
       try {
         await sendOtpToEmail(this.email)
-        this.step = 'otp'
+        this.step = 'email-sent'
+        this.startCooldown()
       } catch (err) {
-        this.error = err.message || '发送验证码失败，请稍后重试'
+        this.error = err.message || '发送登录链接失败，请稍后重试'
       } finally {
         this.sending = false
       }
     },
-    async verifyCode () {
-      if (this.otpCode.length !== 6) return
-
-      this.verifying = true
-      this.error = null
-      try {
-        await verifyOtp(this.email, this.otpCode)
-        await this.loadOrders()
-        this.step = 'orders'
-      } catch (err) {
-        this.error = '验证码错误或已过期'
-      } finally {
-        this.verifying = false
+    startCooldown () {
+      this.resendCooldown = 300 // 5分钟 = 300秒
+      if (this.cooldownTimer) {
+        clearInterval(this.cooldownTimer)
       }
+      this.cooldownTimer = setInterval(() => {
+        if (this.resendCooldown > 0) {
+          this.resendCooldown--
+        } else {
+          clearInterval(this.cooldownTimer)
+          this.cooldownTimer = null
+        }
+      }, 1000)
     },
     async loadOrders () {
       this.loading = true
@@ -213,10 +227,14 @@ export default {
       } catch (err) {
         console.error('退出失败:', err)
       }
+      if (this.cooldownTimer) {
+        clearInterval(this.cooldownTimer)
+        this.cooldownTimer = null
+      }
       this.step = 'email'
       this.email = ''
-      this.otpCode = ''
       this.reservations = []
+      this.resendCooldown = 0
       this.error = null
     },
     viewOrder (id) {
@@ -225,10 +243,19 @@ export default {
     goBack () {
       this.$router.push('/')
     },
-    resendOtp () {
-      this.step = 'email'
-      this.otpCode = ''
+    async resendOtp () {
+      if (this.resendCooldown > 0 || this.sending) return
+
+      this.sending = true
       this.error = null
+      try {
+        await sendOtpToEmail(this.email)
+        this.startCooldown()
+      } catch (err) {
+        this.error = err.message || '发送登录链接失败，请稍后重试'
+      } finally {
+        this.sending = false
+      }
     },
     getStatusClass (status) {
       const classMap = {
@@ -257,6 +284,26 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       })
+    },
+    formatExpiry (dateStr) {
+      if (!dateStr) return ''
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diff = date - now
+
+      // 如果已过期
+      if (diff <= 0) {
+        return '已过期'
+      }
+
+      // 计算剩余时间
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+
+      if (hours > 0) {
+        return `${hours}小时${minutes}分钟后`
+      }
+      return `${minutes}分钟后`
     }
   }
 }
@@ -316,10 +363,6 @@ export default {
   @apply outline-none border-primary ring-2 ring-primary ring-opacity-20;
 }
 
-.otp-input {
-  @apply font-mono tracking-widest text-2xl;
-}
-
 .submit-btn {
   @apply w-full py-3 bg-primary text-white rounded-lg font-medium;
 }
@@ -334,6 +377,15 @@ export default {
 
 .error-msg {
   @apply mt-3 text-red-500 text-sm;
+}
+
+/* Email Sent Notice */
+.email-notice {
+  @apply flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-sm text-yellow-700 text-left;
+}
+
+.resend-btn {
+  @apply mt-2;
 }
 
 /* Orders List */
@@ -416,6 +468,10 @@ export default {
 
 .seat-tag {
   @apply bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs;
+}
+
+.order-expires {
+  @apply flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded mb-2;
 }
 
 .order-footer {

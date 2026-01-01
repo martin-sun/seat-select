@@ -138,7 +138,8 @@ export async function sendOtpToEmail (email) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      shouldCreateUser: true
+      shouldCreateUser: true,
+      emailRedirectTo: `${window.location.origin}/my-orders`
     }
   })
   if (error) throw error

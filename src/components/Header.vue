@@ -19,11 +19,33 @@
         <h1 class="text-base md:text-lg font-bold leading-11 md:leading-14">{{ titleText }}</h1>
       </div>
 
-      <!-- 右侧查询订单链接 -->
-      <div class="w-20 text-right">
+      <!-- 右侧：缩放按钮 + 查询订单 -->
+      <div class="flex items-center gap-2">
+        <!-- 缩放按钮 -->
+        <div v-if="showZoomControls" class="flex items-center gap-1">
+          <button
+            @click="$emit('zoomOut')"
+            class="zoom-btn"
+            title="缩小"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+            </svg>
+          </button>
+          <button
+            @click="$emit('zoomIn')"
+            class="zoom-btn"
+            title="放大"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+          </button>
+        </div>
+        <!-- 查询订单链接 -->
         <router-link
           to="/my-orders"
-          class="text-sm text-white opacity-90 hover:opacity-100"
+          class="text-sm text-white opacity-90 hover:opacity-100 whitespace-nowrap"
         >
           查询订单
         </router-link>
@@ -38,8 +60,13 @@ export default {
   props: {
     showLeft: Number,
     titleText: String,
-    rightText: String
+    rightText: String,
+    showZoomControls: {
+      type: Boolean,
+      default: false
+    }
   },
+  emits: ['backHandleClick', 'zoomIn', 'zoomOut'],
   data () {
     return {
 
@@ -65,5 +92,10 @@ export default {
   .md\:leading-14 {
     line-height: 3.5rem;
   }
+}
+
+/* Zoom control buttons */
+.zoom-btn {
+  @apply flex items-center justify-center w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 transition-colors;
 }
 </style>

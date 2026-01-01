@@ -5,9 +5,6 @@
 */
 <template>
     <div class="activity-area">
-      <div class="screen">
-        <div class="screen-text">Stage</div>
-      </div>
       <!-- 缩略图已移除 -->
       <div class="box" ref="pinchAndPan"
       @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
@@ -168,14 +165,19 @@ export default {
     pinchout: function () {
       let _this = this
       if (_this.scale >= 0 && _this.scale < _this.maxscale) {
-        _this.scale += 0.1
+        _this.scale += 0.15
       }
     },
     // 当缩放 缩小的时候触发
     pinchin: function () {
       let _this = this
-      if (_this.scale > 1) {
-        _this.scale -= 0.1
+      const minScale = 0.3 // 最小缩放比例，允许缩小查看全景
+      if (_this.scale > minScale) {
+        _this.scale -= 0.15
+        // 确保不低于最小值
+        if (_this.scale < minScale) {
+          _this.scale = minScale
+        }
       }
     },
     // 当手指拖动的过程中
@@ -254,10 +256,10 @@ export default {
     },
     // scale === 1 时的左右边界值（允许拖动查看超出屏幕的座位）
     boundaryLeft: function () {
-      // 座位区域实际宽度超出屏幕的部分
-      const seatBoxActualWidth = this.seatBoxHeight * this.seatScale * 1.5 // 估算座位区域宽度
+      // 座位区域实际宽度超出屏幕的部分 - 大幅增加允许拖动的范围
+      const seatBoxActualWidth = this.seatBoxHeight * this.seatScale * 2.5 // 增加估算宽度
       const overflow = Math.max(0, seatBoxActualWidth - this.seatAreaWidthPx)
-      return overflow / 2 + 100 // 额外留出100px的拖动空间
+      return overflow / 2 + 400 // 大幅增加拖动空间
     },
     // scale === 1 时的上下边界值
     boundaryTop: function () {
@@ -265,7 +267,7 @@ export default {
       const seatAreaHeightPx = windowHeight - 100 // 与 CSS 中的高度计算一致
       const seatBoxActualHeight = this.seatBoxHeight * this.seatScale
       const overflow = Math.max(0, seatBoxActualHeight - seatAreaHeightPx)
-      return overflow / 2 + 150 // 额外留出拖动空间
+      return overflow / 2 + 400 // 大幅增加拖动空间
     },
     // 左边触边吸附边界值px
     crossleft: function () {
@@ -386,13 +388,13 @@ export default {
 /* Seat box container */
 .box {
   @apply absolute z-0 w-full left-0;
-  margin-top: 36px;
+  margin-top: 8px;
   /* 设置 width: 100% 和 left: 0 确保子元素 .seatBox 的 left: 50% 能正确居中 */
 }
 
 @media (min-width: 768px) {
   .box {
-    margin-top: 48px;
+    margin-top: 12px;
   }
 }
 
@@ -441,47 +443,17 @@ export default {
   }
 }
 
-/* Screen direction indicator - trapezoid shape */
-.screen {
-  @apply absolute top-0 z-20 text-white;
-  width: 80%;
-  max-width: 400px;
-  border-top: 28px solid #DFDFDF;
-  border-right: 40px solid transparent;
-  border-left: 40px solid transparent;
-  left: 50%;
-  transform: translateX(-50%);
-}
 
-@media (min-width: 768px) {
-  .screen {
-    max-width: 500px;
-    border-top-width: 36px;
-    border-right-width: 50px;
-    border-left-width: 50px;
-  }
-}
-
-.screen-text {
-  @apply text-center whitespace-nowrap text-lg md:text-xl font-semibold;
-  margin-top: -24px;
-}
-
-@media (min-width: 768px) {
-  .screen-text {
-    margin-top: -32px;
-  }
-}
 
 /* Seat tool (row numbers) */
 .seat-tool-parent {
   @apply overflow-hidden;
-  margin-top: 36px;
+  margin-top: 8px;
 }
 
 @media (min-width: 768px) {
   .seat-tool-parent {
-    margin-top: 48px;
+    margin-top: 12px;
   }
 }
 
