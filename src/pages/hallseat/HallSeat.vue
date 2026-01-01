@@ -15,7 +15,7 @@
       <!--以下为缩略座位图具名插槽 开始-->
       <template #thumbnail-seat-solt>
             <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'px',
-            width:thumbnailWidth +'px',background: thumbnailBackgroud(seatItem),
+            width:(thumbnailWidth * (seatItem.width || 1)) +'px',background: thumbnailBackgroud(seatItem),
             top:seatItem.gRow * thumbnailPositionDistin +'px',left:seatItem.gCol * thumbnailPositionDistin +'px'}">
             </div>
       </template>
@@ -26,7 +26,7 @@
         width:seatBoxWidth +'px',marginLeft:seatBoxCenterMargin+'px'}">
          <!--中轴线-->
           <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'px',left: middleLine +'px'}"></div>
-            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width:width +'px',
+            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
             top:seatItem.gRow * positionDistin +'px',left:seatItem.gCol * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>

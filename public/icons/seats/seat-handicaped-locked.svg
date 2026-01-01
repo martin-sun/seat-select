@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32">
+  <!-- 无障碍座位 - 锁定 (非卖) - 两倍宽度连续座位 -->
+  <!-- 椅背 - 连续的 -->
+  <rect x="6" y="4" width="52" height="14" rx="3" fill="#F59E0B"/>
+  <!-- 椅座 - 连续的 -->
+  <rect x="4" y="18" width="56" height="8" rx="2" fill="#D97706"/>
+  <!-- 左扶手 -->
+  <rect x="4" y="12" width="4" height="10" rx="1" fill="#B45309"/>
+  <!-- 右扶手 -->
+  <rect x="56" y="12" width="4" height="10" rx="1" fill="#B45309"/>
+  <!-- 轮椅图标 (居中) -->
+  <g transform="translate(32, 22)" fill="#FEF3C7">
+    <!-- 轮子 -->
+    <circle cx="0" cy="0" r="5" stroke="#FEF3C7" stroke-width="1.5" fill="none"/>
+    <!-- 座椅背部 -->
+    <line x1="0" y1="-5" x2="0" y2="-12" stroke="#FEF3C7" stroke-width="1.5"/>
+    <!-- 座椅 -->
+    <line x1="0" y1="-12" x2="4" y2="-14" stroke="#FEF3C7" stroke-width="1.5"/>
+    <circle cx="4" cy="-14" r="1.5" fill="#FEF3C7"/>
+    <!-- 扶手 -->
+    <line x1="4" y1="-14" x2="6" y2="-12" stroke="#FEF3C7" stroke-width="1.5"/>
+  </g>
+  <!-- 锁图标 (右侧) -->
+  <rect x="52" y="14" width="8" height="6" rx="1" fill="#78350F"/>
+  <path d="M53.5 14 V12 Q53.5 9 56 9 Q58.5 9 58.5 12 V14" stroke="#78350F" stroke-width="1.5" fill="none"/>
+</svg>
