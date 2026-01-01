@@ -8,37 +8,26 @@
     <!--头部 开始-->
     <header-view :titleText="movieName" @backHandleClick="back"></header-view>
     <!--头部 结束-->
-    <!--排期详情和座位上方示例图 开始-->
-    <plan-detail :propHallName="hallName" :propShowDate="showDate" :propShowTime="showTime">
-      <template v-for="seatTypeItem in seatTypeList" >
-          <div class="seat-detail-item" :key="'seatType'+seatTypeItem.type"
-          v-if="seatTypeItem.isShow==='1' && seatTypeItem.position==='up'">
-            <img class="seatTypeClass" :src="seatTypeItem.icon"/>
-            <span class="seatTypeClass">{{seatTypeItem.name}}</span>
-          </div>
-      </template>
-    </plan-detail>
-     <!--排期详情和座位上方示例图 结束-->
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
     :propYMax="yMax" :propSeatScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
-    :propSeatAreaWidthRem="seatAreaWidthRem" :propSeatAreaHeightRem ="seatAreaHeightRem"
+    :propSeatAreaWidthPx="seatAreaWidthPx"
     :propSeatBoxHeight="seatBoxHeight" :propMiddleLine="middleLine" :propHorizontalLine="horizontalLine" ref="seatArea">
       <!--以下为缩略座位图具名插槽 开始-->
       <template #thumbnail-seat-solt>
-            <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'rem',
-            width:thumbnailWidth +'rem',background: thumbnailBackgroud(seatItem),
-            top:seatItem.gRow * thumbnailPositionDistin +'rem',left:seatItem.gCol * thumbnailPositionDistin +'rem'}">
+            <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'px',
+            width:thumbnailWidth +'px',background: thumbnailBackgroud(seatItem),
+            top:seatItem.gRow * thumbnailPositionDistin +'px',left:seatItem.gCol * thumbnailPositionDistin +'px'}">
             </div>
       </template>
       <!--以上为缩略座位图具名插槽 结束-->
       <!--以下为座位图具名插槽 开始-->
       <template #seat-area-solt>
-        <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:seatBoxHeight +'rem',
-        width:seatBoxWidth +'rem',marginLeft:seatBoxCenterMargin+'rem'}">
+        <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:seatBoxHeight +'px',
+        width:seatBoxWidth +'px',marginLeft:seatBoxCenterMargin+'px'}">
          <!--中轴线-->
-          <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'rem',left: middleLine +'rem'}"></div>
-            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'rem',width:width +'rem',
-            top:seatItem.gRow * positionDistin +'rem',left:seatItem.gCol * positionDistin +'rem'}"
+          <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'px',left: middleLine +'px'}"></div>
+            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width:width +'px',
+            top:seatItem.gRow * positionDistin +'px',left:seatItem.gCol * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>
             </div>
@@ -46,12 +35,12 @@
       </template>
       <!--以上为座位图具名插槽 结束-->
     </seat-area>
-    <!-- 失活的组件将会被缓存！-->
-    <keep-alive>
-        <component v-bind:is="selectedTabComponents"
-        :propSeatList="seatList" :propSelectedSeat="selectedSeatList"
-        @quickSelect="processUnSelected" @cancelSelect="processSelected"></component>
-    </keep-alive>
+    <!-- 已选座位展示 -->
+    <selected-tab
+      v-if="selectedSeatList.length > 0"
+      :propSelectedSeat="selectedSeatList"
+      @cancelSelect="processSelected"
+    ></selected-tab>
     <confirm-lock
     :propSelectedSeat="selectedSeatList"
     :propSeatList="seatList"
@@ -62,9 +51,7 @@
 </template>
 <script>
 import SeatArea from './component/SeatArea'
-import PlanDetail from './component/PlanDetail'
 import SelectedTab from './component/SelectedTab'
-import QuickSelectTab from './component/QuickSelectTab'
 import ConfirmLock from './component/ConfirmLock'
 import HeaderView from '@/components/Header'
 import Loading from '@/components/loading'
@@ -78,13 +65,13 @@ export default {
       hallName: '', // 展示用 影厅名称 接口获取
       showDate: '', // 展示用 开始日期 接口获取
       showTime: '', // 展示用 开始时间 接口获取
-      positionDistin: 0.5, // 每个座位偏移距离
-      width: 0.5, // 每个座位的宽
-      height: 0.5, // 每个座位的高
-      thumbnailWidth: 0.1, // 缩略图每个座位的宽
-      thumbnailHeight: 0.1, // 缩略图每个座位的高
-      thumbnailPositionDistin: 0.15, // 缩略图每个座位偏移距离
-      seatAreaWidthRem: 10, // 座位区域横向rem最大值 用于和 seatAreaHeightRem 共同计算区域缩放比例
+      // 座位尺寸配置（px）
+      positionDistin: 32, // 每个座位偏移距离
+      width: 28, // 每个座位的宽
+      height: 28, // 每个座位的高
+      thumbnailWidth: 6, // 缩略图每个座位的宽
+      thumbnailHeight: 6, // 缩略图每个座位的高
+      thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
       selectedSeatList: [], // 已选择座位
       maxSelect: 4, // 最大选择座位数量 改动可改变最大选择座位数
       load: false // 加载dom的控制
@@ -92,10 +79,8 @@ export default {
   },
   components: {
     SeatArea,
-    PlanDetail,
     HeaderView,
     SelectedTab,
-    QuickSelectTab,
     ConfirmLock,
     Loading
   },
@@ -240,15 +225,6 @@ export default {
     },
     // 处理未选择的座位
     processUnSelected: function (index) {
-      // 如果是选择第一个座位 放大区域并移动区域 突出座位 增加用户体验
-      if (this.selectedSeatList.length === 0) {
-        let top = ((this.seatList[index].gRow * this.positionDistin) - this.horizontalLine) * this.seatScale
-        let left = ((this.seatList[index].gCol * this.positionDistin) - this.middleLine) * this.seatScale
-        top = top > 0 ? -top - this.positionDistin : -top + this.positionDistin
-        left = left > 0 ? -left - this.positionDistin : -left + this.positionDistin
-        this.$refs.seatArea.changeScale()
-        this.$refs.seatArea.changePosition(top, left)
-      }
       let _selectedSeatList = this.selectedSeatList
       let otherLoveSeatIndex = this.seatList[index].otherLoveSeatIndex
       if (otherLoveSeatIndex !== null) {
@@ -299,15 +275,14 @@ export default {
     }
   },
   computed: {
-    // 座位区域高度rem
-    seatAreaHeightRem: function () {
-      let screenRem = (document.body.clientWidth || window.innerWidth || document.documentElement.clientWidth) / 10
-      let height = document.documentElement.clientHeight || window.innerHeight || document.body.clientHeight
-      // 除了座位区域的大小
-      let otherDom = 1.08 + 1.2 + 1.2 + 0.67 + 1.87 + 1.2// 头+排期信息+座位示例+屏幕方向区域+底部快捷选择+确认按钮
-      // 剩下的座位区域的大小
-      return height / screenRem - otherDom
+    // 座位区域宽度（根据窗口宽度动态计算）
+    seatAreaWidthPx: function () {
+      const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+      // 移动端最大 375px，桌面端可以更大
+      return windowWidth < 768 ? windowWidth : Math.min(windowWidth, 800)
     },
+    // 座位区域高度（使用 vh 单位，通过 CSS 类控制）
+    // 移除 seatAreaHeightRem 计算，改用 CSS calc(100vh - X)
     // 取最大横坐标
     xMax: function () {
       let i = 0
@@ -328,22 +303,27 @@ export default {
       }
       return i
     },
-    // 竖中轴线
+    // 竖中轴线（px）
     middleLine: function () {
-      // 0.025是.middle-line线本身宽度的一半 也需要居中
-      return ((this.xMax / 2) + 1) * this.positionDistin - 0.025
+      // 座位偏移值的一半作为线宽的一半也需要居中
+      return ((this.xMax / 2) + 1) * this.positionDistin
     },
-    // 横中轴线
+    // 横中轴线（px）
     horizontalLine: function () {
-      // 0.025是.horizontal-line线本身宽度的一半 也需要居中
-      return ((this.yMax / 2) + 1) * this.positionDistin - 0.025
+      return ((this.yMax / 2) + 1) * this.positionDistin
     },
     // 根据影厅的大小缩放比例(需要把影厅全部显示出来)
     seatScale: function () {
       let seatScaleX = 1
       let seatScaleY = 1
-      seatScaleX = this.seatAreaWidthRem / this.seatBoxWidth
-      seatScaleY = this.seatAreaHeightRem / this.seatBoxHeight
+      // 使用窗口高度计算缩放比例
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+      // 座位区域可用高度：窗口高度减去头部和底部确认按钮
+      const otherHeight = 100 // 预留其他区域的高度
+      const availableHeight = windowHeight - otherHeight
+
+      seatScaleX = this.seatAreaWidthPx / this.seatBoxWidth
+      seatScaleY = availableHeight / this.seatBoxHeight
       return seatScaleX < seatScaleY ? seatScaleX : seatScaleY
     },
     // 让影厅居中展示的偏移值
@@ -367,10 +347,6 @@ export default {
     // 缩略图高 rem
     thumbnailBoxHeight: function () {
       return ((this.yMax + 1) * this.thumbnailPositionDistin + this.thumbnailHeight)
-    },
-    // 快速选择和选择座位组件component on-bind:is的值
-    selectedTabComponents: function () {
-      return this.selectedSeatList.length > 0 ? 'SelectedTab' : 'QuickSelectTab'
     },
     // 座位左边栏的数组
     seatToolArr: function () {
