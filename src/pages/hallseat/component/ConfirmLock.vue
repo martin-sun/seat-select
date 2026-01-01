@@ -4,7 +4,7 @@
   @updateDate 最后更新时间为:2019-02-29
 */
 <template>
-<div class='confirm' @click="lockSeat()">
+<div class='fixed bottom-0 left-0 right-0 z-10 h-12 md:h-14 bg-gradient-to-r from-primary to-primary-light text-center text-white text-base md:text-lg leading-[3rem] md:leading-[3.5rem] cursor-pointer' @click="lockSeat()">
   确认选座
 </div>
 </template>
@@ -194,16 +194,6 @@ export default {
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>
-<style lang='stylus' rel='stylesheet/stylus' scoped='scoped'>
-//@import url(); 引入公共css类
-.confirm
-  position fixed
-  bottom 0
-  z-index 10
-  width 750px
-  background: linear-gradient(to right, #6F50F5,#C26DFE);
-  line-height 90px
-  text-align center
-  color white
-  font-size 30px
+<style scoped>
+/* Styles handled by Tailwind classes */
 </style>

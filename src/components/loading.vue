@@ -1,9 +1,9 @@
-
 <template>
-  <div class="loading" v-show="load">
-      <img src="../assets/images/loading.gif">
+  <div v-show="load" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 text-white">
+      <img src="../assets/images/loading.gif" class="w-12 h-12 md:w-16 md:h-16">
   </div>
 </template>
+
 <script>
 export default {
   // 显示加载的页面
@@ -18,20 +18,7 @@ export default {
   }
 }
 </script>
-<style  lang="stylus" scoped>
-.loading
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 9;
-    width: 100%;
-    height: 100%;
-    color: #fff;
-    img
-      width: 50px;
-      height: 50px;
+
+<style scoped>
+/* Loading styles handled by Tailwind classes */
 </style>

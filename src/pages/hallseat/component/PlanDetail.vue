@@ -5,12 +5,12 @@
 */
 <template>
   <div>
-    <div class="plan-detail">
-      <div class="plan-detail-item">{{propShowDate}}</div>
-      <div class="plan-detail-item">{{propShowTime}}</div>
-      <div class="plan-detail-item">{{propHallName}}</div>
+    <div class="flex flex-row justify-between items-center w-full h-12 md:h-14 bg-white text-text-gray text-sm md:text-base">
+      <div class="flex-1 text-center truncate px-2">{{propShowDate}}</div>
+      <div class="flex-1 text-center truncate px-2">{{propShowTime}}</div>
+      <div class="flex-1 text-center truncate px-2">{{propHallName}}</div>
     </div>
-    <div class="seat-detail">
+    <div class="flex flex-row justify-around items-center w-full h-12 md:h-14 bg-bg-gray text-text-gray text-sm md:text-base px-4">
       <slot></slot>
     </div>
   </div>
@@ -59,33 +59,6 @@ export default {
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>
-<style lang='stylus' rel='stylesheet/stylus' scoped='scoped'>
-//@import url(); 引入公共css类
-.plan-detail
-  display flex
-  flex-direction row
-  justify-content space-between
-  align-items center
-  font-size 26px
-  color #888888
-  height 90px
-  width 750px
-  background #ffffff
-  .plan-detail-item
-    width 250px
-    text-align center
-    overflow: hidden;
-    text-overflow:ellipsis;
-    white-space: nowrap;
-.seat-detail
-  display flex
-  flex-direction row
-  justify-content space-around
-  align-items center
-  font-size 26px
-  color #888888
-  height 90px
-  width 710px
-  background #f3f4f6
-  padding 0 20px 0 20px
+<style scoped>
+/* Styles handled by Tailwind classes */
 </style>

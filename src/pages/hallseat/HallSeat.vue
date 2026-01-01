@@ -391,33 +391,44 @@ export default {
   }
 }
 </script>
-<style lang="stylus" rel="stylesheet/stylus" scoped="scoped">
-  .wapper
-    width: 270px
-    width 750px
-    background #f3f4f6
-    .seat-detail-item
-      display flex
-      align-content center
-      .seatTypeClass
-        display block
-        height 35px
-        line-height 35px
-        white-space:nowrap
-    .thumbnailSeatClass
-      position absolute
-    .seatBox
-      position absolute
-      left 50%
-      transform-origin 0rem 0rem 0rem
-      .middle-line
-        position absolute
-        border-right 0.05rem rgba(0,0,0,0.2) dashed
-      .seatClass
-        position absolute
-        .seatImgClass
-          position absolute
-          left 0
-          top 0
-          height 100%
+<style scoped>
+/* Main wrapper */
+.wapper {
+  @apply w-full bg-bg-gray min-h-screen;
+}
+
+/* Seat type legend items */
+.seat-detail-item {
+  @apply flex items-center gap-1;
+}
+
+.seatTypeClass {
+  @apply block h-6 md:h-8 leading-6 md:leading-8 whitespace-nowrap text-xs md:text-sm;
+}
+
+/* Thumbnail seat markers */
+.thumbnailSeatClass {
+  @apply absolute;
+}
+
+/* Seat box container */
+.seatBox {
+  @apply absolute left-1/2;
+  transform-origin: 0 0 0;
+}
+
+/* Center line */
+.middle-line {
+  @apply absolute;
+  border-right: 1px rgba(0,0,0,0.2) dashed;
+}
+
+/* Individual seats */
+.seatClass {
+  @apply absolute cursor-pointer;
+}
+
+.seatImgClass {
+  @apply absolute left-0 top-0 h-full w-full object-contain;
+}
 </style>
