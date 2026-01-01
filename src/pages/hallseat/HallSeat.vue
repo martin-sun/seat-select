@@ -6,7 +6,13 @@
 <template>
   <div class="wapper">
     <!--头部 开始-->
-    <header-view titleText="选择座位" @backHandleClick="back"></header-view>
+    <header-view
+      titleText="选择座位"
+      :showZoomControls="true"
+      @backHandleClick="back"
+      @zoomIn="handleZoomIn"
+      @zoomOut="handleZoomOut"
+    ></header-view>
     <!--头部 结束-->
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
     :propYMax="yMax - yMin" :propSeatScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
@@ -16,21 +22,30 @@
       <template #thumbnail-seat-solt>
             <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'px',
             width:(thumbnailWidth * (seatItem.width || 1)) +'px',background: thumbnailBackgroud(seatItem),
-            top:(seatItem.gRow - yMin) * thumbnailPositionDistin +'px',left:(seatItem.gCol - xMin) * thumbnailPositionDistin +'px'}">
+            top:(yMax - seatItem.gRow) * thumbnailPositionDistin +'px',left:(seatItem.gCol - xMin) * thumbnailPositionDistin +'px'}">
             </div>
       </template>
       <!--以上为缩略座位图具名插槽 结束-->
       <!--以下为座位图具名插槽 开始-->
       <template #seat-area-solt>
-        <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:seatBoxHeight +'px',
+        <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:(seatBoxHeight + stageHeight) +'px',
         width:seatBoxWidth +'px',marginLeft:seatBoxCenterMargin+'px'}">
          <!--中轴线-->
-          <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'px',left: middleLine +'px'}"></div>
+          <div v-show="seatList.length>0" class="middle-line" :style="{height:(seatBoxHeight + stageHeight) +'px',left: middleLine +'px'}"></div>
             <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
-            top:(seatItem.gRow - yMin) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
+            top:(yMax - seatItem.gRow) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>
             </div>
+          <!--Entrance and Exit 标记 - 位于中间空白区域（Q排附近）-->
+          <div class="entrance-exit-label" :style="{top: '0px', left: middleLine + 'px'}">
+            <span>Entrance</span>
+            <span>and Exit</span>
+          </div>
+          <!--Stage 在座位下方，跟随座位移动-->
+          <div class="stage" :style="{top: (seatBoxHeight + 30) + 'px', left: middleLine + 'px'}">
+            <div class="stage-text">Stage</div>
+          </div>
         </div>
       </template>
       <!--以上为座位图具名插槽 结束-->
@@ -84,6 +99,7 @@ export default {
       thumbnailWidth: 6, // 缩略图每个座位的宽
       thumbnailHeight: 6, // 缩略图每个座位的高
       thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
+      stageHeight: 150, // Stage 区域高度
       selectedSeatList: [], // 已选择座位
       maxSelect: 4, // 最大选择座位数量 改动可改变最大选择座位数
       load: false, // 加载dom的控制
@@ -275,6 +291,18 @@ export default {
     back: function () {
       this.$router.go(-1)
     },
+    // 放大座位图
+    handleZoomIn: function () {
+      if (this.$refs.seatArea) {
+        this.$refs.seatArea.pinchout()
+      }
+    },
+    // 缩小座位图
+    handleZoomOut: function () {
+      if (this.$refs.seatArea) {
+        this.$refs.seatArea.pinchin()
+      }
+    },
     loading: function (value) {
       this.load = value
     },
@@ -407,10 +435,11 @@ export default {
       const rowRange = this.yMax - this.yMin
       return ((rowRange + 1) * this.thumbnailPositionDistin + this.thumbnailHeight)
     },
-    // 座位左边栏的数组 - 基于实际座位范围
+    // 座位左边栏的数组 - 基于实际座位范围（反转顺序，A在底部靠近Stage）
     seatToolArr: function () {
       let seatToolArr = []
-      for (let i = this.yMin; i <= this.yMax; i++) {
+      // 从 yMax 到 yMin 反向遍历，使行标签与翻转后的座位匹配
+      for (let i = this.yMax; i >= this.yMin; i--) {
         let el = this.seatList.find((item) => (
           item.gRow === i
         ))
@@ -464,5 +493,43 @@ export default {
 
 .seatImgClass {
   @apply absolute left-0 top-0 h-full w-full object-contain;
+}
+
+/* Stage element - positioned relative to seats */
+.stage {
+  @apply absolute;
+  width: 700px;
+  max-width: 90%;
+  height: 100px;
+  transform: translateX(-50%);
+  margin-top: 40px;
+}
+
+.stage::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #8B5CF6 100%);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  border-radius: 4px;
+}
+
+.stage-text {
+  @apply absolute inset-0 flex items-center justify-center text-white font-bold text-lg tracking-wider;
+}
+
+/* Entrance and Exit label - positioned in the middle gap area */
+.entrance-exit-label {
+  @apply absolute flex flex-col items-center justify-center text-gray-500 font-semibold;
+  transform: translateX(-80%);
+  font-size: 14px;
+  line-height: 1.4;
+  height: 140px;
+  text-align: center;
+}
+
+.entrance-exit-label span {
+  display: block;
 }
 </style>
