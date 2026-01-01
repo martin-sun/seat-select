@@ -1,0 +1,124 @@
+{
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "back": "Back",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "total": "Total",
+    "copy": "Copy",
+    "submit": "Submit",
+    "logout": "Logout"
+  },
+  "header": {
+    "seatSelection": "Select Seats",
+    "myOrders": "My Orders",
+    "reservationDetails": "Reservation Details",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out"
+  },
+  "seatArea": {
+    "stage": "Stage",
+    "entranceExit": "Entrance|and Exit",
+    "entrance": "Entrance",
+    "andExit": "and Exit",
+    "row": "Row",
+    "seat": "Seat"
+  },
+  "quickSelect": {
+    "title": "Quick Select:",
+    "singleSeat": "1 Seat",
+    "doubleSeat": "2 Seats",
+    "tripleSeat": "3 Seats",
+    "quadSeat": "4 Seats"
+  },
+  "confirmLock": {
+    "confirmSeat": "Confirm Selection"
+  },
+  "bookingForm": {
+    "title": "Confirm Booking",
+    "selectedSeats": "Selected Seats:",
+    "totalAmount": "Total:",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "E-transfer Email",
+    "namePlaceholder": "Enter your name",
+    "phonePlaceholder": "Enter phone number",
+    "emailPlaceholder": "Email for payment confirmation",
+    "emailHint": "Please ensure this email matches your E-transfer email",
+    "confirmBooking": "Confirm Booking",
+    "submitting": "Submitting...",
+    "paymentNotice1": "Please complete E-transfer payment within 24 hours",
+    "paymentNotice2": "Seats will be released if payment is not received",
+    "required": "*"
+  },
+  "selectedTab": {
+    "selected": "Selected ({count})"
+  },
+  "myOrders": {
+    "title": "My Orders",
+    "enterEmail": "Enter Your Email",
+    "emailHint": "Enter the E-transfer email used for booking",
+    "emailPlaceholder": "your@email.com",
+    "sendLink": "Send Login Link",
+    "sending": "Sending...",
+    "linkSent": "Login Link Sent!",
+    "emailSentTo": "We have sent a login link to {email}",
+    "checkInbox": "Please check your inbox. If not received, check spam folder",
+    "resend": "Resend",
+    "resendCooldown": "Resend ({time})",
+    "noOrders": "No orders found",
+    "seatLockUntil": "Seats locked until: {time}",
+    "event": "Event"
+  },
+  "reservation": {
+    "title": "Reservation Details",
+    "seatInfo": "Seat Information",
+    "totalAmount": "Total Amount:",
+    "paymentInstructions": "E-Transfer Payment Instructions",
+    "step1": "Open your bank app or online banking",
+    "step2": "Select Interac e-Transfer",
+    "step3": "Recipient email:",
+    "step4Amount": "Amount:",
+    "step5Note": "Add this note:",
+    "paymentWaiting": "Payment will be confirmed automatically",
+    "contactSupport": "Contact support for any issues",
+    "reservationInfo": "Reservation Info",
+    "bookingId": "Booking ID:",
+    "customerName": "Name:",
+    "customerPhone": "Phone:",
+    "customerEmail": "Email:",
+    "bookingTime": "Booking Time:",
+    "backToSelect": "Back to Seat Selection",
+    "remainingTime": "Time Remaining:"
+  },
+  "status": {
+    "pending": "Pending Payment",
+    "paid": "Paid",
+    "expired": "Expired",
+    "cancelled": "Cancelled",
+    "unknown": "Unknown"
+  },
+  "alerts": {
+    "selectAtLeast": "Please select at least one seat",
+    "noEmptySeat": "Please do not leave empty seats",
+    "lockFailed": "Lock failed, amount is 0",
+    "maxSeats": "You can select up to {max} seats",
+    "noSuitableSeat": "No suitable seats available",
+    "enterName": "Please enter your name",
+    "enterPhone": "Please enter phone number",
+    "enterEmail": "Please enter email",
+    "bookingFailed": "Booking failed, please try again",
+    "reservationNotFound": "Reservation not found",
+    "loadFailed": "Failed to load reservation",
+    "sendLinkFailed": "Failed to send login link, please try again",
+    "loadOrdersFailed": "Failed to load orders",
+    "emailCopied": "Email copied to clipboard",
+    "copyFailed": "Copy failed, please copy manually"
+  },
+  "time": {
+    "hoursMinutesLater": "{hours}h {minutes}m remaining",
+    "minutesLater": "{minutes}m remaining",
+    "expired": "Expired"
+  }
+}

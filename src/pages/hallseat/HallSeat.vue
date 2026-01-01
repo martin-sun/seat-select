@@ -7,7 +7,7 @@
   <div class="wapper">
     <!--头部 开始-->
     <header-view
-      titleText="选择座位"
+      :titleText="$t('header.seatSelection')"
       :showZoomControls="true"
       @backHandleClick="back"
       @zoomIn="handleZoomIn"
@@ -35,16 +35,16 @@
             <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
             top:(yMax - seatItem.gRow) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
             >
-              <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>
+              <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon" :title="getSeatTooltip(seatItem)"/>
             </div>
           <!--Entrance and Exit 标记 - 位于中间空白区域（Q排附近）-->
           <div class="entrance-exit-label" :style="{top: '0px', left: middleLine + 'px'}">
-            <span>Entrance</span>
-            <span>and Exit</span>
+            <span>{{ $t('seatArea.entrance') }}</span>
+            <span>{{ $t('seatArea.andExit') }}</span>
           </div>
           <!--Stage 在座位下方，跟随座位移动-->
           <div class="stage" :style="{top: (seatBoxHeight + 30) + 'px', left: middleLine + 'px'}">
-            <div class="stage-text">Stage</div>
+            <div class="stage-text">{{ $t('seatArea.stage') }}</div>
           </div>
         </div>
       </template>
@@ -129,10 +129,46 @@ export default {
     getZoneConfig: function (zone) {
       return this.zoneConfig.find(c => c.zone === zone) || {}
     },
+    // 获取座位悬停提示
+    getSeatTooltip: function (seatItem) {
+      const row = seatItem.row
+      const col = seatItem.col
+      const baseInfo = `Row ${row}, Seat ${col}`
+
+      if (seatItem.status === 'reserved' && seatItem.locked_until) {
+        const lockedUntil = new Date(seatItem.locked_until)
+        const now = new Date()
+        if (lockedUntil > now) {
+          const minutes = Math.ceil((lockedUntil - now) / 60000)
+          return `${baseInfo}\nReserved - Locked for ${minutes} min`
+        }
+      }
+
+      if (seatItem.status === 'sold') {
+        return `${baseInfo}\nSold`
+      }
+
+      if (seatItem.status === 'available') {
+        const config = this.getZoneConfig(seatItem.zone)
+        const price = this.zonePrices[seatItem.zone] || 0
+        return `${baseInfo}\n${config.name || seatItem.zone} - $${price}`
+      }
+
+      return baseInfo
+    },
     // 根据分区和状态获取图标
     getIcon: function (zone, status) {
       const config = this.getZoneConfig(zone)
-      return config.icons ? config.icons[status] : ''
+      // 将未定义图标的状态映射到已有图标：
+      // - reserved（已预定未付款）-> locked
+      // - paid（已付款）-> sold
+      let iconStatus = status
+      if (status === 'reserved') {
+        iconStatus = 'locked'
+      } else if (status === 'paid') {
+        iconStatus = 'sold'
+      }
+      return config.icons ? config.icons[iconStatus] : ''
     },
     // 请求座位数据
     async getSeatList () {
@@ -276,11 +312,6 @@ export default {
     },
     // 处理未选择的座位（选择座位）
     processUnSelected: function (index) {
-      // 判断选择个数不大于 maxSelect
-      if (this.selectedSeatList.length >= this.maxSelect) {
-        alert('最多只能选择' + this.maxSelect + '个座位哦~')
-        return
-      }
       // 改变座位图标为已选择图标
       this.seatList[index].nowIcon = this.seatList[index].selectedIcon
       // 记录 orgIndex属性 是原seatList数组中的下标值
@@ -311,8 +342,8 @@ export default {
       if (seatItem.nowIcon === seatItem.selectedIcon) {
         return '#22C55E'
       }
-      // 已售或锁定状态 - 显示灰色
-      if (seatItem.status === 'sold' || seatItem.status === 'locked') {
+      // 已售、已预定、已付款或锁定状态 - 显示灰色
+      if (seatItem.status === 'sold' || seatItem.status === 'locked' || seatItem.status === 'reserved' || seatItem.status === 'paid') {
         return '#9CA3AF'
       }
       // 可选状态 - 显示分区颜色

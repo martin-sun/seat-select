@@ -5,8 +5,8 @@
 */
 <template>
 <div class='fixed bottom-0 left-0 right-0 z-10 h-12 md:h-14 bg-gradient-to-r from-primary to-primary-light text-white text-base md:text-lg cursor-pointer flex items-center justify-center gap-4' @click="lockSeat()">
-  <span v-if="chPrice > 0" class="font-bold">¥{{ chPrice }}</span>
-  <span>确认选座</span>
+  <span v-if="chPrice > 0" class="font-bold">${{ chPrice }}</span>
+  <span>{{ $t('confirmLock.confirmSeat') }}</span>
 </div>
 </template>
 
@@ -70,25 +70,15 @@ export default {
       }, 300)
 
       if (this.selectedSeat.length === 0) {
-        alert('请至少选择一个座位~')
+        alert(this.$t('alerts.selectAtLeast'))
         return
       }
-      // 开始计算是否留下空位 ------------ 开始
-      let result = this.selectedSeat.every((element) => {
-        return this.checkSeat(element)
-      })
-      // 开始计算是否留下空位 ------------ 结束
-      if (!result) {
-        // 如果 result 为false
-        alert('请不要留下空位~')
-      } else {
-        if (this.chPrice === 0) {
-          alert('锁座失败了~,金额为0')
-          return
-        }
-        // 允许锁座
-        this.createOrder()
+      if (this.chPrice === 0) {
+        alert(this.$t('alerts.lockFailed'))
+        return
       }
+      // 允许锁座
+      this.createOrder()
     },
     createOrder () {
       // 触发显示预订表单
@@ -96,77 +86,6 @@ export default {
         selectedSeats: this.selectedSeat,
         totalPrice: this.chPrice
       })
-    },
-    // 检查每个座位是否会留下空位
-    checkSeat: function (element) {
-      // 标准为 1.左右侧都必须保留 两格座位 + 最大顺延座位(也就是已选座位减去自身)
-      // 2.靠墙和靠已售的座位一律直接通过
-      const checkNum = 2 + this.selectedSeat.length - 1
-      const gRowBasic = element.gRow
-      const gColBasic = element.gCol
-      // 检查座位左侧
-      let left = this.checkSeatDirection(gRowBasic, gColBasic, checkNum, '-')
-      // 如果左侧已经检查出是靠着过道直接 返回true
-      if (left === 'special') {
-        return true
-      }
-      // 检查座位右侧
-      let right = this.checkSeatDirection(gRowBasic, gColBasic, checkNum, '+')
-      if (right === 'special') {
-        // 无论左侧是否是什么状态 检查出右侧靠着过道直接 返回true
-        return true
-      } else if (right === 'normal' && left === 'normal') {
-        // 如果左右两侧都有富裕的座位 返回true
-        return true
-      } else if (right === 'fail' || left === 'fail') {
-        // 如果左右两侧都是不通过检测 返回false
-        return false
-      }
-      return true
-    },
-    // 检查左右侧座位满足规则状态
-    checkSeatDirection: function (gRowBasic, gColBasic, checkNum, direction) {
-      // 空位个数
-      let emptySeat = 0
-      let x = 1 // 检查位置 只允许在x的位置出现过道,已售,锁定
-      for (let i = 1; i <= checkNum; i++) {
-        let iter // 根据 gRow gCol direction 找出检查座位左边按顺序排列的checkNum
-        if (direction === '-') {
-          iter = this.seatList.find((el) => (el.gRow === gRowBasic && el.gCol === gColBasic - i))
-        } else if (direction === '+') {
-          iter = this.seatList.find((el) => (el.gRow === gRowBasic && el.gCol === gColBasic + i))
-        }
-        if (x === i) {
-          if (iter === undefined) {
-            // 过道
-            return 'special'
-          }
-          if (iter.status === 'sold' || iter.status === 'locked') {
-            // 已售或者锁定
-            return 'special'
-          }
-          if (iter.nowIcon === iter.selectedIcon) {
-            // 已选 顺延一位
-            x++
-            continue
-          }
-        } else {
-          if (iter === undefined) {
-            // 过道
-            return 'fail'
-          }
-          if (iter.status === 'sold' ||
-              iter.status === 'locked' ||
-              iter.nowIcon === iter.selectedIcon) {
-            // 已售、锁定或已选
-            return 'fail'
-          }
-        }
-        emptySeat++
-        if (emptySeat >= 2) {
-          return 'normal'
-        }
-      }
     }
   },
   // 生命周期 - 创建完成（可以访问当前this实例）
