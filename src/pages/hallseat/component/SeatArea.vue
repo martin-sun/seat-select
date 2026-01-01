@@ -4,13 +4,13 @@
   @updateDate 最后更新时间为:2019-02-21
 */
 <template>
-    <div class="activity-area" :style="{ width:seatAreaWidthRem + 'rem',height:seatAreaHeightRem + 'rem'}">
+    <div class="activity-area">
       <div class="screen">
         <div class="screen-text">屏幕方向</div>
       </div>
-      <div class="thumbnail" v-show="thumbnailShow" :style="{ transform: 'scale('+seatScale+')',width:thumbnailWidthRem + 'rem',height:thumbnailHeighthRem + 'rem'}">
+      <div class="thumbnail" v-show="thumbnailShow" :style="{ transform: 'scale('+seatScale+')',width:thumbnailWidthPx + 'px',height:thumbnailHeightPx + 'px'}">
         <!--红色外框开始-->
-        <div class="thumbnail-border" :style="{transform: 'scale('+scalereciprocal+')',top:topthumbnail + 'rem',left:leftthumbnail + 'rem'}">
+        <div class="thumbnail-border" :style="{transform: 'scale('+scalereciprocal+')',top:topthumbnail + 'px',left:leftthumbnail + 'px'}">
         </div>
         <!--红色外框结束-->
         <slot name="thumbnail-seat-solt">
@@ -19,18 +19,19 @@
       </div>
       <div class="box" ref="pinchAndPan"
       @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
-      :style="{transform: 'scale('+scale+')',transformOrigin: transformOrigin,top:top + 'rem',left:left + 'rem',
-      width:seatAreaWidthRem + 'rem',height:seatAreaHeightRem + 'rem'}">
+      @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"
+      :style="{transform: 'scale('+scale+')',transformOrigin: transformOrigin,top:top + 'px',left:left + 'px', cursor: 'grab'}"
+      :class="{ 'cursor-grabbing': touchStatus }">
         <slot name="seat-area-solt">
           <!--所有可以点击座位的数据会放入此插槽,此插槽可以缩放,拖动-->
         </slot>
       </div>
         <!--座位左边栏-->
-      <div class="seat-tool-parent" :style="{height:seatAreaHeightRem + 'rem'}">
-        <div class="seat-tool" :style="{transform: 'scale('+seatScale+')',transformOrigin: transformOriginTool,marginTop:seatToolMargin+'rem',
-        fontSize:seatToolFontSize +'rem'}">
+      <div class="seat-tool-parent">
+        <div class="seat-tool" :style="{transform: 'scale('+seatScale+')',transformOrigin: transformOriginTool,marginTop:seatToolMargin+'px',
+        fontSize:seatToolFontSize +'px'}">
             <div v-for="(item, index) in seatToolArr" :key="'seat-tool' + index" class="seat-tool-item"
-            :style="{height:seatHeightWithScale+'rem',width:seatToolWidthWithScale+'rem',lineHeight:seatHeightWithScale+'rem'}">
+            :style="{height:seatHeightWithScale+'px',width:seatToolWidthWithScale+'px',lineHeight:seatHeightWithScale+'px'}">
                 {{item}}
             </div>
         </div>
@@ -46,8 +47,7 @@ export default {
     propYMax: Number,
     propSeatScale: Number,
     propSeatHeight: Number,
-    propSeatAreaWidthRem: Number,
-    propSeatAreaHeightRem: Number,
+    propSeatAreaWidthPx: Number,
     propMiddleLine: Number,
     propHorizontalLine: Number,
     propSeatBoxHeight: Number,
@@ -56,27 +56,22 @@ export default {
   data: function () {
     return {
       scale: 1, // 区域放大尺寸
-      top: 0, // 单位rem
-      left: 0, // 单位rem
-      topthumbnail: 0, // 单位rem
-      leftthumbnail: 0, // 单位rem
+      top: 0, // 单位px
+      left: 0, // 单位px
+      topthumbnail: 0, // 单位px
+      leftthumbnail: 0, // 单位px
       startX: 0, // ---移动的起点X轴 单位px
       startY: 0, // ---移动的起点Y轴 单位px
-      seatAreaWidthRem: this.propSeatAreaWidthRem, // 座位区域宽  rem
-      seatAreaHeightRem: this.propSeatAreaHeightRem, // 座位区域高  rem
-      thumbnailWidthRem: this.propThumbnailAreaWidth, // 缩略图宽 rem
-      thumbnailHeighthRem: this.propThumbnailAreaHeight, // 缩略图高 rem
-      seatToolWidth: 0.3, // 0.3为座位栏合适的初始宽度 单位rem
+      seatAreaWidthPx: this.propSeatAreaWidthPx, // 座位区域宽 px
+      thumbnailWidthPx: this.propThumbnailAreaWidth, // 缩略图宽 px
+      thumbnailHeightPx: this.propThumbnailAreaHeight, // 缩略图高 px
+      seatToolWidth: 18, // 座位栏合适的初始宽度 px
       middleLine: this.propMiddleLine,
       horizontalLine: this.propHorizontalLine,
       // 最大排数
       yMax: this.propYMax,
       // 内部座位图缩放比例(为了一次可以显示全部座位)
       seatScale: this.propSeatScale,
-      // 项目 rem计算值
-      pxtorem: 75,
-      // 设备 rem计算值
-      screenRem: (document.body.clientWidth || window.innerWidth || document.documentElement.clientWidth) / 10,
       // 缩略图是否显示
       thumbnailShow: false,
       // 定时器对象
@@ -132,6 +127,29 @@ export default {
       this.panend(ev)
       this.initialPinchDistance = null
     },
+    // 鼠标事件处理
+    handleMouseDown: function (ev) {
+      ev.preventDefault()
+      this.touchStatus = true
+      this.thumbnailShow = true
+      this.startY = this.top
+      this.startX = this.left
+      this.touchStartX = ev.clientX
+      this.touchStartY = ev.clientY
+      clearTimeout(this.timer)
+    },
+    handleMouseMove: function (ev) {
+      if (!this.touchStatus) return
+      ev.preventDefault()
+      this.panmove({
+        deltaX: ev.clientX - this.touchStartX,
+        deltaY: ev.clientY - this.touchStartY
+      })
+    },
+    handleMouseUp: function () {
+      if (!this.touchStatus) return
+      this.panend()
+    },
     getPinchDistance: function (touches) {
       const dx = touches[0].clientX - touches[1].clientX
       const dy = touches[0].clientY - touches[1].clientY
@@ -172,14 +190,14 @@ export default {
     panmove: function (ev) {
       let _this = this
       if (_this.touchStatus) {
-        // 本次座位图移动横纵坐标rem的值
-        _this.top = (ev.deltaY + _this.startY) / _this.screenRem
-        _this.left = (ev.deltaX + _this.startX) / _this.screenRem
+        // 本次座位图移动横纵坐标px的值
+        _this.top = (ev.deltaY + _this.startY)
+        _this.left = (ev.deltaX + _this.startX)
         // .seatBox的高和缩略图的高 换算比例
-        let heightProportion = (_this.seatBoxHeight * _this.seatScale / _this.thumbnailHeighthRem)
+        let heightProportion = (_this.seatBoxHeight * _this.seatScale / _this.thumbnailHeightPx)
         // .seatBox的宽和缩略图的宽 换算比例
-        let widthProportion = (_this.seatAreaWidthRem / _this.thumbnailWidthRem)
-        // 本次缩略图移动横纵坐标rem的值
+        let widthProportion = (_this.seatAreaWidthPx / _this.thumbnailWidthPx)
+        // 本次缩略图移动横纵坐标px的值
         _this.topthumbnail = -_this.top / heightProportion * _this.scalereciprocal
         _this.leftthumbnail = -_this.left / widthProportion * _this.scalereciprocal
       }
@@ -192,8 +210,8 @@ export default {
       // 展示缩略图
       _this.thumbnailShow = true
       // 获取上次记录的xy坐标作为起点
-      _this.startY = _this.top * _this.screenRem
-      _this.startX = _this.left * _this.screenRem
+      _this.startY = _this.top
+      _this.startX = _this.left
       // 记录触摸起始位置（用于原生触摸事件）
       if (ev.touches && ev.touches.length > 0) {
         _this.touchStartX = ev.touches[0].clientX
@@ -206,36 +224,31 @@ export default {
       let _this = this
       // 优化触摸性能
       _this.touchStatus = false
-      if (_this.scale === 1) {
-        _this.top = 0
-        _this.left = 0
-        _this.topthumbnail = 0
-        _this.leftthumbnail = 0
-      } else {
-        // 如果宽度度移动超过了边界值 把移动置为边界值
-        if (_this.left > _this.crossleft) {
-          _this.left = _this.crossleft
-        } else if (_this.left < -_this.crossleft) {
-          _this.left = -_this.crossleft
-        }
-        // 缩略图移动超过了边界值 把移动置为边界值
-        if (_this.leftthumbnail > _this.thumbnailWidthRemProportion) {
-          _this.leftthumbnail = _this.thumbnailWidthRemProportion
-        } else if (_this.leftthumbnail < -_this.thumbnailWidthRemProportion) {
-          _this.leftthumbnail = -_this.thumbnailWidthRemProportion
-        }
-        // 如果高度移动超过了边界值 把移动置为边界值
-        if (_this.top > _this.crosstop) {
-          _this.top = _this.crosstop
-        } else if (_this.top < -_this.crosstop) {
-          _this.top = -_this.crosstop
-        }
-        // 缩略图移动超过了边界值 把移动置为边界值
-        if (_this.topthumbnail > _this.thumbnailHeighthRemProportion) {
-          _this.topthumbnail = _this.thumbnailHeighthRemProportion
-        } else if (_this.topthumbnail < -_this.thumbnailHeighthRemProportion) {
-          _this.topthumbnail = -_this.thumbnailHeighthRemProportion
-        }
+      // 边界检查 - 允许在任何缩放比例下拖动
+      const maxLeft = _this.scale === 1 ? _this.boundaryLeft : _this.crossleft
+      const maxTop = _this.scale === 1 ? _this.boundaryTop : _this.crosstop
+      // 如果宽度移动超过了边界值 把移动置为边界值
+      if (_this.left > maxLeft) {
+        _this.left = maxLeft
+      } else if (_this.left < -maxLeft) {
+        _this.left = -maxLeft
+      }
+      // 如果高度移动超过了边界值 把移动置为边界值
+      if (_this.top > maxTop) {
+        _this.top = maxTop
+      } else if (_this.top < -maxTop) {
+        _this.top = -maxTop
+      }
+      // 缩略图移动超过了边界值 把移动置为边界值
+      if (_this.leftthumbnail > _this.thumbnailWidthPxProportion) {
+        _this.leftthumbnail = _this.thumbnailWidthPxProportion
+      } else if (_this.leftthumbnail < -_this.thumbnailWidthPxProportion) {
+        _this.leftthumbnail = -_this.thumbnailWidthPxProportion
+      }
+      if (_this.topthumbnail > _this.thumbnailHeightPxProportion) {
+        _this.topthumbnail = _this.thumbnailHeightPxProportion
+      } else if (_this.topthumbnail < -_this.thumbnailHeightPxProportion) {
+        _this.topthumbnail = -_this.thumbnailHeightPxProportion
       }
       _this.timer = setTimeout(() => {
         _this.thumbnailShow = false
@@ -247,29 +260,47 @@ export default {
     maxscale: function () {
       return 1 + 1 / this.seatScale
     },
-    // 左边触边吸附边界值rem
+    // scale === 1 时的左右边界值（允许拖动查看超出屏幕的座位）
+    boundaryLeft: function () {
+      // 座位区域实际宽度超出屏幕的部分
+      const seatBoxActualWidth = this.seatBoxHeight * this.seatScale * 1.5 // 估算座位区域宽度
+      const overflow = Math.max(0, seatBoxActualWidth - this.seatAreaWidthPx)
+      return overflow / 2 + 100 // 额外留出100px的拖动空间
+    },
+    // scale === 1 时的上下边界值
+    boundaryTop: function () {
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+      const seatAreaHeightPx = windowHeight - 100 // 与 CSS 中的高度计算一致
+      const seatBoxActualHeight = this.seatBoxHeight * this.seatScale
+      const overflow = Math.max(0, seatBoxActualHeight - seatAreaHeightPx)
+      return overflow / 2 + 150 // 额外留出拖动空间
+    },
+    // 左边触边吸附边界值px
     crossleft: function () {
       let _this = this
-      return (_this.scale - 1) * _this.seatAreaWidthRem * _this.scaleXCross
+      return (_this.scale - 1) * _this.seatAreaWidthPx * _this.scaleXCross
     },
-    // 上边触边吸附边界值rem
+    // 上边触边吸附边界值px
     crosstop: function () {
       let _this = this
-      return (_this.scale - 1) * _this.seatAreaHeightRem * _this.scaleYCross
+      // 获取窗口高度作为座位区域高度
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+      const seatAreaHeightPx = windowHeight - 100 // 减去其他区域的高度
+      return (_this.scale - 1) * seatAreaHeightPx * _this.scaleYCross
     },
     // scale的倒数
     scalereciprocal: function () {
       return 1 / this.scale
     },
     // 缩略图宽度触边吸附边界值
-    thumbnailWidthRemProportion: function () {
+    thumbnailWidthPxProportion: function () {
       let _this = this
-      return (1 - _this.scalereciprocal) * _this.thumbnailWidthRem / 2
+      return (1 - _this.scalereciprocal) * _this.thumbnailWidthPx / 2
     },
     // 缩略图高度触边吸附边界值
-    thumbnailHeighthRemProportion: function () {
+    thumbnailHeightPxProportion: function () {
       let _this = this
-      return (1 - _this.scalereciprocal) * _this.thumbnailHeighthRem / 2
+      return (1 - _this.scalereciprocal) * _this.thumbnailHeightPx / 2
     },
     // 每个座位放大后的高度
     seatHeightWithScale: function () {
@@ -278,8 +309,8 @@ export default {
     },
     // seat-tool 内的字体大小
     seatToolFontSize: function () {
-      let fontsize = 20 / this.pxtorem
-      return fontsize * this.scale
+      // 基础字体大小 12px，随缩放比例变化
+      return 12 * this.scale
     },
     // seat-tool-item 的宽度
     seatToolWidthWithScale: function () {
@@ -302,22 +333,23 @@ export default {
     },
     // 缩放.box区域 x轴的中心点比例 用于缩放原点
     scaleXCross: function () {
-      // .box的所有尺寸与内部.seatbox的换算比例都是seatScale,例如外部seatAreaWidthRem其实是固定的10rem
-      // 但是因为有了自适应缩放seatScale比例的关系 内部设置的属性都会被乘上seatScale
-      // seatAreaWidthRem/seatScale大小=外部seatAreaWidthRem
-      return (this.middleLine / this.seatAreaWidthRem) * this.seatScale
+      // .box的所有尺寸与内部.seatbox的换算比例都是seatScale
+      return (this.middleLine / this.seatAreaWidthPx) * this.seatScale
     },
     // 缩放.box区域 y轴的中心点比例 用于缩放原点
     scaleYCross: function () {
-      return (this.horizontalLine / this.seatAreaHeightRem) * this.seatScale
+      // 获取窗口高度作为座位区域高度
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+      const seatAreaHeightPx = windowHeight - 100 // 减去其他区域的高度
+      return (this.horizontalLine / seatAreaHeightPx) * this.seatScale
     }
   },
   watch: {
     propThumbnailAreaWidth: function (value) {
-      this.thumbnailWidthRem = value
+      this.thumbnailWidthPx = value
     },
     propThumbnailAreaHeight: function (value) {
-      this.thumbnailHeighthRem = value
+      this.thumbnailHeightPx = value
     },
     propYMax: function (value) {
       this.yMax = value
@@ -346,7 +378,30 @@ export default {
 <style scoped>
 /* Activity area - main container */
 .activity-area {
-  @apply relative bg-bg-gray overflow-hidden pb-8 md:pb-12;
+  @apply relative bg-bg-gray overflow-hidden w-full;
+  /* 使用 calc 计算高度，减去头部和底部确认按钮 */
+  height: calc(100vh - 100px);
+  padding-bottom: 48px; /* 为底部确认按钮留出空间 */
+}
+
+@media (min-width: 768px) {
+  .activity-area {
+    height: calc(100vh - 110px);
+    padding-bottom: 56px;
+  }
+}
+
+/* Seat box container */
+.box {
+  @apply absolute z-0 w-full left-0;
+  margin-top: 36px;
+  /* 设置 width: 100% 和 left: 0 确保子元素 .seatBox 的 left: 50% 能正确居中 */
+}
+
+@media (min-width: 768px) {
+  .box {
+    margin-top: 48px;
+  }
 }
 
 /* Thumbnail minimap */
@@ -426,18 +481,6 @@ export default {
   }
 }
 
-/* Seat box container */
-.box {
-  @apply absolute z-0;
-  margin-top: 36px;
-}
-
-@media (min-width: 768px) {
-  .box {
-    margin-top: 48px;
-  }
-}
-
 /* Seat tool (row numbers) */
 .seat-tool-parent {
   @apply overflow-hidden;
@@ -457,5 +500,10 @@ export default {
 
 .seat-tool-item {
   @apply px-0.5;
+}
+
+/* Grabbing cursor when dragging */
+.cursor-grabbing {
+  cursor: grabbing !important;
 }
 </style>
