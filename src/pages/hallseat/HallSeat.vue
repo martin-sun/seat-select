@@ -9,14 +9,14 @@
     <header-view titleText="选择座位" @backHandleClick="back"></header-view>
     <!--头部 结束-->
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
-    :propYMax="yMax" :propSeatScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
+    :propYMax="yMax - yMin" :propSeatScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
     :propSeatAreaWidthPx="seatAreaWidthPx"
     :propSeatBoxHeight="seatBoxHeight" :propMiddleLine="middleLine" :propHorizontalLine="horizontalLine" ref="seatArea">
       <!--以下为缩略座位图具名插槽 开始-->
       <template #thumbnail-seat-solt>
             <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'px',
             width:(thumbnailWidth * (seatItem.width || 1)) +'px',background: thumbnailBackgroud(seatItem),
-            top:seatItem.gRow * thumbnailPositionDistin +'px',left:seatItem.gCol * thumbnailPositionDistin +'px'}">
+            top:(seatItem.gRow - yMin) * thumbnailPositionDistin +'px',left:(seatItem.gCol - xMin) * thumbnailPositionDistin +'px'}">
             </div>
       </template>
       <!--以上为缩略座位图具名插槽 结束-->
@@ -27,7 +27,7 @@
          <!--中轴线-->
           <div v-show="seatList.length>0" class="middle-line" :style="{height:seatBoxHeight +'px',left: middleLine +'px'}"></div>
             <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
-            top:seatItem.gRow * positionDistin +'px',left:seatItem.gCol * positionDistin +'px'}"
+            top:(seatItem.gRow - yMin) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon"/>
             </div>
@@ -209,6 +209,17 @@ export default {
     },
     // 座位区域高度（使用 vh 单位，通过 CSS 类控制）
     // 移除 seatAreaHeightRem 计算，改用 CSS calc(100vh - X)
+    // 取最小横坐标
+    xMin: function () {
+      if (this.seatList.length === 0) return 0
+      let min = Infinity
+      for (let index in this.seatList) {
+        if (this.seatList[index].gCol < min) {
+          min = this.seatList[index].gCol
+        }
+      }
+      return min
+    },
     // 取最大横坐标
     xMax: function () {
       let i = 0
@@ -218,6 +229,17 @@ export default {
         }
       }
       return i
+    },
+    // 取最小纵坐标
+    yMin: function () {
+      if (this.seatList.length === 0) return 0
+      let min = Infinity
+      for (let index in this.seatList) {
+        if (this.seatList[index].gRow < min) {
+          min = this.seatList[index].gRow
+        }
+      }
+      return min
     },
     // 取最大纵坐标
     yMax: function () {
@@ -229,56 +251,62 @@ export default {
       }
       return i
     },
-    // 竖中轴线（px）
+    // 竖中轴线（px）- 基于实际座位范围计算
     middleLine: function () {
-      // 座位偏移值的一半作为线宽的一半也需要居中
-      return ((this.xMax / 2) + 1) * this.positionDistin
+      const colRange = this.xMax - this.xMin
+      return ((colRange / 2) + 1) * this.positionDistin
     },
-    // 横中轴线（px）
+    // 横中轴线（px）- 基于实际座位范围计算
     horizontalLine: function () {
-      return ((this.yMax / 2) + 1) * this.positionDistin
+      const rowRange = this.yMax - this.yMin
+      return ((rowRange / 2) + 1) * this.positionDistin
     },
-    // 根据影厅的大小缩放比例(需要把影厅全部显示出来)
+    // 根据影厅的大小缩放比例
+    // 设置最小缩放值，保持座位大小不变，超出部分通过拖动查看
     seatScale: function () {
-      let seatScaleX = 1
-      let seatScaleY = 1
+      const minScale = 1.0 // 最小缩放比例，保持原始大小不缩小
+
       // 使用窗口高度计算缩放比例
       const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
       // 座位区域可用高度：窗口高度减去头部和底部确认按钮
       const otherHeight = 100 // 预留其他区域的高度
       const availableHeight = windowHeight - otherHeight
 
-      seatScaleX = this.seatAreaWidthPx / this.seatBoxWidth
-      seatScaleY = availableHeight / this.seatBoxHeight
-      return seatScaleX < seatScaleY ? seatScaleX : seatScaleY
+      const seatScaleX = this.seatAreaWidthPx / this.seatBoxWidth
+      const seatScaleY = availableHeight / this.seatBoxHeight
+      const calculatedScale = seatScaleX < seatScaleY ? seatScaleX : seatScaleY
+
+      // 返回计算值和最小值中的较大者
+      return Math.max(calculatedScale, minScale)
     },
     // 让影厅居中展示的偏移值
     seatBoxCenterMargin: function () {
       return -(this.seatBoxWidth * this.seatScale) / 2
     },
-    // class 为 seatBox 的高度值 单位为rem
+    // class 为 seatBox 的高度值（px）- 基于实际座位范围
     seatBoxHeight: function () {
-      // 纵轴总数量+1 * 座位偏移值 + 一个座位高度
-      return (this.yMax + 1) * this.positionDistin + this.height
+      const rowRange = this.yMax - this.yMin
+      return (rowRange + 1) * this.positionDistin + this.height
     },
-    // class 为 seatBox 的宽度值 单位为rem
+    // class 为 seatBox 的宽度值（px）- 基于实际座位范围
     seatBoxWidth: function () {
-      // 横轴总数量+1 * 座位偏移值 + 一个座位宽度
-      return (this.xMax + 1) * this.positionDistin + this.width
+      const colRange = this.xMax - this.xMin
+      return (colRange + 1) * this.positionDistin + this.width
     },
-    // 缩略图宽 rem
+    // 缩略图宽（px）- 基于实际座位范围
     thumbnailBoxWidth: function () {
-      return ((this.xMax + 1) * this.thumbnailPositionDistin + this.thumbnailWidth)
+      const colRange = this.xMax - this.xMin
+      return ((colRange + 1) * this.thumbnailPositionDistin + this.thumbnailWidth)
     },
-    // 缩略图高 rem
+    // 缩略图高（px）- 基于实际座位范围
     thumbnailBoxHeight: function () {
-      return ((this.yMax + 1) * this.thumbnailPositionDistin + this.thumbnailHeight)
+      const rowRange = this.yMax - this.yMin
+      return ((rowRange + 1) * this.thumbnailPositionDistin + this.thumbnailHeight)
     },
-    // 座位左边栏的数组
+    // 座位左边栏的数组 - 基于实际座位范围
     seatToolArr: function () {
       let seatToolArr = []
-      let yMax = this.yMax
-      for (let i = 1; i <= yMax; i++) {
+      for (let i = this.yMin; i <= this.yMax; i++) {
         let el = this.seatList.find((item) => (
           item.gRow === i
         ))

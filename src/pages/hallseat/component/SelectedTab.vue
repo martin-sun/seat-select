@@ -18,7 +18,7 @@
       </li>
     </ul>
     <div class="text-xs font-medium text-primary mt-1 pt-1 border-t">
-      合计: ¥{{totalPrice}}
+      合计: ${{totalPrice}}
     </div>
   </div>
 </template>

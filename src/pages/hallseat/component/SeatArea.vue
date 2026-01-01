@@ -6,17 +6,9 @@
 <template>
     <div class="activity-area">
       <div class="screen">
-        <div class="screen-text">屏幕方向</div>
+        <div class="screen-text">Stage</div>
       </div>
-      <div class="thumbnail" v-show="thumbnailShow" :style="{ transform: 'scale('+seatScale+')',width:thumbnailWidthPx + 'px',height:thumbnailHeightPx + 'px'}">
-        <!--红色外框开始-->
-        <div class="thumbnail-border" :style="{transform: 'scale('+scalereciprocal+')',top:topthumbnail + 'px',left:leftthumbnail + 'px'}">
-        </div>
-        <!--红色外框结束-->
-        <slot name="thumbnail-seat-solt">
-          <!--这里是缩略图中的所有座位放入此插槽-->
-        </slot>
-      </div>
+      <!-- 缩略图已移除 -->
       <div class="box" ref="pinchAndPan"
       @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
       @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"
