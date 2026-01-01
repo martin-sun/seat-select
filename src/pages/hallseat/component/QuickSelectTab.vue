@@ -4,14 +4,14 @@
   @updateDate 最后更新时间为:2019-07-22
 */
 <template>
-  <div class='selected'>
-    <div class="text">快速选座:</div>
-    <div class="scroll" ref="scroll">
-      <ul class="scroll-ul">
-        <li class="scroll-item" @click="quickSeat(1)">1人座</li>
-        <li class="scroll-item" @click="quickSeat(2)">2人座</li>
-        <li class="scroll-item" @click="quickSeat(3)">3人座</li>
-        <li class="scroll-item" @click="quickSeat(4)">4人座</li>
+  <div class='fixed z-10 bottom-12 md:bottom-14 left-0 right-0 bg-white py-3 md:py-4 pl-3 md:pl-4 h-auto overflow-hidden'>
+    <div class="text-sm md:text-base font-normal mb-2">快速选座:</div>
+    <div class="scroll relative h-16 md:h-20 w-full overflow-hidden" ref="scroll">
+      <ul class="scroll-ul flex">
+        <li class="scroll-item flex-none ml-3 md:ml-4 h-8 md:h-10 leading-8 md:leading-10 text-center text-xs md:text-sm px-3 md:px-4 text-text-gray border border-text-gray rounded-lg cursor-pointer hover:bg-gray-100" @click="quickSeat(1)">1人座</li>
+        <li class="scroll-item flex-none ml-3 md:ml-4 h-8 md:h-10 leading-8 md:leading-10 text-center text-xs md:text-sm px-3 md:px-4 text-text-gray border border-text-gray rounded-lg cursor-pointer hover:bg-gray-100" @click="quickSeat(2)">2人座</li>
+        <li class="scroll-item flex-none ml-3 md:ml-4 h-8 md:h-10 leading-8 md:leading-10 text-center text-xs md:text-sm px-3 md:px-4 text-text-gray border border-text-gray rounded-lg cursor-pointer hover:bg-gray-100" @click="quickSeat(3)">3人座</li>
+        <li class="scroll-item flex-none ml-3 md:ml-4 h-8 md:h-10 leading-8 md:leading-10 text-center text-xs md:text-sm px-3 md:px-4 text-text-gray border border-text-gray rounded-lg cursor-pointer hover:bg-gray-100" @click="quickSeat(4)">4人座</li>
       </ul>
     </div>
   </div>
@@ -454,43 +454,6 @@ export default {
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>
-<style lang='stylus' rel='stylesheet/stylus' scoped='scoped'>
-//@import url(); 引入公共css类
-.selected
-  position fixed
-  z-index 10
-  bottom 90px
-  background #ffffff
-  width 750px
-  padding 20px 0 20px 20px
-  height 100px
-  overflow hidden
-  .text
-    width 750px
-    height 26px
-    line-height 26px
-    font-size 28px
-    font-weight 400
-  .scroll
-    position absolute
-    height 140px
-    width 750px
-    top 0
-    left 0
-    z-index 11
-    .scroll-ul
-      width 1280px
-      display flex
-      margin-top 60px
-      .scroll-item
-        flex: none;
-        margin-left 20px
-        height 65px
-        line-height 65px
-        text-align center
-        font-size 23px
-        width 160px
-        color #888888
-        border 2px solid #888888
-        border-radius 10px
+<style scoped>
+/* Styles handled by Tailwind classes */
 </style>

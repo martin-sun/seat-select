@@ -1,7 +1,9 @@
 <template>
-  <div id="app">
+  <div id="app" class="min-h-screen bg-bg-gray">
     <router-view/>
   </div>
 </template>
-<style lang="stylus">
+
+<style>
+/* App-level styles if needed */
 </style>

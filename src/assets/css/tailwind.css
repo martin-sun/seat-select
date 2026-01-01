@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  a {
+    @apply text-[#7e8c8d] no-underline;
+  }
+
+  li {
+    @apply list-none;
+  }
+
+  body {
+    -webkit-text-size-adjust: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+}

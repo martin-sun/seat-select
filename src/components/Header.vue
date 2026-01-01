@@ -1,9 +1,9 @@
 <template>
-	<div id="header">
+	<div id="header" class="flex w-full h-11 md:h-14 bg-gradient-to-r from-primary to-primary-light text-white">
 		<!-- <div class="back" v-show="showLeft" @click="backClick"> 返回</div> -->
-		<slot name='leftView'><div class="back"></div></slot>
-		<slot name='titleView'><div class="title">{{titleText}}</div></slot>
-		<slot name='rightView'><div class="right"></div></slot>
+		<slot name='leftView'><div class="w-16 md:w-20 h-full text-center leading-11 md:leading-14 text-sm md:text-base"></div></slot>
+		<slot name='titleView'><div class="flex-1 h-full text-center text-base md:text-lg leading-11 md:leading-14">{{titleText}}</div></slot>
+		<slot name='rightView'><div class="w-16 md:w-20 h-full text-center pr-2 text-base md:text-lg leading-11 md:leading-14 text-white"></div></slot>
 		<slot></slot>
 	</div>
 </template>
@@ -26,42 +26,20 @@ export default {
 }
 </script>
 
-<style scoped="scoped">
-	#header{
-		display: flex;
-		background: linear-gradient(to right, #6F50F5,#C26DFE);
-		height: 81px;
-		width: 100%;
-		color: white;
-	}
-	.back{
-		width: 140px;
-		height: 100%;
-		text-align: center;
-		line-height: 81px;
-		font-size: 25px;
-	}
-	.backImage{
-		margin-left: -70px;
-		margin-top: 26px;
-		width: 14px;
-		height: 28px;
-	}
-	.title{
-		width: 470px;
-		height: 100%;
-		text-align: center;
-		font-size: 30px;
-		line-height: 81px;
-	}
-  .right{
-    width: 130px;
-    height: 100%;
-    text-align: center;
-    padding-right: 12px;
-    font-size: 30px;
-		line-height: 81px;
-		color: white
+<style scoped>
+/* Custom line-height utilities for header */
+.leading-11 {
+  line-height: 2.75rem;
+}
+.leading-14 {
+  line-height: 3.5rem;
+}
+@media (min-width: 768px) {
+  .md\:leading-11 {
+    line-height: 2.75rem;
   }
-
+  .md\:leading-14 {
+    line-height: 3.5rem;
+  }
+}
 </style>

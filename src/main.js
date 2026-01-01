@@ -1,8 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import 'amfe-flexible'
-import './assets/stylus/reset.styl'
+import './assets/css/tailwind.css'
+import './assets/css/custom.css'
 import { post, get, patch, put } from './http'
 import Vconsole from 'vconsole'
 

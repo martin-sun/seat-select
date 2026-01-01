@@ -343,63 +343,119 @@ export default {
 }
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus" scoped="scoped">
-  .activity-area
-    position relative
-    background #f3f4f6
-    overflow hidden
-    padding-bottom 50px
-    .thumbnail
-      position absolute
-      z-index 3
-      top 0
-      left 0
-      background rgba(0,0,0,0.4)
-      overflow hidden
-      transform-origin: 0 0
-      .thumbnail-border
-        position absolute
-        z-index 4
-        box-sizing border-box
-        width 100%
-        height 100%
-        padding 1px
-        border-2px(red,0)
-    .screen
-      width: 630px
-      border-top 42px solid #DFDFDF
-      border-right 60px solid transparent
-      border-left 60px solid transparent
-      color white
-      position absolute
-      top 0px
-      z-index 2
-      left 50%
-      transform translateX(-50%);
-      .screen-text
-        text-align center
-        white-space nowrap;
-        font-size 34px;
-        font-weight 600;
-        margin-top:-38px;
-    .box
-      margin-top 50px
-      position absolute
-      z-index 0
-    .seat-tool-parent
-      overflow hidden
-      margin-top 50px
-      .seat-tool
-        display flex
-        flex-direction column
-        position absolute
-        z-index 1
-        left 0.1rem
-        border-radius 50px;
-        background rgba(0,0,0,0.3)
-        text-align center
-        color white
-        font-weight bold
-        .seat-tool-item
-          padding 0 0.05rem
+<style scoped>
+/* Activity area - main container */
+.activity-area {
+  @apply relative bg-bg-gray overflow-hidden pb-8 md:pb-12;
+}
+
+/* Thumbnail minimap */
+.thumbnail {
+  @apply absolute z-30 top-0 left-0 bg-black/40 overflow-hidden;
+  transform-origin: 0 0;
+}
+
+.thumbnail-border {
+  @apply absolute z-40 box-border w-full h-full;
+  padding: 1px;
+}
+
+/* High-res border for thumbnail */
+.thumbnail-border::after {
+  content: "";
+  pointer-events: none;
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  border: 2px solid red;
+  border-radius: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+@media (min-resolution: 2dppx) {
+  .thumbnail-border::after {
+    width: 200%;
+    height: 200%;
+    border-radius: 0;
+    transform: scale(0.5);
+  }
+}
+
+@media (min-resolution: 3dppx) {
+  .thumbnail-border::after {
+    width: 300%;
+    height: 300%;
+    border-radius: 0;
+    transform: scale(0.333);
+  }
+}
+
+/* Screen direction indicator - trapezoid shape */
+.screen {
+  @apply absolute top-0 z-20 text-white;
+  width: 80%;
+  max-width: 400px;
+  border-top: 28px solid #DFDFDF;
+  border-right: 40px solid transparent;
+  border-left: 40px solid transparent;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 768px) {
+  .screen {
+    max-width: 500px;
+    border-top-width: 36px;
+    border-right-width: 50px;
+    border-left-width: 50px;
+  }
+}
+
+.screen-text {
+  @apply text-center whitespace-nowrap text-lg md:text-xl font-semibold;
+  margin-top: -24px;
+}
+
+@media (min-width: 768px) {
+  .screen-text {
+    margin-top: -32px;
+  }
+}
+
+/* Seat box container */
+.box {
+  @apply absolute z-0;
+  margin-top: 36px;
+}
+
+@media (min-width: 768px) {
+  .box {
+    margin-top: 48px;
+  }
+}
+
+/* Seat tool (row numbers) */
+.seat-tool-parent {
+  @apply overflow-hidden;
+  margin-top: 36px;
+}
+
+@media (min-width: 768px) {
+  .seat-tool-parent {
+    margin-top: 48px;
+  }
+}
+
+.seat-tool {
+  @apply flex flex-col absolute z-10 bg-black/30 text-center text-white font-bold rounded-full;
+  left: 0.25rem;
+}
+
+.seat-tool-item {
+  @apply px-0.5;
+}
 </style>
