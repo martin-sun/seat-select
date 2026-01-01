@@ -36,7 +36,7 @@ export default {
   computed: {},
   // 监控data中的数据变化
   watch: {
-    propSelectedSeat: function (value) {
+    propSelectedSeat: function () {
       let width = this.propSelectedSeat.length * 2.4 + 1.2
       this.$refs.scrollUl.style.width = width + 'rem'
       this.$nextTick(() => {
@@ -70,8 +70,8 @@ export default {
   beforeMount () {}, // 生命周期 - 挂载之前
   beforeUpdate () {}, // 生命周期 - 更新之前
   updated () {}, // 生命周期 - 更新之后
-  beforeDestroy () {}, // 生命周期 - 销毁之前
-  destroyed () {}, // 生命周期 - 销毁完成
+  beforeUnmount () {}, // 生命周期 - 销毁之前
+  unmounted () {}, // 生命周期 - 销毁完成
   activated () {} // 如果页面有keep-alive缓存功能，这个函数会触发
 }
 </script>

@@ -1,14 +1,16 @@
+const { defineConfig } = require('@vue/cli-service')
 const path = require('path')
-module.exports = {
+
+module.exports = defineConfig({
   // 基本路径
   publicPath: '/',
-  // productionSourceMap：{ type:Bollean,default:true } 生产源映射
   // 如果您不需要生产时的源映射，那么将此设置为false可以加速生产构建
   productionSourceMap: false,
+  transpileDependencies: true,
   css: {
     loaderOptions: {
       stylus: {
-        javascriptEnabled: true
+        // stylus-loader 7.x 需要使用 stylusOptions
       }
     }
   },
@@ -26,7 +28,8 @@ module.exports = {
       }
     }
   }
-}
+})
+
 function addStyleResource (rule) {
   rule.use('style-resource')
     .loader('style-resources-loader')
