@@ -4,8 +4,9 @@
   @updateDate 最后更新时间为:2019-02-29
 */
 <template>
-<div class='fixed bottom-0 left-0 right-0 z-10 h-12 md:h-14 bg-gradient-to-r from-primary to-primary-light text-center text-white text-base md:text-lg leading-[3rem] md:leading-[3.5rem] cursor-pointer' @click="lockSeat()">
-  确认选座
+<div class='fixed bottom-0 left-0 right-0 z-10 h-12 md:h-14 bg-gradient-to-r from-primary to-primary-light text-white text-base md:text-lg cursor-pointer flex items-center justify-center gap-4' @click="lockSeat()">
+  <span v-if="chPrice > 0" class="font-bold">¥{{ chPrice }}</span>
+  <span>确认选座</span>
 </div>
 </template>
 
