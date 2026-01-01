@@ -45,16 +45,29 @@
     :propSelectedSeat="selectedSeatList"
     :propSeatList="seatList"
     @loading="loading"
+    @showBookingForm="handleShowBookingForm"
     ></confirm-lock>
     <loading :load="load"></loading>
+    <!-- 预订表单弹窗 -->
+    <booking-form
+      :visible="showBookingModal"
+      :selectedSeats="selectedSeatList"
+      :eventId="eventId"
+      :totalPrice="bookingTotalPrice"
+      @close="showBookingModal = false"
+      @success="handleBookingSuccess"
+    ></booking-form>
   </div>
 </template>
 <script>
 import SeatArea from './component/SeatArea'
 import SelectedTab from './component/SelectedTab'
 import ConfirmLock from './component/ConfirmLock'
+import BookingForm from './component/BookingForm'
 import HeaderView from '@/components/Header'
 import Loading from '@/components/loading'
+import { supabase, subscribeToSeats } from '@/supabase'
+
 export default {
   name: 'HallSeat',
   data () {
@@ -63,6 +76,7 @@ export default {
       zoneConfig: [], // 分区配置
       zonePrices: {}, // 分区价格
       eventId: '', // 活动ID
+      seatSubscription: null, // 实时订阅
       // 座位尺寸配置（px）
       positionDistin: 32, // 每个座位偏移距离
       width: 28, // 每个座位的宽
@@ -72,7 +86,9 @@ export default {
       thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
       selectedSeatList: [], // 已选择座位
       maxSelect: 4, // 最大选择座位数量 改动可改变最大选择座位数
-      load: false // 加载dom的控制
+      load: false, // 加载dom的控制
+      showBookingModal: false, // 预订表单弹窗显示状态
+      bookingTotalPrice: 0 // 预订总价
     }
   },
   components: {
@@ -80,22 +96,18 @@ export default {
     HeaderView,
     SelectedTab,
     ConfirmLock,
+    BookingForm,
     Loading
   },
   mounted () {
-    this.loading(true)
     this.getSeatList()
-    this.loading(false)
   },
-  // // fixme 这里确认是否还需要
-  // beforeRouteLeave (to, from, next) {
-  //   if (to.path === '/moviePlan') {
-  //     to.meta.keepAlive = true
-  //   } else {
-  //     to.meta.keepAlive = false
-  //   }
-  //   next()
-  // },
+  beforeUnmount () {
+    // 清理实时订阅
+    if (this.seatSubscription) {
+      this.seatSubscription.unsubscribe()
+    }
+  },
   methods: {
     // 根据分区获取配置
     getZoneConfig: function (zone) {
@@ -107,43 +119,123 @@ export default {
       return config.icons ? config.icons[status] : ''
     },
     // 请求座位数据
-    getSeatList: function () {
-      this.$get('/mock/seats.json')
-        .then((response) => {
-          console.log('座位返回response------>>>>', response)
-          // 保存配置
-          this.eventId = response.event_id
-          this.zonePrices = response.zone_prices
-          this.zoneConfig = response.zone_config
+    async getSeatList () {
+      this.loading(true)
+      try {
+        // 获取 event ID（从路由参数或查询参数）
+        const eventIdFromRoute = this.$route.params.eventId || this.$route.query.eventId
 
-          var resSeatList = response.seats
-          if (!resSeatList) {
-            return
+        let event
+        if (eventIdFromRoute) {
+          // 使用路由中的 event ID
+          const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .eq('id', eventIdFromRoute)
+            .single()
+          if (error) throw error
+          event = data
+        } else {
+          // 获取第一个活动的事件
+          const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .eq('is_active', true)
+            .limit(1)
+            .single()
+          if (error) throw error
+          event = data
+        }
+
+        if (!event) {
+          console.error('No active event found')
+          return
+        }
+
+        // 保存配置
+        this.eventId = event.id
+        this.zonePrices = event.zone_prices || {}
+        this.zoneConfig = event.zone_config || []
+        this.maxSelect = event.max_seats_per_booking || 4
+
+        // 获取座位数据
+        const { data: seats, error: seatsError } = await supabase
+          .from('seats')
+          .select('*')
+          .eq('event_id', event.id)
+          .order('g_row', { ascending: true })
+          .order('g_col', { ascending: true })
+
+        if (seatsError) throw seatsError
+
+        // 座位处理（转换 snake_case 到 camelCase 并添加图标）
+        const processedSeats = seats.map(seat => {
+          const zone = seat.zone
+          const status = seat.status
+
+          return {
+            ...seat,
+            // 转换字段名
+            gRow: seat.g_row,
+            gCol: seat.g_col,
+            // 设置图标
+            defautIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
+            nowIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
+            selectedIcon: this.getIcon(zone, 'selected'),
+            soldedIcon: this.getIcon(zone, 'sold'),
+            lockedIcon: this.getIcon(zone, 'locked'),
+            // 判断座位是否可以点击（只有 available 状态可点击）
+            canClick: (status === 'available'),
+            // 获取座位价格
+            price: this.zonePrices[zone] || 0
+          }
+        })
+
+        this.seatList = processedSeats
+        console.log('座位数据加载完成，共', processedSeats.length, '个座位')
+
+        // 订阅座位实时更新
+        this.seatSubscription = subscribeToSeats(event.id, (payload) => {
+          console.log('座位状态变化:', payload)
+          this.handleSeatChange(payload)
+        })
+      } catch (err) {
+        console.error('加载座位数据失败:', err)
+      } finally {
+        this.loading(false)
+      }
+    },
+    // 处理座位实时更新
+    handleSeatChange (payload) {
+      const { eventType, new: newSeat } = payload
+
+      if (eventType === 'UPDATE') {
+        const index = this.seatList.findIndex(s => s.id === newSeat.id)
+        if (index !== -1) {
+          const zone = newSeat.zone
+          const status = newSeat.status
+
+          // 更新座位数据
+          this.seatList[index] = {
+            ...this.seatList[index],
+            ...newSeat,
+            gRow: newSeat.g_row,
+            gCol: newSeat.g_col,
+            defautIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
+            nowIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
+            canClick: (status === 'available'),
+            price: this.zonePrices[zone] || 0
           }
 
-          // 座位处理
-          resSeatList.forEach(element => {
-            const zone = element.zone
-            const status = element.status
-
-            // 设置图标
-            element.defautIcon = this.getIcon(zone, status === 'available' ? 'available' : status)
-            element.nowIcon = element.defautIcon
-            element.selectedIcon = this.getIcon(zone, 'selected')
-            element.soldedIcon = this.getIcon(zone, 'sold')
-            element.lockedIcon = this.getIcon(zone, 'locked')
-
-            // 判断座位是否可以点击（只有 available 状态可点击）
-            element.canClick = (status === 'available')
-
-            // 获取座位价格
-            element.price = this.zonePrices[zone] || 0
-          })
-
-          this.seatList = resSeatList
-        }, err => {
-          console.log(err)
-        })
+          // 如果座位被其他人预订，从已选列表中移除
+          if (status !== 'available') {
+            const selectedIndex = this.selectedSeatList.findIndex(s => s.id === newSeat.id)
+            if (selectedIndex !== -1) {
+              this.selectedSeatList.splice(selectedIndex, 1)
+            }
+          }
+        }
+      }
     },
     // 点击每个座位触发的函数
     clickSeat: function (index) {
@@ -198,6 +290,18 @@ export default {
       // 可选状态 - 显示分区颜色
       const config = this.getZoneConfig(seatItem.zone)
       return config.color || '#FFFFFF'
+    },
+    // 显示预订表单
+    handleShowBookingForm (data) {
+      this.bookingTotalPrice = data.totalPrice
+      this.showBookingModal = true
+    },
+    // 预订成功处理
+    handleBookingSuccess (reservation) {
+      console.log('预订成功:', reservation)
+      // 清空已选座位
+      this.selectedSeatList = []
+      this.showBookingModal = false
     }
   },
   computed: {
