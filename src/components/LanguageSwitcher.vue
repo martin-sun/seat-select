@@ -10,24 +10,22 @@
 </template>
 
 <script>
-import { getCurrentLocale } from '@/i18n'
-
 export default {
   name: 'LanguageSwitcher',
-  data () {
-    return {
-      currentLocale: getCurrentLocale()
+  computed: {
+    currentLocale () {
+      // Reactive: automatically updates when i18n locale changes
+      return this.$i18n.locale
     }
   },
   methods: {
     toggleLang () {
       const newLang = this.currentLocale === 'zh-CN' ? 'en' : 'zh'
       const currentPath = this.$route.fullPath
-      // 替换 URL 中的语言前缀
+      // Replace language prefix in URL
       const newPath = currentPath.replace(/^\/(zh|en)/, `/${newLang}`)
       this.$router.push(newPath)
-      // locale 会由路由守卫自动更新
-      this.currentLocale = newLang === 'zh' ? 'zh-CN' : 'en-US'
+      // Locale will be updated by route guard automatically
     }
   }
 }

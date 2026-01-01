@@ -80,7 +80,7 @@ import SelectedTab from './component/SelectedTab'
 import ConfirmLock from './component/ConfirmLock'
 import BookingForm from './component/BookingForm'
 import HeaderView from '@/components/Header'
-import Loading from '@/components/loading'
+import Loading from '@/components/Loading'
 import { supabase, subscribeToSeats } from '@/supabase'
 
 export default {
@@ -244,11 +244,9 @@ export default {
         })
 
         this.seatList = processedSeats
-        console.log('座位数据加载完成，共', processedSeats.length, '个座位')
 
-        // 订阅座位实时更新
+        // Subscribe to real-time seat updates
         this.seatSubscription = subscribeToSeats(event.id, (payload) => {
-          console.log('座位状态变化:', payload)
           this.handleSeatChange(payload)
         })
       } catch (err) {
@@ -312,6 +310,11 @@ export default {
     },
     // 处理未选择的座位（选择座位）
     processUnSelected: function (index) {
+      // Check if max seats limit reached
+      if (this.selectedSeatList.length >= this.maxSelect) {
+        alert(this.$t('alerts.maxSeats', { max: this.maxSelect }))
+        return
+      }
       // 改变座位图标为已选择图标
       this.seatList[index].nowIcon = this.seatList[index].selectedIcon
       // 记录 orgIndex属性 是原seatList数组中的下标值
@@ -355,10 +358,9 @@ export default {
       this.bookingTotalPrice = data.totalPrice
       this.showBookingModal = true
     },
-    // 预订成功处理
-    handleBookingSuccess (reservation) {
-      console.log('预订成功:', reservation)
-      // 清空已选座位
+    // Handle booking success
+    handleBookingSuccess () {
+      // Clear selected seats
       this.selectedSeatList = []
       this.showBookingModal = false
     }
