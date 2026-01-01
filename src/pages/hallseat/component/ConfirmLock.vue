@@ -14,20 +14,19 @@
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
 export default {
-// import引入的组件需要注入到对象中才能使用
+  name: 'ConfirmLock',
   components: {},
   props: {
     propSelectedSeat: Array,
-    propSeatList: Array,
-    propIsCheap: Number,
-    propServiceFee: String,
-    propPlanId: String
+    propSeatList: Array
   },
+  emits: ['loading', 'showBookingForm'],
   data () {
     // 这里存放数据
     return {
       selectedSeat: this.propSelectedSeat,
-      seatList: this.propSeatList
+      seatList: this.propSeatList,
+      isProcessing: false // 防止重复点击
     }
   },
   // 监听属性 类似于data概念
@@ -49,47 +48,41 @@ export default {
       return seatIdList
     }
   },
-  // 监控data中的数据变化
   watch: {
     propSelectedSeat: function () {
       this.selectedSeat = this.propSelectedSeat
     },
     propSeatList: function () {
       this.seatList = this.propSeatList
-    },
-    propIsCheap: function (value) {
-      this.isCheap = value
-    },
-    propServiceFee: function (value) {
-      this.serviceFee = value
-    },
-    propPlanId: function (value) {
-      this.planId = value
     }
   },
   // 方法集合
   methods: {
     lockSeat: function () {
-      let _this = this
       // 防止连点
-      let check = _this.$once(new Date().getTime())
-      if (!check) {
+      if (this.isProcessing) {
         return
       }
-      if (_this.selectedSeat.length === 0) {
+      this.isProcessing = true
+      // 300ms 后重置，防止长时间锁定
+      setTimeout(() => {
+        this.isProcessing = false
+      }, 300)
+
+      if (this.selectedSeat.length === 0) {
         alert('请至少选择一个座位~')
         return
       }
       // 开始计算是否留下空位 ------------ 开始
-      let result = _this.selectedSeat.every(function (element) {
-        return _this.checkSeat(element)
+      let result = this.selectedSeat.every((element) => {
+        return this.checkSeat(element)
       })
       // 开始计算是否留下空位 ------------ 结束
       if (!result) {
         // 如果 result 为false
         alert('请不要留下空位~')
       } else {
-        if (_this.chPrice === 0) {
+        if (this.chPrice === 0) {
           alert('锁座失败了~,金额为0')
           return
         }
@@ -98,7 +91,11 @@ export default {
       }
     },
     createOrder () {
-      alert('在这里开始走锁座逻辑')
+      // 触发显示预订表单
+      this.$emit('showBookingForm', {
+        selectedSeats: this.selectedSeat,
+        totalPrice: this.chPrice
+      })
     },
     // 检查每个座位是否会留下空位
     checkSeat: function (element) {
