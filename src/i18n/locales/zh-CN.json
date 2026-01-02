@@ -10,6 +10,58 @@
     "submit": "提交",
     "logout": "退出"
   },
+  "chunwan": {
+    "nav": {
+      "title": "萨斯卡通春晚",
+      "about": "活动介绍",
+      "tickets": "票务信息",
+      "history": "往期回顾",
+      "programs": "节目单"
+    },
+    "banner": {
+      "yearLabel": "春节联欢晚会"
+    },
+    "buyTicket": "立即购票",
+    "viewPrograms": "查看节目单",
+    "eventInfo": {
+      "date": "演出时间",
+      "location": "演出地点",
+      "aboutTitle": "活动介绍"
+    },
+    "ticketSection": {
+      "title": "票务信息"
+    },
+    "ticketCard": {
+      "perPerson": "人",
+      "select": "选择此票",
+      "soldOut": "已售罄"
+    },
+    "historySection": {
+      "title": "往期回顾"
+    },
+    "historyCard": {
+      "clickToWatch": "点击观看精彩回顾"
+    },
+    "footer": {
+      "organizer": "主办：萨斯卡通华人社区协会",
+      "contact": "联系我们：info@saskatoonchunwan.ca"
+    },
+    "programs": {
+      "title": "节目单",
+      "subtitle": "精彩节目，不容错过",
+      "liveNow": "正在直播",
+      "backToHome": "返回首页",
+      "performers": "表演者",
+      "types": {
+        "all": "全部",
+        "song": "歌曲",
+        "dance": "舞蹈",
+        "skit": "小品",
+        "opera": "戏曲",
+        "acrobatics": "杂技"
+      }
+    }
+  },
   "header": {
     "seatSelection": "选择座位",
     "myOrders": "查询订单",

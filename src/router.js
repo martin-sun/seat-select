@@ -4,6 +4,9 @@ import ReservationStatus from '@/pages/reservation/ReservationStatus'
 import MyOrders from '@/pages/myorders/MyOrders'
 import i18n, { setLocale } from '@/i18n'
 
+const ChunwanHome = () => import('@/pages/home/ChunwanHome.vue')
+const ChunwanPrograms = () => import('@/pages/home/ChunwanPrograms.vue')
+
 const supportedLocales = ['zh', 'en']
 
 const routes = [
@@ -12,13 +15,23 @@ const routes = [
     children: [
       {
         path: '',
+        name: 'ChunwanHome',
+        component: ChunwanHome
+      },
+      {
+        path: 'tickets',
         name: 'HallSeat',
         component: HallSeat
       },
       {
-        path: 'event/:eventId',
+        path: 'tickets/event/:eventId',
         name: 'HallSeatWithEvent',
         component: HallSeat
+      },
+      {
+        path: 'programs',
+        name: 'ChunwanPrograms',
+        component: ChunwanPrograms
       },
       {
         path: 'reservation/:id',

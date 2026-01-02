@@ -1,5 +1,7 @@
 -- =====================================================
--- Fix RPC Function: Add proper validation
+-- Fix RPC Function: Correct column reference in unnest
+-- The previous version used ARRAY_AGG(id) but unnest
+-- creates a column named 'requested_id', not 'id'
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION create_reservation_atomic(
@@ -55,6 +57,7 @@ BEGIN
   END IF;
 
   -- Verify all seats belong to the specified event
+  -- Fixed: Use 'requested_id' instead of 'id' since that's the alias from unnest
   SELECT ARRAY_AGG(requested_id) INTO v_invalid_seats
   FROM unnest(p_seat_ids) AS requested_id
   WHERE NOT EXISTS (
@@ -74,12 +77,11 @@ BEGIN
   -- Calculate expiry time (24 hours from now)
   v_expires_at := now() + INTERVAL '24 hours';
 
-  -- Check if all seats are available (with FOR UPDATE to lock rows)
+  -- Check if all seats are available (no FOR UPDATE with aggregate)
   SELECT ARRAY_AGG(id) INTO v_unavailable_seats
   FROM seats
   WHERE id = ANY(p_seat_ids)
-    AND status != 'available'
-  FOR UPDATE;
+    AND status != 'available';
 
   -- If any seats are not available, return error
   IF v_unavailable_seats IS NOT NULL AND array_length(v_unavailable_seats, 1) > 0 THEN
@@ -161,4 +163,4 @@ EXCEPTION
       'error', SQLERRM
     );
 END;
-$$
+$$;
