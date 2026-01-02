@@ -10,6 +10,58 @@
     "submit": "Submit",
     "logout": "Logout"
   },
+  "chunwan": {
+    "nav": {
+      "title": "Saskatoon Gala",
+      "about": "About",
+      "tickets": "Tickets",
+      "history": "Past Events",
+      "programs": "Programs"
+    },
+    "banner": {
+      "yearLabel": "Chinese New Year Gala"
+    },
+    "buyTicket": "Buy Tickets",
+    "viewPrograms": "View Programs",
+    "eventInfo": {
+      "date": "Date & Time",
+      "location": "Location",
+      "aboutTitle": "About the Event"
+    },
+    "ticketSection": {
+      "title": "Ticket Information"
+    },
+    "ticketCard": {
+      "perPerson": "person",
+      "select": "Select",
+      "soldOut": "Sold Out"
+    },
+    "historySection": {
+      "title": "Past Events"
+    },
+    "historyCard": {
+      "clickToWatch": "Click to watch highlights"
+    },
+    "footer": {
+      "organizer": "Hosted by: Saskatoon Chinese Community Association",
+      "contact": "Contact us: info@saskatoonchunwan.ca"
+    },
+    "programs": {
+      "title": "Program List",
+      "subtitle": "Amazing performances await you",
+      "liveNow": "Live Now",
+      "backToHome": "Back to Home",
+      "performers": "Performers",
+      "types": {
+        "all": "All",
+        "song": "Song",
+        "dance": "Dance",
+        "skit": "Comedy",
+        "opera": "Opera",
+        "acrobatics": "Acrobatics"
+      }
+    }
+  },
   "header": {
     "seatSelection": "Select Seats",
     "myOrders": "My Orders",

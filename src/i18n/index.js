@@ -12,7 +12,7 @@ function getDefaultLocale () {
 }
 
 const i18n = createI18n({
-  legacy: true, // 使用 Options API 模式
+  legacy: false, // 使用 Composition API 模式
   globalInjection: true, // 全局注入 $t
   locale: getDefaultLocale(),
   fallbackLocale: 'en-US',
@@ -26,11 +26,11 @@ export default i18n
 
 // 导出切换语言的辅助函数
 export function setLocale (locale) {
-  i18n.global.locale = locale
+  i18n.global.locale.value = locale
   localStorage.setItem('locale', locale)
   document.documentElement.setAttribute('lang', locale)
 }
 
 export function getCurrentLocale () {
-  return i18n.global.locale
+  return i18n.global.locale.value
 }

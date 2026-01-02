@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@directus/sdk": "^20.3.0",
     "@supabase/supabase-js": "^2.89.0",
     "axios": "^0.21.1",
     "better-scroll": "^1.14.1",

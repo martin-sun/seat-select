@@ -1,5 +1,6 @@
 -- =====================================================
--- Fix RPC Function: Add proper validation
+-- Fix RPC Function: Remove FOR UPDATE from aggregate query
+-- PostgreSQL does not allow FOR UPDATE with aggregate functions
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION create_reservation_atomic(
@@ -74,12 +75,17 @@ BEGIN
   -- Calculate expiry time (24 hours from now)
   v_expires_at := now() + INTERVAL '24 hours';
 
-  -- Check if all seats are available (with FOR UPDATE to lock rows)
+  -- Lock the seats first to prevent concurrent bookings
+  -- This must be done before the availability check
+  PERFORM id FROM seats
+  WHERE id = ANY(p_seat_ids)
+  FOR UPDATE NOWAIT;
+
+  -- Check if all seats are available (no FOR UPDATE - already locked above)
   SELECT ARRAY_AGG(id) INTO v_unavailable_seats
   FROM seats
   WHERE id = ANY(p_seat_ids)
-    AND status != 'available'
-  FOR UPDATE;
+    AND status != 'available';
 
   -- If any seats are not available, return error
   IF v_unavailable_seats IS NOT NULL AND array_length(v_unavailable_seats, 1) > 0 THEN
@@ -89,12 +95,6 @@ BEGIN
       'unavailable_seats', v_unavailable_seats
     );
   END IF;
-
-  -- Lock the available seats to prevent concurrent bookings
-  PERFORM id FROM seats
-  WHERE id = ANY(p_seat_ids)
-    AND status = 'available'
-  FOR UPDATE NOWAIT;
 
   -- Create the reservation
   INSERT INTO reservations (
@@ -161,4 +161,4 @@ EXCEPTION
       'error', SQLERRM
     );
 END;
-$$
+$$;
