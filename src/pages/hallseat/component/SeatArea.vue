@@ -9,7 +9,14 @@
       <div class="box" ref="pinchAndPan"
       @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
       @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"
-      :style="{transform: 'scale('+scale+')',transformOrigin: transformOrigin,top:top + 'px',left:left + 'px', cursor: 'grab'}"
+      :style="{
+        transform: 'scale('+scale+')',
+        transformOrigin: transformOrigin,
+        top: top + 'px',
+        left: left + 'px',
+        cursor: 'grab',
+        transition: isTransitionEnabled ? 'transform 0.2s ease-out' : 'none'
+      }"
       :class="{ 'cursor-grabbing': touchStatus }">
         <slot name="seat-area-solt">
           <!--所有可以点击座位的数据会放入此插槽,此插槽可以缩放,拖动-->
@@ -76,7 +83,14 @@ export default {
       // 原生触摸事件相关
       touchStartX: 0,
       touchStartY: 0,
-      initialPinchDistance: null
+      initialPinchDistance: null,
+      // 手势缩放优化相关
+      lastPinchTime: 0,           // 上次缩放触发时间（节流用）
+      pinchThrottleMs: 80,        // 节流间隔 80ms
+      pinchDistanceThreshold: 25, // 触发阈值 25px（原 10px）
+      baseScale: 1,               // 手势开始时的缩放基准值
+      basePinchDistance: null,    // 手势开始时的双指距离基准
+      isTransitionEnabled: false  // CSS transition 开关
     }
   },
   methods: {
@@ -86,8 +100,13 @@ export default {
         // 单指触摸 - panstart
         this.panstart(ev)
       } else if (ev.touches.length === 2) {
-        // 双指触摸 - 记录初始距离用于缩放
-        this.initialPinchDistance = this.getPinchDistance(ev.touches)
+        // 双指触摸 - 记录初始距离和基准值用于缩放
+        const distance = this.getPinchDistance(ev.touches)
+        this.initialPinchDistance = distance
+        this.basePinchDistance = distance
+        this.baseScale = this.scale
+        // 禁用 transition 以获得实时响应
+        this.isTransitionEnabled = false
       }
     },
     handleTouchMove: function (ev) {
@@ -99,22 +118,37 @@ export default {
           deltaY: touch.clientY - this.touchStartY
         })
       } else if (ev.touches.length === 2) {
-        // 双指移动 - pinch
+        // 双指移动 - pinch（优化版：节流 + 比例计算）
         const currentDistance = this.getPinchDistance(ev.touches)
-        if (this.initialPinchDistance) {
-          if (currentDistance > this.initialPinchDistance + 10) {
-            this.pinchout()
-            this.initialPinchDistance = currentDistance
-          } else if (currentDistance < this.initialPinchDistance - 10) {
-            this.pinchin()
-            this.initialPinchDistance = currentDistance
+        if (this.basePinchDistance && this.initialPinchDistance) {
+          // 节流检查
+          const now = Date.now()
+          if (now - this.lastPinchTime < this.pinchThrottleMs) {
+            return
           }
+          // 阈值检查 - 距离变化需超过阈值才触发
+          const deltaFromLast = Math.abs(currentDistance - this.initialPinchDistance)
+          if (deltaFromLast < this.pinchDistanceThreshold) {
+            return
+          }
+          // 使用比例计算缩放
+          this.handlePinchScale(currentDistance)
+          // 更新参考点和时间
+          this.initialPinchDistance = currentDistance
+          this.lastPinchTime = now
         }
       }
     },
     handleTouchEnd: function (ev) {
+      // 手势结束，启用 transition 进行平滑收尾
+      this.isTransitionEnabled = true
+      // 延迟禁用，避免影响下次手势
+      setTimeout(() => {
+        this.isTransitionEnabled = false
+      }, 200)
       this.panend(ev)
       this.initialPinchDistance = null
+      this.basePinchDistance = null
     },
     // 鼠标事件处理
     handleMouseDown: function (ev) {
@@ -161,24 +195,40 @@ export default {
       _this.top = top * (this.scale - 1) + 0.67
       _this.left = left * (this.scale - 1)
     },
-    // 当缩放 放大的时候触发
+    // 当缩放 放大的时候触发（按钮调用）
     pinchout: function () {
-      let _this = this
-      if (_this.scale >= 0 && _this.scale < _this.maxscale) {
-        _this.scale += 0.15
+      // 启用 transition 实现平滑过渡
+      this.isTransitionEnabled = true
+      if (this.scale >= 0 && this.scale < this.maxscale) {
+        // 减小增量从 0.15 到 0.1，更精细控制
+        this.scale = Math.min(this.scale + 0.1, this.maxscale)
       }
+      // 延迟禁用 transition
+      setTimeout(() => { this.isTransitionEnabled = false }, 200)
     },
-    // 当缩放 缩小的时候触发
+    // 当缩放 缩小的时候触发（按钮调用）
     pinchin: function () {
-      let _this = this
+      // 启用 transition 实现平滑过渡
+      this.isTransitionEnabled = true
       const minScale = 0.3 // 最小缩放比例，允许缩小查看全景
-      if (_this.scale > minScale) {
-        _this.scale -= 0.15
-        // 确保不低于最小值
-        if (_this.scale < minScale) {
-          _this.scale = minScale
-        }
+      if (this.scale > minScale) {
+        // 减小增量从 0.15 到 0.1，更精细控制
+        this.scale = Math.max(this.scale - 0.1, minScale)
       }
+      // 延迟禁用 transition
+      setTimeout(() => { this.isTransitionEnabled = false }, 200)
+    },
+    // 手势缩放处理 - 基于比例计算（更平滑）
+    handlePinchScale: function (currentDistance) {
+      const minScale = 0.3
+      const maxScale = this.maxscale
+      // 计算相对于基准的缩放比例
+      const scaleRatio = currentDistance / this.basePinchDistance
+      // 衰减因子使缩放更平滑（0.6 可调整灵敏度）
+      const dampingFactor = 0.6
+      const targetScale = this.baseScale * (1 + (scaleRatio - 1) * dampingFactor)
+      // 限制在有效范围内
+      this.scale = Math.max(minScale, Math.min(maxScale, targetScale))
     },
     // 当手指拖动的过程中
     panmove: function (ev) {
@@ -390,6 +440,10 @@ export default {
   @apply absolute z-0 w-full left-0;
   margin-top: 8px;
   /* 设置 width: 100% 和 left: 0 确保子元素 .seatBox 的 left: 50% 能正确居中 */
+  /* 启用硬件加速，提升缩放性能 */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @media (min-width: 768px) {
