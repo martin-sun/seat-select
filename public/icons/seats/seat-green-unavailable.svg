@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <filter id="soft-shadow-un-green" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+      <feOffset in="blur" dx="0" dy="1" result="offsetBlur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.2"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#soft-shadow-un-green)" opacity="0.8">
+    <path d="M7 6C7 3.5 9 2 16 2C23 2 25 3.5 25 6V16H7V6Z" fill="#DCFCE7"/>
+    <rect x="5" y="15" width="22" height="10" rx="3" fill="#BBF7D0"/>
+    <rect x="4" y="10" width="3" height="12" rx="1.5" fill="#86EFAC"/>
+    <rect x="25" y="10" width="3" height="12" rx="1.5" fill="#86EFAC"/>
+    <!-- Slash -->
+    <line x1="8" y1="8" x2="24" y2="24" stroke="#86EFAC" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

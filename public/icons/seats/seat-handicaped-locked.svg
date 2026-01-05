@@ -1,26 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32">
-  <!-- 无障碍座位 - 锁定 (非卖) - 两倍宽度连续座位 -->
-  <!-- 椅背 - 连续的 -->
-  <rect x="6" y="4" width="52" height="14" rx="3" fill="#F59E0B"/>
-  <!-- 椅座 - 连续的 -->
-  <rect x="4" y="18" width="56" height="8" rx="2" fill="#D97706"/>
-  <!-- 左扶手 -->
-  <rect x="4" y="12" width="4" height="10" rx="1" fill="#B45309"/>
-  <!-- 右扶手 -->
-  <rect x="56" y="12" width="4" height="10" rx="1" fill="#B45309"/>
-  <!-- 轮椅图标 (居中) -->
-  <g transform="translate(32, 22)" fill="#FEF3C7">
-    <!-- 轮子 -->
-    <circle cx="0" cy="0" r="5" stroke="#FEF3C7" stroke-width="1.5" fill="none"/>
-    <!-- 座椅背部 -->
-    <line x1="0" y1="-5" x2="0" y2="-12" stroke="#FEF3C7" stroke-width="1.5"/>
-    <!-- 座椅 -->
-    <line x1="0" y1="-12" x2="4" y2="-14" stroke="#FEF3C7" stroke-width="1.5"/>
-    <circle cx="4" cy="-14" r="1.5" fill="#FEF3C7"/>
-    <!-- 扶手 -->
-    <line x1="4" y1="-14" x2="6" y2="-12" stroke="#FEF3C7" stroke-width="1.5"/>
+  <defs>
+    <filter id="soft-shadow-handicap" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+      <feOffset in="blur" dx="0" dy="1" result="offsetBlur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.2"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="seat-gradient-handicap" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <g filter="url(#soft-shadow-handicap)">
+    <!-- Backrest (Double width) -->
+    <path d="M7 6C7 3.5 9 2 16 2 H48 C55 2 57 3.5 57 6 V16 H7 V6 Z" fill="url(#seat-gradient-handicap)"/>
+    <!-- Seat Cushion -->
+    <rect x="5" y="15" width="54" height="10" rx="3" fill="#B45309"/>
+    <!-- Armrests -->
+    <rect x="4" y="10" width="3" height="12" rx="1.5" fill="#92400E"/>
+    <rect x="57" y="10" width="3" height="12" rx="1.5" fill="#92400E"/>
+    
+    <!-- Wheelchair Icon -->
+    <g transform="translate(26, 8)" stroke="#FEF3C7" stroke-width="2" fill="none">
+        <circle cx="6" cy="6" r="5" />
+        <path d="M6 6 V1 L10 -1" stroke-linecap="round"/>
+        <circle cx="10" cy="-2" r="1.5" fill="#FEF3C7" stroke="none"/>
+    </g>
+    <!-- Lock Icon on right -->
+    <g transform="translate(48, 6)">
+         <path d="M4 2 C2.5 2 1.5 3 1.5 4.5 V6 H6.5 V4.5 C6.5 3 5.5 2 4 2 Z" fill="#78350F"/>
+         <rect x="0.5" y="7" width="7" height="6" rx="1" fill="#78350F"/>
+    </g>
   </g>
-  <!-- 锁图标 (右侧) -->
-  <rect x="52" y="14" width="8" height="6" rx="1" fill="#78350F"/>
-  <path d="M53.5 14 V12 Q53.5 9 56 9 Q58.5 9 58.5 12 V14" stroke="#78350F" stroke-width="1.5" fill="none"/>
 </svg>
