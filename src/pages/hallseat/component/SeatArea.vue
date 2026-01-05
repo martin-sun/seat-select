@@ -149,13 +149,14 @@ export default {
     },
     // 适配屏幕并居中显示
     refit: function (smooth = false) {
-      if (!this.panzoomInstance || !this.initialScale) return
+      if (!this.panzoomInstance || !this.initialScale || !isFinite(this.initialScale) || this.initialScale <= 0) {
+        return
+      }
 
       const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
       const seatAreaHeightPx = windowHeight - 120
       
       // 计算居中位置
-      // actualWidth 现在基于 propSeatBoxWidth (高清渲染下的 1:1 宽度)
       const actualWidth = (this.propSeatBoxWidth || this.seatAreaWidthPx) * this.initialScale
       const actualHeight = this.seatBoxHeight * this.initialScale
       
@@ -168,7 +169,7 @@ export default {
       // 更新缩放限制
       const dynamicMaxZoom = Math.max(8, 4 / this.initialScale)
       this.panzoomInstance.setMaxZoom(dynamicMaxZoom)
-      this.panzoomInstance.setMinZoom(this.initialScale * 0.5)
+      this.panzoomInstance.setMinZoom(this.initialScale * 0.3) // 允许稍微缩小更多一点
 
       if (smooth) {
         this.panzoomInstance.smoothZoom(0, 0, this.initialScale / this.scale)
@@ -253,6 +254,11 @@ export default {
   },
   mounted: function () {
     this.initPanzoom()
+    
+    // 安全起见，如果 3 秒后还没 ready (比如数据加载失败)，也通知父组件关闭 loading
+    setTimeout(() => {
+      this.$emit('ready')
+    }, 3000)
   },
   beforeUnmount () {
     if (this.panzoomInstance) {

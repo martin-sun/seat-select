@@ -21,10 +21,15 @@ export default {
 
 <style scoped>
 .loading-overlay {
-  @apply fixed inset-0 z-[100] flex flex-col items-center justify-center;
-  background: rgba(18, 18, 18, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center;
+  background: #121212; /* Start with solid background */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Once loaded, we can fade it out */
+.loading-overlay[v-show="true"] {
+  background: rgba(18, 18, 18, 0.9);
 }
 
 .loading-content {

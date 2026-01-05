@@ -39,12 +39,12 @@
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon" :title="getSeatTooltip(seatItem)"/>
             </div>
-          <!--Entrance and Exit 标记 - 位于中间空白区域（Q排附近）-->
+          <!--Entrance and Exit 标记 - 位于中间区域-->
           <div class="entrance-exit-label" :style="{top: '0px', left: middleLine + 'px'}">
             <span>{{ $t('seatArea.entrance') }}</span>
             <span>{{ $t('seatArea.andExit') }}</span>
           </div>
-          <!--Stage 在座位下方，跟随座位移动-->
+          <!--Stage 在座位下方-->
           <div class="stage" :style="{top: (seatBoxHeight + 30) + 'px', left: middleLine + 'px'}">
             <div class="stage-text">{{ $t('seatArea.stage') }}</div>
           </div>
@@ -103,7 +103,7 @@ export default {
       thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
       stageHeight: 150, // Stage 区域高度
       selectedSeatList: [], // 已选择座位
-      maxSelect: 4, // 最大选择座位数量 改动可改变最大选择座位数
+      maxSelect: 10, // 最大选择座位数量 改动可改变最大选择座位数
       load: true, // 加载dom的控制 (初始开启)
       showBookingModal: false, // 预订表单弹窗显示状态
       bookingTotalPrice: 0 // 预订总价
@@ -461,7 +461,8 @@ export default {
       const seatScaleY = (availableHeight * 0.95) / this.seatBoxHeight // 0.95 用于留出上下边距
 
       // 取两者中较小的一个，确保整体都能在屏幕内
-      return Math.min(seatScaleX, seatScaleY)
+      const scale = Math.min(seatScaleX, seatScaleY)
+      return isFinite(scale) && scale > 0 ? scale : 1
     },
     // 让影厅居中展示的偏移值
     seatBoxCenterMargin: function () {
@@ -528,7 +529,7 @@ export default {
 
 /* Seat box container */
 .seatBox {
-  @apply absolute left-1/2;
+  @apply absolute left-0;
   transform-origin: 0 0 0;
 }
 

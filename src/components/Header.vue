@@ -2,7 +2,7 @@
   <div class="header-wrapper bg-gradient-to-r from-primary to-primary-light text-white">
     <div class="flex items-center justify-between px-4 h-11 md:h-14">
       <!-- 左侧返回按钮 -->
-      <div class="w-20">
+      <div class="w-10">
         <button
           v-if="showLeft !== 0"
           @click="$emit('backHandleClick')"
@@ -15,16 +15,16 @@
       </div>
 
       <!-- 中间标题 -->
-      <div class="flex-1 text-center">
-        <h1 class="text-base md:text-lg font-bold leading-11 md:leading-14">{{ titleText }}</h1>
+      <div class="flex-1 text-center overflow-hidden px-2">
+        <h1 class="text-sm md:text-lg font-bold leading-11 md:leading-14 whitespace-nowrap truncate">{{ titleText }}</h1>
       </div>
 
       <!-- 右侧：语言切换 + 缩放按钮 + 查询订单 -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1 md:gap-2">
         <!-- 语言切换 -->
         <language-switcher></language-switcher>
         <!-- 缩放按钮 -->
-        <div v-if="showZoomControls" class="flex items-center gap-1">
+        <div v-if="showZoomControls" class="flex items-center gap-0.5 md:gap-1">
           <button
             @click="$emit('resetView')"
             class="zoom-btn"
@@ -56,7 +56,7 @@
         <!-- 查询订单链接 -->
         <router-link
           :to="`/${$route.params.lang || 'zh'}/my-orders`"
-          class="text-sm text-white opacity-90 hover:opacity-100 whitespace-nowrap"
+          class="text-[10px] md:text-sm text-white opacity-90 hover:opacity-100 whitespace-nowrap bg-white/10 px-1.5 py-0.5 rounded"
         >
           {{ $t('header.myOrders') }}
         </router-link>
