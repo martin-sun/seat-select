@@ -1,5 +1,5 @@
 <template>
-<div class='fixed bottom-0 left-0 right-0 z-10 h-12 md:h-14 bg-gradient-to-r from-primary to-primary-light text-white text-base md:text-lg cursor-pointer flex items-center justify-center gap-4' @click="lockSeat()">
+<div class='fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-primary to-primary-light text-white text-base md:text-lg cursor-pointer flex items-center justify-center gap-4 py-3 md:py-4' style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));" @click="lockSeat()">
   <span v-if="chPrice > 0" class="font-bold">${{ chPrice }}</span>
   <span>{{ $t('confirmLock.confirmSeat') }}</span>
 </div>

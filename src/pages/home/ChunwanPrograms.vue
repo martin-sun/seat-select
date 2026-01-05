@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ProgramCard from './components/ProgramCard.vue'
@@ -111,7 +111,7 @@ export default {
       { value: 'acrobatics', label: t('chunwan.programs.types.acrobatics') }
     ])
 
-    // 从 Directus 获取数据
+    // 从 Supabase 获取数据
     const fetchData = async () => {
       loading.value = true
       error.value = null
@@ -121,9 +121,14 @@ export default {
           getSettings()
         ])
 
+        const isEn = lang.value === 'en'
+
         if (programsData) {
           programs.value = programsData.map(p => ({
             ...p,
+            title: isEn ? (p.title_en || p.title) : p.title,
+            performers: isEn ? (p.performers_en || p.performers) : p.performers,
+            description: isEn ? (p.description_en || p.description) : p.description,
             thumbnail: getAssetUrl(p.thumbnail)
           }))
         }
@@ -141,6 +146,11 @@ export default {
     }
 
     onMounted(() => {
+      fetchData()
+    })
+
+    // 监听语言变化，重新获取数据以应用正确的字段映射
+    watch(lang, () => {
       fetchData()
     })
 

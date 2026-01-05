@@ -6,7 +6,7 @@
         <div v-if="organizers.length">
           <h3 class="text-2xl font-bold text-yellow-400 mb-6 flex items-center space-x-2">
             <span class="w-8 h-px bg-yellow-400/50"></span>
-            <span>主办单位</span>
+            <span>{{ $t('chunwan.organizerSection.organizer') }}</span>
           </h3>
           <ul class="space-y-4">
             <li 
@@ -24,7 +24,7 @@
         <div v-if="coOrganizers.length">
           <h3 class="text-2xl font-bold text-yellow-400 mb-6 flex items-center space-x-2">
             <span class="w-8 h-px bg-yellow-400/50"></span>
-            <span>协办单位</span>
+            <span>{{ $t('chunwan.organizerSection.coOrganizer') }}</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div 

@@ -2,14 +2,14 @@
   <section class="sponsor-section py-16 px-4 bg-red-950/30">
     <div class="max-w-6xl mx-auto">
       <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-400 mb-12">
-        特别鸣谢我们的赞助商
+        {{ $t('chunwan.sponsorSection.title') }}
       </h2>
 
       <!-- 冠名赞助 (Title Sponsor) -->
       <div v-if="titleSponsors.length" class="mb-12">
         <div class="text-center mb-6">
           <span class="px-4 py-1 bg-yellow-500 text-red-900 rounded-full text-sm font-bold tracking-widest uppercase">
-            冠名赞助
+            {{ $t('chunwan.sponsorSection.levels.title') }}
           </span>
         </div>
         <div class="flex justify-center">
@@ -29,7 +29,7 @@
       <div v-if="goldSponsors.length" class="mb-12">
         <div class="text-center mb-6">
           <span class="px-4 py-1 bg-yellow-600/80 text-yellow-50 rounded-full text-sm font-bold tracking-widest">
-            金牌赞助
+            {{ $t('chunwan.sponsorSection.levels.gold') }}
           </span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -49,7 +49,7 @@
       <div v-if="silverSponsors.length" class="mb-12">
         <div class="text-center mb-6">
           <span class="px-4 py-1 bg-gray-400/50 text-gray-100 rounded-full text-sm font-bold tracking-widest">
-            银牌赞助
+            {{ $t('chunwan.sponsorSection.levels.silver') }}
           </span>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -69,7 +69,7 @@
       <div v-if="bronzeSponsors.length">
         <div class="text-center mb-6">
           <span class="px-4 py-1 bg-orange-800/30 text-orange-200 rounded-full text-sm font-bold tracking-widest">
-            友好赞助
+            {{ $t('chunwan.sponsorSection.levels.bronze') }}
           </span>
         </div>
         <div class="flex flex-wrap justify-center gap-3">

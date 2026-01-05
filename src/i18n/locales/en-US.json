@@ -60,6 +60,19 @@
         "opera": "Opera",
         "acrobatics": "Acrobatics"
       }
+    },
+    "sponsorSection": {
+      "title": "Special Thanks to Our Sponsors",
+      "levels": {
+        "title": "Title Sponsor",
+        "gold": "Gold Sponsor",
+        "silver": "Silver Sponsor",
+        "bronze": "Friendship Sponsor"
+      }
+    },
+    "organizerSection": {
+      "organizer": "Hosts",
+      "coOrganizer": "Co-hosts"
     }
   },
   "header": {

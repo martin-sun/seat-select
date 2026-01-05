@@ -60,6 +60,19 @@
         "opera": "戏曲",
         "acrobatics": "杂技"
       }
+    },
+    "sponsorSection": {
+      "title": "特别鸣谢我们的赞助商",
+      "levels": {
+        "title": "冠名赞助",
+        "gold": "金牌赞助",
+        "silver": "银牌赞助",
+        "bronze": "友好赞助"
+      }
+    },
+    "organizerSection": {
+      "organizer": "主办单位",
+      "coOrganizer": "协办单位"
     }
   },
   "header": {

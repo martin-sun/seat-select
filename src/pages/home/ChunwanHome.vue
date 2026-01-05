@@ -183,7 +183,7 @@ export default {
     const sponsors = ref([])
     const organizers = ref([])
 
-    // 从 Directus 获取数据
+    // 从 Supabase 获取数据
     const fetchData = async () => {
       loading.value = true
       error.value = null
@@ -196,18 +196,20 @@ export default {
           getOrganizers()
         ])
 
-        // 设置数据 - 映射 Directus 字段名
+        const isEn = lang.value === 'en'
+
+        // 设置数据
         if (settingsData) {
           settings.value = {
-            siteTitle: settingsData.site_title,
+            siteTitle: isEn ? (settingsData.site_title_en || settingsData.site_title) : settingsData.site_title,
             eventYear: settingsData.event_year,
-            eventTheme: settingsData.event_theme,
-            eventDate: settingsData.event_date,
-            eventLocation: settingsData.event_location,
-            eventAddress: settingsData.event_address,
-            bannerTitle: settingsData.banner_title,
-            bannerSubtitle: settingsData.banner_subtitle,
-            aboutContent: settingsData.about_content,
+            eventTheme: isEn ? (settingsData.event_theme_en || settingsData.event_theme) : settingsData.event_theme,
+            eventDate: isEn ? (settingsData.event_date_en || settingsData.event_date) : settingsData.event_date,
+            eventLocation: isEn ? (settingsData.event_location_en || settingsData.event_location) : settingsData.event_location,
+            eventAddress: isEn ? (settingsData.event_address_en || settingsData.event_address) : settingsData.event_address,
+            bannerTitle: isEn ? (settingsData.banner_title_en || settingsData.banner_title) : settingsData.banner_title,
+            bannerSubtitle: isEn ? (settingsData.banner_subtitle_en || settingsData.banner_subtitle) : settingsData.banner_subtitle,
+            aboutContent: isEn ? (settingsData.about_content_en || settingsData.about_content) : settingsData.about_content,
             showProgramsLink: settingsData.show_programs_link || false,
             bannerImage: getAssetUrl(settingsData.banner_image),
             contactEmail: settingsData.contact_email || 'saskatoonsfc@gmail.com',
@@ -220,25 +222,37 @@ export default {
 
         // 票价数据
         if (ticketsData) {
-          tickets.value = ticketsData
+          tickets.value = ticketsData.map(ticket => ({
+            ...ticket,
+            name: isEn ? (ticket.name_en || ticket.name) : ticket.name,
+            description: isEn ? (ticket.description_en || ticket.description) : ticket.description
+          }))
         }
 
         // 往期回顾数据
         if (historyData) {
           history.value = historyData.map(item => ({
             ...item,
+            title: isEn ? (item.title_en || item.title) : item.title,
             thumbnail: getAssetUrl(item.thumbnail)
           }))
         }
 
         // 赞助商数据
         if (sponsorsData) {
-          sponsors.value = sponsorsData
+          sponsors.value = sponsorsData.map(sponsor => ({
+            ...sponsor,
+            name: isEn ? (sponsor.name_en || sponsor.name) : sponsor.name
+          }))
         }
 
         // 主办单位数据
         if (organizersData) {
-          organizers.value = organizersData
+          organizers.value = organizersData.map(org => ({
+            ...org,
+            name: isEn ? (org.name_en || org.name) : org.name,
+            description: isEn ? (org.description_en || org.description) : org.description
+          }))
         }
       } catch (err) {
         error.value = err.message
@@ -255,6 +269,11 @@ export default {
     }, { immediate: true })
 
     onMounted(() => {
+      fetchData()
+    })
+
+    // 监听语言变化，重新获取数据以应用正确的字段映射
+    watch(lang, () => {
       fetchData()
     })
 
