@@ -12,7 +12,7 @@
   },
   "chunwan": {
     "nav": {
-      "title": "Saskatoon Gala",
+      "title": "2026 RBC New Year Night - Saskatoon Spring Festival Gala",
       "about": "About",
       "tickets": "Tickets",
       "history": "Past Events",
@@ -43,8 +43,8 @@
       "clickToWatch": "Click to watch highlights"
     },
     "footer": {
-      "organizer": "Hosted by: Saskatoon Chinese Community Association",
-      "contact": "Contact us: info@saskatoonchunwan.ca"
+      "organizer": "Copyright © {year} Saskatoon Spring Festival Gala. All Rights Reserved.",
+      "contact": "Contact us: {email}"
     },
     "programs": {
       "title": "Program List",

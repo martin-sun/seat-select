@@ -70,12 +70,14 @@ export default {
 
     const formattedDate = computed(() => {
       const d = new Date(props.date)
+      if (isNaN(d.getTime())) return props.date
       const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }
       return d.toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', options)
     })
 
     const formattedTime = computed(() => {
       const d = new Date(props.date)
+      if (isNaN(d.getTime())) return ''
       const options = { hour: '2-digit', minute: '2-digit' }
       return d.toLocaleTimeString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', options)
     })

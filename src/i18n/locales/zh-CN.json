@@ -12,7 +12,7 @@
   },
   "chunwan": {
     "nav": {
-      "title": "萨斯卡通春晚",
+      "title": "2026年RBC新春之夜萨斯卡通春晚",
       "about": "活动介绍",
       "tickets": "票务信息",
       "history": "往期回顾",
@@ -43,8 +43,8 @@
       "clickToWatch": "点击观看精彩回顾"
     },
     "footer": {
-      "organizer": "主办：萨斯卡通华人社区协会",
-      "contact": "联系我们：info@saskatoonchunwan.ca"
+      "organizer": "Copyright © {year} Saskatoon Spring Festival Gala. All Rights Reserved.",
+      "contact": "联系我们：{email}"
     },
     "programs": {
       "title": "节目单",

@@ -83,7 +83,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ProgramCard from './components/ProgramCard.vue'
-import { getPrograms, getSettings, getAssetUrl } from '@/directus'
+import { getPrograms, getSettings, getAssetUrl } from '@/cms'
 
 export default {
   name: 'ChunwanPrograms',
