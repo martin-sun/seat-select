@@ -52,7 +52,7 @@ def get_payment_confirmation_html(customer_name, order_id, amount, seats):
     """
     return html
 
-def get_payment_instruction_html(customer_name, order_id, amount, seats):
+def get_payment_instruction_html(customer_name, order_id, amount, seats, customer_phone):
     """
     生成支付指令邮件的 HTML 内容 (中英双语)
     """
@@ -98,8 +98,8 @@ def get_payment_instruction_html(customer_name, order_id, amount, seats):
                     </div>
                     <div class="step">
                         <strong>2. Message/Memo / 备注信息 (IMPORTANT/非常重要):</strong><br/>
-                        Please include your Order ID: <span class="highlight">{order_id}</span><br/>
-                        请务必在备注中填写订单号：<span class="highlight">{order_id}</span>
+                        Please include your Phone Number: <span class="highlight">{customer_phone}</span><br/>
+                        请务必在备注中填写您的手机号：<span class="highlight">{customer_phone}</span>
                     </div>
                     <div class="step">
                         <strong>3. Verification / 自动核销:</strong><br/>

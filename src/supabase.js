@@ -337,6 +337,18 @@ export async function batchUpdateSeatStatus(seatIds, status) {
   return data
 }
 
+// Batch update seat zone
+export async function batchUpdateSeatZone(seatIds, zone) {
+  const { data, error } = await supabase
+    .from('seats')
+    .update({ zone, updated_at: new Date().toISOString() })
+    .in('id', seatIds)
+    .select()
+
+  if (error) throw error
+  return data
+}
+
 // ============================================
 // Admin Content Management
 // ============================================

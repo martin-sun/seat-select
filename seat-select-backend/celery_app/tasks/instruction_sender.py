@@ -54,7 +54,8 @@ def send_payment_instructions():
                 customer_name=res.get('customer_name', 'Valued Customer'),
                 order_id=res.get('order_id', res_id),
                 amount=res['total_amount'],
-                seats=seats_list
+                seats=seats_list,
+                customer_phone=res.get('customer_phone', 'N/A')
             )
 
             # 发送邮件

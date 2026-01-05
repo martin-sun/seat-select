@@ -99,6 +99,25 @@
             清除选择
           </button>
         </div>
+
+        <div class="divider"></div>
+
+        <div class="zone-action">
+          <label>更改区域：</label>
+          <select v-model="selectedZoneId" :disabled="selectedSeats.length === 0">
+            <option value="">请选择区域</option>
+            <option v-for="zone in availableZones" :key="zone.id" :value="zone.id">
+              {{ zone.name }}
+            </option>
+          </select>
+          <button 
+            class="zone-btn"
+            :disabled="selectedSeats.length === 0 || !selectedZoneId"
+            @click="batchSetZone"
+          >
+            确认更改
+          </button>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -174,15 +193,30 @@
           <span>禁用</span>
         </div>
       </div>
+
+      <!-- Custom Confirmation Modal -->
+      <ConfirmModal
+        :show="confirmModal.show"
+        :title="confirmModal.title"
+        :message="confirmModal.message"
+        :type="confirmModal.type"
+        @confirm="handleModalConfirm"
+        @cancel="closeModal"
+      />
     </template>
   </div>
 </template>
 
 <script>
-import { getAdminEvents, getAdminSeats, batchUpdateSeatStatus } from '@/supabase'
+import { getAdminEvents, getAdminSeats, batchUpdateSeatStatus, batchUpdateSeatZone } from '@/supabase'
+import { toast } from '@/utils/toast'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 export default {
   name: 'SeatsManagement',
+  components: {
+    ConfirmModal
+  },
   data() {
     return {
       events: [],
@@ -198,7 +232,15 @@ export default {
         { value: 'reserved', label: '已预订' },
         { value: 'sold', label: '已售出' },
         { value: 'unavailable', label: '禁用' }
-      ]
+      ],
+      selectedZoneId: '',
+      confirmModal: {
+        show: false,
+        title: '',
+        message: '',
+        type: 'primary',
+        action: null
+      }
     }
   },
   computed: {
@@ -211,6 +253,17 @@ export default {
         if (this.filterStatus && seat.status !== this.filterStatus) return false
         return true
       })
+    },
+    availableZones() {
+      const event = this.events.find(e => e.id === this.selectedEventId)
+      if (!event || !event.zone_config) {
+        // Fallback to zones from seats if no config
+        return [...new Set(this.seats.map(s => s.zone))].map(id => ({ id, name: id }))
+      }
+      return event.zone_config.map(c => ({
+        id: c.zone,
+        name: c.name || c.zone
+      }))
     }
   },
   mounted() {
@@ -228,23 +281,27 @@ export default {
         console.error('Failed to load events:', err)
       }
     },
-    async loadSeats() {
+    async loadSeats(silent = false) {
       if (!this.selectedEventId) {
         this.seats = []
         this.stats = {}
         return
       }
 
-      this.loading = true
-      this.selectedSeats = []
+      if (!silent) this.loading = true
+      
       try {
         const result = await getAdminSeats(this.selectedEventId)
         this.seats = result.seats
         this.stats = result.stats
+        
+        // If it was silent, we should probably clear selection? 
+        // Actually keep it if possible, but for simplicity let's clear it
+        // this.selectedSeats = [] 
       } catch (err) {
         console.error('Failed to load seats:', err)
       } finally {
-        this.loading = false
+        if (!silent) this.loading = false
       }
     },
     formatDate(dateStr) {
@@ -308,17 +365,62 @@ export default {
       if (this.selectedSeats.length === 0) return
       
       const statusText = this.getStatusText(status)
-      if (!confirm(`确定要将选中的 ${this.selectedSeats.length} 个座位设为"${statusText}"吗？`)) {
-        return
+      this.openModal({
+        title: '操作确认',
+        message: `确定要将选中的 ${this.selectedSeats.length} 个座位设为"${statusText}"吗？`,
+        action: async () => {
+          try {
+            const count = this.selectedSeats.length
+            await batchUpdateSeatStatus(this.selectedSeats, status)
+            await this.loadSeats(true) // Silent refresh
+            this.selectedSeats = [] // Clear after success
+            toast.success(`已成功更新 ${count} 个座位状态`)
+          } catch (err) {
+            console.error('Failed to update seats:', err)
+            toast.error('操作失败，请重试')
+          }
+        }
+      })
+    },
+    async batchSetZone() {
+      if (this.selectedSeats.length === 0 || !this.selectedZoneId) return
+      
+      const zoneName = this.availableZones.find(z => z.id === this.selectedZoneId)?.name || this.selectedZoneId
+      this.openModal({
+        title: '更改区域确认',
+        message: `确定要将选中的 ${this.selectedSeats.length} 个座位更改为区域 "${zoneName}" 吗？`,
+        action: async () => {
+          try {
+            const count = this.selectedSeats.length
+            await batchUpdateSeatZone(this.selectedSeats, this.selectedZoneId)
+            await this.loadSeats(true) // Silent refresh
+            this.selectedSeats = [] // Clear after success
+            this.selectedZoneId = ''
+            toast.success(`已成功更改 ${count} 个座位的区域`)
+          } catch (err) {
+            console.error('Failed to update seat zones:', err)
+            toast.error('操作失败，请重试: ' + err.message)
+          }
+        }
+      })
+    },
+    openModal({ title, message, action, type = 'primary' }) {
+      this.confirmModal = {
+        show: true,
+        title,
+        message,
+        action,
+        type
       }
-
-      try {
-        await batchUpdateSeatStatus(this.selectedSeats, status)
-        await this.loadSeats()
-        alert(`已成功更新 ${this.selectedSeats.length} 个座位状态`)
-      } catch (err) {
-        console.error('Failed to update seats:', err)
-        alert('操作失败，请重试')
+    },
+    closeModal() {
+      this.confirmModal.show = false
+    },
+    async handleModalConfirm() {
+      const action = this.confirmModal.action
+      this.closeModal()
+      if (action) {
+        await action()
       }
     }
   }
@@ -552,6 +654,54 @@ export default {
 }
 
 .clear-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 8px;
+}
+
+.zone-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zone-action label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.zone-action select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zone-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(33, 150, 243, 0.4);
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.zone-btn:hover:not(:disabled) {
+  background: rgba(33, 150, 243, 0.25);
+}
+
+.zone-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
