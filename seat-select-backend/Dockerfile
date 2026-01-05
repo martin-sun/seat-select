@@ -1,33 +1,32 @@
-# Use a slim Python image
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
-
-# Set the working directory
-WORKDIR /app
-
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
-
-# Copy only the files needed for installing dependencies
-COPY pyproject.toml uv.lock ./
-
-# Install dependencies
-RUN uv sync --frozen --no-install-project --no-dev
-
-# Final stage
+# 使用基础 Python 镜像
 FROM python:3.12-slim-bookworm
 
+# 设置工作目录
 WORKDIR /app
 
-# Copy the environment from the builder
-COPY --from=builder /app/.venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
+# 安装 uv 和必要的系统依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && apt-get purge -y --auto-remove curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the source code
+# 将 uv 添加到路径
+ENV PATH="/root/.local/bin:${PATH}"
+
+# 复制依赖定义文件
+COPY pyproject.toml uv.lock ./
+
+# [关键修复] 直接将依赖安装到系统 Python 环境中，避免 .venv 路径问题
+RUN uv pip install --system --no-cache -r pyproject.toml
+
+# 复制项目代码
 COPY . .
 
-# Environment variables
+# 设置 Python 环境变量
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Default command (will be overridden in docker-compose)
+# 默认命令（可在 docker-compose 中覆盖）
 CMD ["celery", "-A", "celery_app.celery", "worker", "--loglevel=info"]

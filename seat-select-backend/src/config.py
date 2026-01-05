@@ -16,3 +16,9 @@ class Settings(BaseSettings):
     RESERVATION_EXPIRY_HOURS: int = int(os.getenv("RESERVATION_EXPIRY_HOURS", "24"))
 
 settings = Settings()
+
+# Debug: Check if Supabase key is loaded
+if not settings.SUPABASE_KEY:
+    print("WARNING: SUPABASE_KEY is empty!")
+else:
+    print(f"DEBUG: SUPABASE_KEY loaded (length: {len(settings.SUPABASE_KEY)})")

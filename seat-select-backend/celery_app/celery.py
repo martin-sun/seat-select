@@ -21,9 +21,9 @@ app.conf.update(
 )
 
 app.conf.beat_schedule = {
-    "check-payments-every-2-minutes": {
+    "check-payments-every-minute": {
         "task": "celery_app.tasks.payment_check.check_payments",
-        "schedule": 10.0,  # every 10 seconds for testing
+        "schedule": 60.0,  # every 1 minute
     },
     "cleanup-expired-reservations-every-10-minutes": {
         "task": "celery_app.tasks.reservation_cleanup.cleanup_reservations",
