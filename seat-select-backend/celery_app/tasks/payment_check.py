@@ -88,6 +88,39 @@ def check_payments():
                 
                 # 5. Move email to Processed folder and remove from INBOX
                 gmail.mark_as_processed(msg_id, label_name='Processed')
+                print(f"✅ Payment matched and processed for Reservation {res_id}")
+
+                # 6. Send Confirmation Email to Customer
+                try:
+                    from src.utils.gmail.templates import get_payment_confirmation_html
+                    
+                    if customer_email:
+                        subject = f"Payment Confirmed: Order {res['order_id']} - 2026 Chunwan"
+                        
+                        # Get seat names for the email (assuming seat_ids are in reservation)
+                        seat_ids = res.get('seat_ids', [])
+                        if seat_ids:
+                            seats_info = supabase.table("seats").select("row, col").in_("id", seat_ids).execute()
+                            seats_list = [f"{s['row']}{s['col']}" for s in seats_info.data]
+                        else:
+                            seats_list = []
+                        
+                        html_body = get_payment_confirmation_html(
+                            customer_name=res.get('customer_name', 'Valued Customer'),
+                            order_id=res['order_id'],
+                            amount=res['total_amount'],
+                            seats=seats_list
+                        )
+                        
+                        gmail.send_email(
+                            to=customer_email,
+                            subject=subject,
+                            body=html_body,
+                            body_type='html'
+                        )
+                        print(f"📧 Confirmation email sent to {customer_email}")
+                except Exception as e:
+                    print(f"⚠️ Failed to send confirmation email for {res_id}: {e}")
                 
                 matched_count += 1
                 # Once matched, we don't need to check other emails for THIS reservation

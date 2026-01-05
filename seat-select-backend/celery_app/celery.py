@@ -11,7 +11,11 @@ app = Celery(
     "seat_select_tasks",
     broker=redis_url,
     backend=redis_url,
-    include=["celery_app.tasks.payment_check", "celery_app.tasks.reservation_cleanup"]
+    include=[
+        "celery_app.tasks.payment_check", 
+        "celery_app.tasks.reservation_cleanup",
+        "celery_app.tasks.instruction_sender"
+    ]
 )
 
 app.conf.update(
@@ -28,6 +32,10 @@ app.conf.beat_schedule = {
     "cleanup-expired-reservations-every-10-minutes": {
         "task": "celery_app.tasks.reservation_cleanup.cleanup_reservations",
         "schedule": crontab(minute="*/10"),
+    },
+    "send-instructions-every-minute": {
+        "task": "celery_app.tasks.instruction_sender.send_payment_instructions",
+        "schedule": 60.0,  # every 1 minute
     },
 }
 

@@ -75,6 +75,18 @@
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.pickedUp }}</span>
+          <span class="stat-label">已取票</span>
+        </div>
+      </div>
+      <div class="stat-card revenue">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -157,6 +169,14 @@
                   :disabled="actionLoading === order.id"
                 >
                   取消
+                </button>
+                <button 
+                  v-if="order.status === 'paid'"
+                  class="action-btn pickup"
+                  @click="pickUpTicket(order)"
+                  :disabled="actionLoading === order.id"
+                >
+                  取票
                 </button>
                 <button 
                   class="action-btn view"
@@ -288,6 +308,7 @@ export default {
         paid: 0,
         expired: 0,
         cancelled: 0,
+        pickedUp: 0,
         totalRevenue: 0
       }
     }
@@ -301,6 +322,7 @@ export default {
         { label: '全部', value: null },
         { label: '待支付', value: 'pending', count: this.stats.pending },
         { label: '已支付', value: 'paid', count: this.stats.paid },
+        { label: '已取票', value: 'picked_up', count: this.stats.pickedUp },
         { label: '已过期', value: 'expired', count: this.stats.expired },
         { label: '已取消', value: 'cancelled', count: this.stats.cancelled }
       ]
@@ -331,21 +353,27 @@ export default {
     async loadStats() {
       try {
         // Load stats for each status
-        const [pending, paid, expired, cancelled] = await Promise.all([
+        const [pending, paid, pickedUp, expired, cancelled] = await Promise.all([
           getAllReservations({ status: 'pending', pageSize: 1 }),
           getAllReservations({ status: 'paid', pageSize: 1 }),
+          getAllReservations({ status: 'picked_up', pageSize: 1 }),
           getAllReservations({ status: 'expired', pageSize: 1 }),
           getAllReservations({ status: 'cancelled', pageSize: 1 })
         ])
         
         this.stats.pending = pending.count || 0
         this.stats.paid = paid.count || 0
+        this.stats.pickedUp = pickedUp.count || 0
         this.stats.expired = expired.count || 0
         this.stats.cancelled = cancelled.count || 0
 
-        // Calculate total revenue from paid orders
-        const paidOrders = await getAllReservations({ status: 'paid', pageSize: 1000 })
-        this.stats.totalRevenue = (paidOrders.data || []).reduce((sum, o) => sum + parseFloat(o.total_amount), 0).toFixed(2)
+        // Calculate total revenue from paid or picked_up orders
+        const [paidOrders, pickedUpOrders] = await Promise.all([
+          getAllReservations({ status: 'paid', pageSize: 1000 }),
+          getAllReservations({ status: 'picked_up', pageSize: 1000 })
+        ])
+        const allPaid = [...(paidOrders.data || []), ...(pickedUpOrders.data || [])]
+        this.stats.totalRevenue = allPaid.reduce((sum, o) => sum + parseFloat(o.total_amount), 0).toFixed(2)
       } catch (err) {
         console.error('Failed to load stats:', err)
       }
@@ -396,6 +424,21 @@ export default {
         this.actionLoading = null
       }
     },
+    async pickUpTicket(order) {
+      if (!confirm(`确认将订单 #${order.id.substring(0, 8).toUpperCase()} 标记为已取票？`)) return
+      
+      this.actionLoading = order.id
+      try {
+        await updateReservationStatus(order.id, 'picked_up')
+        await this.loadOrders()
+        await this.loadStats()
+      } catch (err) {
+        console.error('Failed to mark as picked up:', err)
+        alert('操作失败，请重试')
+      } finally {
+        this.actionLoading = null
+      }
+    },
     viewOrder(order) {
       this.selectedOrder = order
     },
@@ -406,6 +449,7 @@ export default {
       const map = {
         pending: '待支付',
         paid: '已支付',
+        picked_up: '已取票',
         expired: '已过期',
         cancelled: '已取消'
       }
@@ -711,6 +755,11 @@ export default {
   color: #4caf50;
 }
 
+.status-badge.picked_up {
+  background: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
+}
+
 .status-badge.expired {
   background: rgba(244, 67, 54, 0.15);
   color: #f44336;
@@ -778,6 +827,15 @@ export default {
 
 .action-btn.view:hover {
   background: rgba(33, 150, 243, 0.25);
+}
+
+.action-btn.pickup {
+  background: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
+}
+
+.action-btn.pickup:hover:not(:disabled) {
+  background: rgba(156, 39, 176, 0.25);
 }
 
 .empty-state {
