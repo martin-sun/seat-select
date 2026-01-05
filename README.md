@@ -63,7 +63,7 @@ wrangler login
 
 ```bash
 npm run build
-wrangler pages deploy dist --project-name=seat-select
+wrangler pages deploy dist --project-name=saskatoonsfc
 ```
 
 ### 更新部署（每次代码修改后）
@@ -71,7 +71,7 @@ wrangler pages deploy dist --project-name=seat-select
 只需运行以下命令：
 
 ```bash
-npm run build && wrangler pages deploy dist --project-name=seat-select
+npm run build && wrangler pages deploy dist --project-name=saskatoonsfc
 ```
 
 或者分步执行：
@@ -81,7 +81,7 @@ npm run build && wrangler pages deploy dist --project-name=seat-select
 npm run build
 
 # 2. 部署
-wrangler pages deploy dist --project-name=seat-select
+wrangler pages deploy dist --project-name=saskatoonsfc
 ```
 
 ### 自定义域名配置

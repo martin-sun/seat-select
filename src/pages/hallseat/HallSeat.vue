@@ -16,9 +16,10 @@
     ></header-view>
     <!--头部 结束-->
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
-    :propYMax="yMax - yMin" :propSeatScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
-    :propSeatAreaWidthPx="seatAreaWidthPx"
-    :propSeatBoxHeight="seatBoxHeight" :propMiddleLine="middleLine" :propHorizontalLine="horizontalLine" ref="seatArea">
+    :propYMax="yMax - yMin" :propInitialScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
+    :propSeatAreaWidthPx="seatAreaWidthPx" :propSeatBoxWidth="seatBoxWidth"
+    :propSeatBoxHeight="seatBoxHeight" :propMiddleLine="middleLine" :propHorizontalLine="horizontalLine" ref="seatArea"
+    @seatClick="handleSeatClick" @ready="handleSeatAreaReady">
       <!--以下为缩略座位图具名插槽 开始-->
       <template #thumbnail-seat-solt>
             <div v-for="seatItem in seatList" :key="'thumbnail'+seatItem.id" class="thumbnailSeatClass" :style="{height:thumbnailHeight +'px',
@@ -29,11 +30,11 @@
       <!--以上为缩略座位图具名插槽 结束-->
       <!--以下为座位图具名插槽 开始-->
       <template #seat-area-solt>
-        <div class="seatBox" :style="{transform: 'scale('+seatScale+')',height:(seatBoxHeight + stageHeight) +'px',
-        width:seatBoxWidth +'px',marginLeft:seatBoxCenterMargin+'px'}">
+        <div class="seatBox" :style="{height:(seatBoxHeight + stageHeight) +'px',
+        width:seatBoxWidth +'px'}">
          <!--中轴线-->
           <div v-show="seatList.length>0" class="middle-line" :style="{height:(seatBoxHeight + stageHeight) +'px',left: middleLine +'px'}"></div>
-            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
+            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :data-seat-index="index" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
             top:(yMax - seatItem.gRow) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon" :title="getSeatTooltip(seatItem)"/>
@@ -103,7 +104,7 @@ export default {
       stageHeight: 150, // Stage 区域高度
       selectedSeatList: [], // 已选择座位
       maxSelect: 4, // 最大选择座位数量 改动可改变最大选择座位数
-      load: false, // 加载dom的控制
+      load: true, // 加载dom的控制 (初始开启)
       showBookingModal: false, // 预订表单弹窗显示状态
       bookingTotalPrice: 0 // 预订总价
     }
@@ -298,6 +299,12 @@ export default {
         }
       }
     },
+    handleSeatClick: function (index) {
+      const parsedIndex = Number(index)
+      if (Number.isNaN(parsedIndex)) return
+      if (parsedIndex < 0 || parsedIndex >= this.seatList.length) return
+      this.clickSeat(parsedIndex)
+    },
     // 处理已选的座位（取消选择）
     processSelected: function (index) {
       // 改变座位图标为初始图标
@@ -344,6 +351,14 @@ export default {
         this.$refs.seatArea.resetView()
       }
     },
+    // 座位区域准备就绪
+    handleSeatAreaReady: function () {
+      // 当 SeatArea 完成初始缩放和对齐后，关闭加载层
+      setTimeout(() => {
+        this.load = false
+      }, 500) // 额外留一点缓冲时间确保渲染完成
+    },
+    // 加载动画
     loading: function (value) {
       this.load = value
     },
