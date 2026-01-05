@@ -1,0 +1,46 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: seat-select-redis
+    ports:
+      - "6380:6379" # Map to 6380 to avoid conflict with local redis if running
+    volumes:
+      - redis_data:/data
+
+  worker:
+    build:
+      context: ./seat-select-backend
+      dockerfile: Dockerfile
+    container_name: seat-select-worker
+    depends_on:
+      - redis
+    env_file:
+      - ./seat-select-backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/10
+    volumes:
+      - ./seat-select-backend/src:/app/src
+      - ./seat-select-backend/celery_app:/app/celery_app
+      - ./seat-select-backend/src/utils/gmail/creds:/app/src/utils/gmail/creds
+    restart: always
+
+  celery-beat:
+    build:
+      context: ./seat-select-backend
+      dockerfile: Dockerfile
+    container_name: seat-select-beat
+    command: celery -A celery_app.celery beat --loglevel=info
+    depends_on:
+      - redis
+    env_file:
+      - ./seat-select-backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/10
+    volumes:
+      - ./seat-select-backend/src:/app/src
+      - ./seat-select-backend/celery_app:/app/celery_app
+      - ./seat-select-backend/src/utils/gmail/creds:/app/src/utils/gmail/creds
+    restart: always
+
+volumes:
+  redis_data:
