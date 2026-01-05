@@ -7,15 +7,12 @@
     <div class="activity-area">
       <!-- 缩略图已移除 -->
       <div class="box" ref="pinchAndPan"
-      @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
-      @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"
       :style="{
         transform: 'scale('+scale+')',
-        transformOrigin: transformOrigin,
+        transformOrigin: '0 0',
         top: top + 'px',
         left: left + 'px',
-        cursor: 'grab',
-        transition: isTransitionEnabled ? 'transform 0.2s ease-out' : 'none'
+        cursor: 'grab'
       }"
       :class="{ 'cursor-grabbing': touchStatus }">
         <slot name="seat-area-solt">
@@ -35,6 +32,8 @@
     </div>
 </template>
 <script>
+import panzoom from 'panzoom'
+
 export default {
   name: 'SeatArea',
   props: {
@@ -51,13 +50,12 @@ export default {
   },
   data: function () {
     return {
+      panzoomInstance: null,
       scale: 1, // 区域放大尺寸
       top: 0, // 单位px
       left: 0, // 单位px
       topthumbnail: 0, // 单位px
       leftthumbnail: 0, // 单位px
-      startX: 0, // ---移动的起点X轴 单位px
-      startY: 0, // ---移动的起点Y轴 单位px
       seatAreaWidthPx: this.propSeatAreaWidthPx, // 座位区域宽 px
       thumbnailWidthPx: this.propThumbnailAreaWidth, // 缩略图宽 px
       thumbnailHeightPx: this.propThumbnailAreaHeight, // 缩略图高 px
@@ -79,312 +77,134 @@ export default {
       // 触摸状态
       touchStatus: false,
       // 座位左边栏的数组
-      seatToolArr: this.propSeatToolArr,
-      // 原生触摸事件相关
-      touchStartX: 0,
-      touchStartY: 0,
-      initialPinchDistance: null,
-      // 手势缩放优化相关
-      lastPinchTime: 0,           // 上次缩放触发时间（节流用）
-      pinchThrottleMs: 80,        // 节流间隔 80ms
-      pinchDistanceThreshold: 25, // 触发阈值 25px（原 10px）
-      baseScale: 1,               // 手势开始时的缩放基准值
-      basePinchDistance: null,    // 手势开始时的双指距离基准
-      isTransitionEnabled: false  // CSS transition 开关
+      seatToolArr: this.propSeatToolArr
     }
   },
   methods: {
-    // 触摸事件处理 - 替代 vue-touch
-    handleTouchStart: function (ev) {
-      if (ev.touches.length === 1) {
-        // 单指触摸 - panstart
-        this.panstart(ev)
-      } else if (ev.touches.length === 2) {
-        // 双指触摸 - 记录初始距离和基准值用于缩放
-        const distance = this.getPinchDistance(ev.touches)
-        this.initialPinchDistance = distance
-        this.basePinchDistance = distance
-        this.baseScale = this.scale
-        // 禁用 transition 以获得实时响应
-        this.isTransitionEnabled = false
-      }
-    },
-    handleTouchMove: function (ev) {
-      if (ev.touches.length === 1) {
-        // 单指移动 - panmove
-        const touch = ev.touches[0]
-        this.panmove({
-          deltaX: touch.clientX - this.touchStartX,
-          deltaY: touch.clientY - this.touchStartY
+    initPanzoom () {
+      if (this.$refs.pinchAndPan) {
+        this.panzoomInstance = panzoom(this.$refs.pinchAndPan, {
+          maxZoom: 5, // 增加最大缩放倍数，确保即使初始缩放很小也能放大看清
+          minZoom: 0.1, // 允许更小的缩放
+          bounds: false, // 禁用边界限制，解决在嵌套缩放下的滑动锁死 Bug
+          smoothScroll: true,
+          onDoubleClick: function () {
+            return false // 禁用双击缩放，避免干扰选座
+          }
         })
-      } else if (ev.touches.length === 2) {
-        // 双指移动 - pinch（优化版：节流 + 比例计算）
-        const currentDistance = this.getPinchDistance(ev.touches)
-        if (this.basePinchDistance && this.initialPinchDistance) {
-          // 节流检查
-          const now = Date.now()
-          if (now - this.lastPinchTime < this.pinchThrottleMs) {
-            return
-          }
-          // 阈值检查 - 距离变化需超过阈值才触发
-          const deltaFromLast = Math.abs(currentDistance - this.initialPinchDistance)
-          if (deltaFromLast < this.pinchDistanceThreshold) {
-            return
-          }
-          // 使用比例计算缩放
-          this.handlePinchScale(currentDistance)
-          // 更新参考点和时间
-          this.initialPinchDistance = currentDistance
-          this.lastPinchTime = now
+
+        // 初始居中处理 - 如果座位图高度小于可用区域
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+        const seatAreaHeightPx = windowHeight - 120
+        const actualHeight = this.seatBoxHeight * this.seatScale
+        if (actualHeight < seatAreaHeightPx) {
+          const initialTop = (seatAreaHeightPx - actualHeight) / 2
+          this.panzoomInstance.moveTo(0, initialTop)
         }
+
+        this.panzoomInstance.on('transform', () => {
+          const transform = this.panzoomInstance.getTransform()
+          this.scale = transform.scale
+          this.left = transform.x
+          this.top = transform.y
+
+          // 同步缩略图位置
+          this.updateThumbnail()
+        })
+
+        this.panzoomInstance.on('panstart', () => {
+          this.touchStatus = true
+          this.thumbnailShow = true
+          clearTimeout(this.timer)
+        })
+
+        this.panzoomInstance.on('panend', () => {
+          this.touchStatus = false
+          this.timer = setTimeout(() => {
+            this.thumbnailShow = false
+          }, 2000)
+        })
       }
     },
-    handleTouchEnd: function (ev) {
-      // 手势结束，启用 transition 进行平滑收尾
-      this.isTransitionEnabled = true
-      // 延迟禁用，避免影响下次手势
-      setTimeout(() => {
-        this.isTransitionEnabled = false
-      }, 200)
-      this.panend(ev)
-      this.initialPinchDistance = null
-      this.basePinchDistance = null
-    },
-    // 鼠标事件处理
-    handleMouseDown: function (ev) {
-      ev.preventDefault()
-      this.touchStatus = true
-      this.thumbnailShow = true
-      this.startY = this.top
-      this.startX = this.left
-      this.touchStartX = ev.clientX
-      this.touchStartY = ev.clientY
-      clearTimeout(this.timer)
-    },
-    handleMouseMove: function (ev) {
-      if (!this.touchStatus) return
-      ev.preventDefault()
-      this.panmove({
-        deltaX: ev.clientX - this.touchStartX,
-        deltaY: ev.clientY - this.touchStartY
-      })
-    },
-    handleMouseUp: function () {
-      if (!this.touchStatus) return
-      this.panend()
-    },
-    getPinchDistance: function (touches) {
-      const dx = touches[0].clientX - touches[1].clientX
-      const dy = touches[0].clientY - touches[1].clientY
-      return Math.sqrt(dx * dx + dy * dy)
-    },
-    // 第一次点击座位改变放大比例
-    changeScale: function () {
-      if (this.maxscale === 1) {
-        return
-      }
-      this.scale = this.maxscale
-    },
-    // 第一次点击座位改变偏移
-    changePosition: function (top, left) {
-      if (this.maxscale === 1) {
-        return
-      }
-      let _this = this
-      // 0.67是上方 屏幕方向dom 部分偏移的部分 也是 .box margin-top 的50px
-      _this.top = top * (this.scale - 1) + 0.67
-      _this.left = left * (this.scale - 1)
+    updateThumbnail () {
+      // .seatBox的高和缩略图的高 换算比例
+      const heightProportion = (this.seatBoxHeight * this.seatScale / this.thumbnailHeightPx)
+      // .seatBox的宽和缩略图的宽 换算比例
+      const widthProportion = (this.seatAreaWidthPx / this.thumbnailWidthPx)
+      
+      this.topthumbnail = -this.top / heightProportion * this.scalereciprocal
+      this.leftthumbnail = -this.left / widthProportion * this.scalereciprocal
     },
     // 当缩放 放大的时候触发（按钮调用）
     pinchout: function () {
-      // 启用 transition 实现平滑过渡
-      this.isTransitionEnabled = true
-      if (this.scale >= 0 && this.scale < this.maxscale) {
-        // 减小增量从 0.15 到 0.1，更精细控制
-        this.scale = Math.min(this.scale + 0.1, this.maxscale)
+      if (this.panzoomInstance) {
+        const cx = this.seatAreaWidthPx / 2
+        const cy = (window.innerHeight - 100) / 2
+        this.panzoomInstance.smoothZoom(cx, cy, 1.2)
       }
-      // 延迟禁用 transition
-      setTimeout(() => { this.isTransitionEnabled = false }, 200)
     },
     // 当缩放 缩小的时候触发（按钮调用）
     pinchin: function () {
-      // 启用 transition 实现平滑过渡
-      this.isTransitionEnabled = true
-      const minScale = 0.3 // 最小缩放比例，允许缩小查看全景
-      if (this.scale > minScale) {
-        // 减小增量从 0.15 到 0.1，更精细控制
-        this.scale = Math.max(this.scale - 0.1, minScale)
-      }
-      // 延迟禁用 transition
-      setTimeout(() => { this.isTransitionEnabled = false }, 200)
-    },
-    // 手势缩放处理 - 基于比例计算（更平滑）
-    handlePinchScale: function (currentDistance) {
-      const minScale = 0.3
-      const maxScale = this.maxscale
-      // 计算相对于基准的缩放比例
-      const scaleRatio = currentDistance / this.basePinchDistance
-      // 衰减因子使缩放更平滑（0.6 可调整灵敏度）
-      const dampingFactor = 0.6
-      const targetScale = this.baseScale * (1 + (scaleRatio - 1) * dampingFactor)
-      // 限制在有效范围内
-      this.scale = Math.max(minScale, Math.min(maxScale, targetScale))
-    },
-    // 当手指拖动的过程中
-    panmove: function (ev) {
-      let _this = this
-      if (_this.touchStatus) {
-        // 本次座位图移动横纵坐标px的值
-        _this.top = (ev.deltaY + _this.startY)
-        _this.left = (ev.deltaX + _this.startX)
-        // .seatBox的高和缩略图的高 换算比例
-        let heightProportion = (_this.seatBoxHeight * _this.seatScale / _this.thumbnailHeightPx)
-        // .seatBox的宽和缩略图的宽 换算比例
-        let widthProportion = (_this.seatAreaWidthPx / _this.thumbnailWidthPx)
-        // 本次缩略图移动横纵坐标px的值
-        _this.topthumbnail = -_this.top / heightProportion * _this.scalereciprocal
-        _this.leftthumbnail = -_this.left / widthProportion * _this.scalereciprocal
+      if (this.panzoomInstance) {
+        const cx = this.seatAreaWidthPx / 2
+        const cy = (window.innerHeight - 100) / 2
+        this.panzoomInstance.smoothZoom(cx, cy, 0.8)
       }
     },
-    // 当手指拖动开始的时候
-    panstart: function (ev) {
-      let _this = this
-      // 优化触摸性能
-      _this.touchStatus = true
-      // 展示缩略图
-      _this.thumbnailShow = true
-      // 获取上次记录的xy坐标作为起点
-      _this.startY = _this.top
-      _this.startX = _this.left
-      // 记录触摸起始位置（用于原生触摸事件）
-      if (ev.touches && ev.touches.length > 0) {
-        _this.touchStartX = ev.touches[0].clientX
-        _this.touchStartY = ev.touches[0].clientY
+    // 重置视图并居中
+    resetView: function () {
+      if (this.panzoomInstance) {
+        // 计算初始居中位置
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+        const seatAreaHeightPx = windowHeight - 120
+        const actualHeight = this.seatBoxHeight * this.seatScale
+        let initialTop = 0
+        if (actualHeight < seatAreaHeightPx) {
+          initialTop = (seatAreaHeightPx - actualHeight) / 2
+        }
+
+        // 平滑移动到初始位置并将缩放比例重置为 1
+        this.panzoomInstance.smoothZoom(0, 0, 1 / this.scale) // 平滑缩放回 1
+        this.panzoomInstance.moveTo(0, initialTop)
       }
-      clearTimeout(_this.timer)
-    },
-    // 当手指拖动结束的时候
-    panend: function () {
-      let _this = this
-      // 优化触摸性能
-      _this.touchStatus = false
-      // 边界检查 - 允许在任何缩放比例下拖动
-      const maxLeft = _this.scale === 1 ? _this.boundaryLeft : _this.crossleft
-      const maxTop = _this.scale === 1 ? _this.boundaryTop : _this.crosstop
-      // 如果宽度移动超过了边界值 把移动置为边界值
-      if (_this.left > maxLeft) {
-        _this.left = maxLeft
-      } else if (_this.left < -maxLeft) {
-        _this.left = -maxLeft
-      }
-      // 如果高度移动超过了边界值 把移动置为边界值
-      if (_this.top > maxTop) {
-        _this.top = maxTop
-      } else if (_this.top < -maxTop) {
-        _this.top = -maxTop
-      }
-      // 缩略图移动超过了边界值 把移动置为边界值
-      if (_this.leftthumbnail > _this.thumbnailWidthPxProportion) {
-        _this.leftthumbnail = _this.thumbnailWidthPxProportion
-      } else if (_this.leftthumbnail < -_this.thumbnailWidthPxProportion) {
-        _this.leftthumbnail = -_this.thumbnailWidthPxProportion
-      }
-      if (_this.topthumbnail > _this.thumbnailHeightPxProportion) {
-        _this.topthumbnail = _this.thumbnailHeightPxProportion
-      } else if (_this.topthumbnail < -_this.thumbnailHeightPxProportion) {
-        _this.topthumbnail = -_this.thumbnailHeightPxProportion
-      }
-      _this.timer = setTimeout(() => {
-        _this.thumbnailShow = false
-      }, 2000)
     }
   },
   computed: {
-    // 最大放大比例
-    maxscale: function () {
-      return 1 + 1 / this.seatScale
-    },
-    // scale === 1 时的左右边界值（允许拖动查看超出屏幕的座位）
-    boundaryLeft: function () {
-      // 座位区域实际宽度超出屏幕的部分 - 大幅增加允许拖动的范围
-      const seatBoxActualWidth = this.seatBoxHeight * this.seatScale * 2.5 // 增加估算宽度
-      const overflow = Math.max(0, seatBoxActualWidth - this.seatAreaWidthPx)
-      return overflow / 2 + 400 // 大幅增加拖动空间
-    },
-    // scale === 1 时的上下边界值
-    boundaryTop: function () {
-      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-      const seatAreaHeightPx = windowHeight - 100 // 与 CSS 中的高度计算一致
-      const seatBoxActualHeight = this.seatBoxHeight * this.seatScale
-      const overflow = Math.max(0, seatBoxActualHeight - seatAreaHeightPx)
-      return overflow / 2 + 400 // 大幅增加拖动空间
-    },
-    // 左边触边吸附边界值px
-    crossleft: function () {
-      let _this = this
-      return (_this.scale - 1) * _this.seatAreaWidthPx * _this.scaleXCross
-    },
-    // 上边触边吸附边界值px
-    crosstop: function () {
-      let _this = this
-      // 获取窗口高度作为座位区域高度
-      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-      const seatAreaHeightPx = windowHeight - 100 // 减去其他区域的高度
-      return (_this.scale - 1) * seatAreaHeightPx * _this.scaleYCross
-    },
     // scale的倒数
     scalereciprocal: function () {
       return 1 / this.scale
     },
-    // 缩略图宽度触边吸附边界值
-    thumbnailWidthPxProportion: function () {
-      let _this = this
-      return (1 - _this.scalereciprocal) * _this.thumbnailWidthPx / 2
-    },
-    // 缩略图高度触边吸附边界值
-    thumbnailHeightPxProportion: function () {
-      let _this = this
-      return (1 - _this.scalereciprocal) * _this.thumbnailHeightPx / 2
-    },
     // 每个座位放大后的高度
     seatHeightWithScale: function () {
-      let _this = this
-      return _this.seatHeight * _this.scale
+      return this.seatHeight * this.scale
     },
     // seat-tool 内的字体大小
     seatToolFontSize: function () {
-      // 基础字体大小 12px，随缩放比例变化
       return 12 * this.scale
     },
     // seat-tool-item 的宽度
     seatToolWidthWithScale: function () {
-      let _this = this
-      return _this.seatToolWidth * _this.scale
+      return this.seatToolWidth * this.scale
     },
     // 座位侧边栏需要偏移的长度
     seatToolMargin: function () {
-      let _this = this
-      let height = (_this.seatHeightWithScale * _this.yMax) * _this.scaleYCross * (_this.seatScale - 1)
-      return _this.top + _this.seatHeightWithScale * _this.seatScale - _this.crosstop + height
+      const height = (this.seatHeightWithScale * this.yMax) * this.scaleYCross * (this.seatScale - 1)
+      return this.top + this.seatHeightWithScale * this.seatScale - this.crosstop + height
     },
-    // css样式控制.box缩放中心点
-    transformOrigin: function () {
-       return 'center ' + this.scaleYCross * 100 + '%'
+    // 上边触边吸附边界值px
+    crosstop: function () {
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+      const seatAreaHeightPx = windowHeight - 100
+      return (this.scale - 1) * seatAreaHeightPx * this.scaleYCross
     },
     // css样式控制.seat-tool缩放中心点
     transformOriginTool: function () {
       return '0 ' + this.scaleYCross * 100 + '%'
     },
-    // 缩放.box区域 x轴的中心点比例 用于缩放原点
-    scaleXCross: function () {
-      // .box的所有尺寸与内部.seatbox的换算比例都是seatScale
-      return (this.middleLine / this.seatAreaWidthPx) * this.seatScale
-    },
     // 缩放.box区域 y轴的中心点比例 用于缩放原点
     scaleYCross: function () {
-      // 获取窗口高度作为座位区域高度
       const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-      const seatAreaHeightPx = windowHeight - 100 // 减去其他区域的高度
+      const seatAreaHeightPx = windowHeight - 100
       return (this.horizontalLine / seatAreaHeightPx) * this.seatScale
     }
   },
@@ -415,8 +235,15 @@ export default {
     }
   },
   mounted: function () {
+    this.initPanzoom()
+  },
+  beforeUnmount () {
+    if (this.panzoomInstance) {
+      this.panzoomInstance.dispose()
+    }
   }
 }
+
 </script>
 
 <style scoped>
@@ -435,15 +262,11 @@ export default {
   }
 }
 
-/* Seat box container */
 .box {
   @apply absolute z-0 w-full left-0;
   margin-top: 8px;
-  /* 设置 width: 100% 和 left: 0 确保子元素 .seatBox 的 left: 50% 能正确居中 */
   /* 启用硬件加速，提升缩放性能 */
   will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 @media (min-width: 768px) {

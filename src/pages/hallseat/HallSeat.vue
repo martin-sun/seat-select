@@ -12,6 +12,7 @@
       @backHandleClick="back"
       @zoomIn="handleZoomIn"
       @zoomOut="handleZoomOut"
+      @resetView="handleResetView"
     ></header-view>
     <!--头部 结束-->
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
@@ -337,6 +338,12 @@ export default {
         this.$refs.seatArea.pinchin()
       }
     },
+    // 重置并居中显示座位图
+    handleResetView: function () {
+      if (this.$refs.seatArea) {
+        this.$refs.seatArea.resetView()
+      }
+    },
     loading: function (value) {
       this.load = value
     },
@@ -427,22 +434,19 @@ export default {
       return ((rowRange / 2) + 1) * this.positionDistin
     },
     // 根据影厅的大小缩放比例
-    // 设置最小缩放值，保持座位大小不变，超出部分通过拖动查看
+    // 自动缩放以适应屏幕同时也允许手动调整
     seatScale: function () {
-      const minScale = 1.0 // 最小缩放比例，保持原始大小不缩小
-
-      // 使用窗口高度计算缩放比例
+      // 座位区域可用高度：窗口高度减去头部和一些边距
       const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-      // 座位区域可用高度：窗口高度减去头部和底部确认按钮
-      const otherHeight = 100 // 预留其他区域的高度
+      const otherHeight = 120 // 增加预留高度以提供更好的边距
       const availableHeight = windowHeight - otherHeight
 
-      const seatScaleX = this.seatAreaWidthPx / this.seatBoxWidth
-      const seatScaleY = availableHeight / this.seatBoxHeight
-      const calculatedScale = seatScaleX < seatScaleY ? seatScaleX : seatScaleY
+      // 计算水平和垂直方向所需的缩放比例
+      const seatScaleX = (this.seatAreaWidthPx * 0.95) / this.seatBoxWidth // 0.95 用于留出左右边距
+      const seatScaleY = (availableHeight * 0.95) / this.seatBoxHeight // 0.95 用于留出上下边距
 
-      // 返回计算值和最小值中的较大者
-      return Math.max(calculatedScale, minScale)
+      // 取两者中较小的一个，确保整体都能在屏幕内
+      return Math.min(seatScaleX, seatScaleY)
     },
     // 让影厅居中展示的偏移值
     seatBoxCenterMargin: function () {

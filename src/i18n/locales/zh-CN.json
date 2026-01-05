@@ -80,7 +80,8 @@
     "myOrders": "查询订单",
     "reservationDetails": "预订详情",
     "zoomIn": "放大",
-    "zoomOut": "缩小"
+    "zoomOut": "缩小",
+    "resetView": "居中显示"
   },
   "seatArea": {
     "stage": "Stage",

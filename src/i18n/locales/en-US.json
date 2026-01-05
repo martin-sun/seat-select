@@ -80,7 +80,8 @@
     "myOrders": "My Orders",
     "reservationDetails": "Reservation Details",
     "zoomIn": "Zoom In",
-    "zoomOut": "Zoom Out"
+    "zoomOut": "Zoom Out",
+    "resetView": "Reset View"
   },
   "seatArea": {
     "stage": "Stage",
