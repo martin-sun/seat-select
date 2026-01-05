@@ -20,3 +20,11 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+# Backend specific ignores
+seat-select-backend/src/utils/gmail/creds/credentials.json
+seat-select-backend/src/utils/gmail/creds/token.json
+seat-select-backend/celerybeat-schedule.db
+seat-select-backend/__pycache__/
+seat-select-backend/**/*.pyc
+seat-select-backend/.venv/
