@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS seats (
   g_row INT NOT NULL,
   g_col INT NOT NULL,
   zone TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'sold')),
+  status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'sold', 'unavailable')),
   locked_until TIMESTAMPTZ,
   reservation_id UUID REFERENCES reservations(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
