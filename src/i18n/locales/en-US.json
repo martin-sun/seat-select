@@ -89,7 +89,14 @@
     "entrance": "Entrance",
     "andExit": "and Exit",
     "row": "Row",
-    "seat": "Seat"
+    "seat": "Seat",
+    "legend": {
+      "available": "Available",
+      "selected": "Selected",
+      "sold": "Sold",
+      "locked": "Locked",
+      "unavailable": "Unavailable"
+    }
   },
   "quickSelect": {
     "title": "Quick Select:",

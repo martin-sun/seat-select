@@ -273,8 +273,8 @@ export default {
 /* Activity area - main container */
 .activity-area {
   @apply relative bg-bg-gray overflow-hidden w-full;
-  /* 使用 calc 计算高度，减去头部和底部确认按钮 */
-  height: calc(100vh - 100px);
+  /* 使用 calc 计算高度，减去头部、图例(约48px)和底部确认按钮 */
+  height: calc(100vh - 148px);
   padding-bottom: 48px; /* 为底部确认按钮留出空间 */
   touch-action: none;
   overscroll-behavior: contain;
@@ -284,7 +284,7 @@ export default {
 
 @media (min-width: 768px) {
   .activity-area {
-    height: calc(100vh - 110px);
+    height: calc(100vh - 160px);
     padding-bottom: 56px;
   }
 }

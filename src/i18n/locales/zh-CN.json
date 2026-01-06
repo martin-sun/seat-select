@@ -89,7 +89,14 @@
     "entrance": "Entrance",
     "andExit": "and Exit",
     "row": "排",
-    "seat": "座"
+    "seat": "座",
+    "legend": {
+      "available": "可选",
+      "selected": "已选",
+      "sold": "已售",
+      "locked": "锁定",
+      "unavailable": "暂不可售"
+    }
   },
   "quickSelect": {
     "title": "快速选座:",

@@ -15,6 +15,11 @@
       @resetView="handleResetView"
     ></header-view>
     <!--头部 结束-->
+    <seat-legend
+      :zoneConfig="zoneConfig"
+      :zonePrices="zonePrices"
+      :hasUnavailable="hasUnavailable"
+    ></seat-legend>
     <seat-area :propThumbnailAreaWidth="thumbnailBoxWidth" :propThumbnailAreaHeight="thumbnailBoxHeight"
     :propYMax="yMax - yMin" :propInitialScale="seatScale" :propSeatHeight="positionDistin" :propSeatToolArr="seatToolArr"
     :propSeatAreaWidthPx="seatAreaWidthPx" :propSeatBoxWidth="seatBoxWidth"
@@ -87,6 +92,7 @@
 </template>
 <script>
 import SeatArea from './component/SeatArea'
+import SeatLegend from './component/SeatLegend'
 import SelectedTab from './component/SelectedTab'
 import ConfirmLock from './component/ConfirmLock'
 import BookingForm from './component/BookingForm'
@@ -120,6 +126,7 @@ export default {
   },
   components: {
     SeatArea,
+    SeatLegend,
     HeaderView,
     SelectedTab,
     ConfirmLock,
@@ -400,6 +407,10 @@ export default {
       // 移动端最大 375px，桌面端可以更大
       return windowWidth < 768 ? windowWidth : Math.min(windowWidth, 800)
     },
+    // 是否有暂不可售的座位
+    hasUnavailable: function () {
+      return this.seatList.some(s => s.status === 'unavailable')
+    },
     // 座位区域高度（使用 vh 单位，通过 CSS 类控制）
     // 移除 seatAreaHeightRem 计算，改用 CSS calc(100vh - X)
     // 取最小横坐标
@@ -459,7 +470,7 @@ export default {
     seatScale: function () {
       // 座位区域可用高度：窗口高度减去头部和一些边距
       const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-      const otherHeight = 120 // 增加预留高度以提供更好的边距
+      const otherHeight = 168 // 增加预留高度以提供更好的边距，包含头部(64px)和图例(约50px)以及其他边距
       const availableHeight = windowHeight - otherHeight
 
       // 计算水平和垂直方向所需的缩放比例
