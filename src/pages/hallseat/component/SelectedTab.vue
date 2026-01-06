@@ -4,21 +4,22 @@
   @updateDate 最后更新时间为:2019-02-20
 */
 <template>
-  <div class='fixed z-20 right-2 top-16 bg-white/95 shadow-lg rounded-lg p-2 max-w-[140px]'>
-    <div class="text-xs font-medium text-gray-600 mb-1 border-b pb-1">{{ $t('selectedTab.selected', { count: selectedSeat.length }) }}</div>
-    <ul class="max-h-[200px] overflow-y-auto">
+  <div class='fixed z-20 left-4 top-20 bg-white/95 shadow-lg rounded-xl p-4 w-[180px] md:w-[220px]'>
+    <div class="text-sm font-bold text-gray-600 mb-2 border-b pb-2">{{ $t('selectedTab.selected', { count: selectedSeat.length }) }}</div>
+    <ul class="max-h-[300px] overflow-y-auto">
       <li
         v-for="item in selectedSeat"
         :key="'select'+item.id"
         @click="cancelSelect(item)"
-        class="text-xs py-1 px-2 my-1 text-gray-700 bg-gray-100 rounded cursor-pointer hover:bg-red-100 hover:text-red-600 transition-colors flex justify-between items-center"
+        class="text-sm py-2 px-3 my-1.5 text-gray-700 bg-gray-50 border border-gray-100 rounded-lg cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all flex justify-between items-center group"
       >
-        <span>{{ $t('seatArea.row') }} {{item.row}} {{ $t('seatArea.seat') }} {{item.col}}</span>
-        <span class="text-gray-400 ml-1">×</span>
+        <span class="font-medium">{{ $t('seatArea.row') }} {{item.row}} {{ $t('seatArea.seat') }} {{item.col}}</span>
+        <span class="text-gray-400 group-hover:text-red-500 transition-colors ml-2 text-lg">×</span>
       </li>
     </ul>
-    <div class="text-xs font-medium text-primary mt-1 pt-1 border-t">
-      {{ $t('common.total') }}: ${{totalPrice}}
+    <div class="text-base font-bold text-primary mt-2 pt-2 border-t flex justify-between items-center">
+      <span>{{ $t('common.total') }}:</span>
+      <span>${{totalPrice}}</span>
     </div>
   </div>
 </template>
