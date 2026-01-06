@@ -116,7 +116,7 @@ export default {
       thumbnailWidth: 6, // 缩略图每个座位的宽
       thumbnailHeight: 6, // 缩略图每个座位的高
       thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
-      stageHeight: 150, // Stage 区域高度
+      stageHeight: 250, // Stage 区域高度
       selectedSeatList: [], // 已选择座位
       maxSelect: 20, // 最大选择座位数量 改动可改变最大选择座位数
       load: true, // 加载dom的控制 (初始开启)
@@ -242,6 +242,7 @@ export default {
         const processedSeats = seats.map(seat => {
           const zone = seat.zone
           const status = seat.status
+          const zoneConfig = this.getZoneConfig(zone)
 
           return {
             ...seat,
@@ -257,7 +258,9 @@ export default {
             // 判断座位是否可以点击（只有 available 状态可点击）
             canClick: (status === 'available'),
             // 获取座位价格
-            price: this.zonePrices[zone] || 0
+            price: this.zonePrices[zone] || 0,
+            // 从 zone_config 中获取宽度（残疾人座位为2，普通座位为1）
+            width: zoneConfig.width || 1
           }
         })
 
@@ -282,6 +285,7 @@ export default {
         if (index !== -1) {
           const zone = newSeat.zone
           const status = newSeat.status
+          const zoneConfig = this.getZoneConfig(zone)
 
           // 更新座位数据
           const isSelectedLocally = this.selectedSeatList.some(s => s.id === newSeat.id)
@@ -294,7 +298,9 @@ export default {
             defautIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
             nowIcon: isSelectedLocally ? this.seatList[index].selectedIcon : this.getIcon(zone, status === 'available' ? 'available' : status),
             canClick: (status === 'available'),
-            price: this.zonePrices[zone] || 0
+            price: this.zonePrices[zone] || 0,
+            // 从 zone_config 中获取宽度（残疾人座位为2，普通座位为1）
+            width: zoneConfig.width || 1
           }
 
           // 如果座位被其他人预订，从已选列表中移除
@@ -592,9 +598,9 @@ export default {
 /* Stage element - positioned relative to seats */
 .stage {
   @apply absolute;
-  width: 700px;
-  max-width: 90%;
-  height: 100px;
+  width: 1000px;
+  max-width: 95%;
+  height: 160px;
   transform: translateX(-50%);
   margin-top: 40px;
 }
