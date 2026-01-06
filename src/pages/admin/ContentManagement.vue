@@ -105,8 +105,12 @@
               <input v-model="settings.event_location_en" type="text" />
             </div>
             <div class="form-group full-width">
-              <label>详细地址（中英文）</label>
+              <label>详细地址（中文）</label>
               <input v-model="settings.event_address" type="text" />
+            </div>
+            <div class="form-group full-width">
+              <label>详细地址（英文）</label>
+              <input v-model="settings.event_address_en" type="text" />
             </div>
           </div>
         </div>
