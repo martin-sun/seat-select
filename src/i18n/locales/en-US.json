@@ -33,7 +33,7 @@
     },
     "ticketCard": {
       "perPerson": "person",
-      "select": "Select",
+      "select": "View Area",
       "soldOut": "Sold Out"
     },
     "historySection": {

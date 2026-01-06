@@ -34,7 +34,7 @@
         width:seatBoxWidth +'px'}">
          <!--中轴线-->
           <div v-show="seatList.length>0" class="middle-line" :style="{height:(seatBoxHeight + stageHeight) +'px',left: middleLine +'px'}"></div>
-            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" @click.prevent="clickSeat(index)" :data-seat-index="index" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
+            <div v-for="(seatItem,index) in seatList" :key="seatItem.id" class="seatClass" :data-seat-index="index" :style="{height:height +'px',width: (width * (seatItem.width || 1)) +'px',
             top:(yMax - seatItem.gRow) * positionDistin +'px',left:(seatItem.gCol - xMin) * positionDistin +'px'}"
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon" :title="getSeatTooltip(seatItem)"/>
@@ -268,13 +268,15 @@ export default {
           const status = newSeat.status
 
           // 更新座位数据
+          const isSelectedLocally = this.selectedSeatList.some(s => s.id === newSeat.id)
+          
           this.seatList[index] = {
             ...this.seatList[index],
             ...newSeat,
             gRow: newSeat.g_row,
             gCol: newSeat.g_col,
             defautIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
-            nowIcon: this.getIcon(zone, status === 'available' ? 'available' : status),
+            nowIcon: isSelectedLocally ? this.seatList[index].selectedIcon : this.getIcon(zone, status === 'available' ? 'available' : status),
             canClick: (status === 'available'),
             price: this.zonePrices[zone] || 0
           }

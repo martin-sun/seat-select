@@ -33,7 +33,7 @@
     },
     "ticketCard": {
       "perPerson": "人",
-      "select": "选择此票",
+      "select": "查看区域",
       "soldOut": "已售罄"
     },
     "historySection": {

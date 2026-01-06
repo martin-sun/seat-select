@@ -73,6 +73,7 @@
             v-for="ticket in tickets"
             :key="ticket.id"
             :ticket="ticket"
+            @view-area="showImageModal = true"
           />
         </div>
         <div class="text-center mt-8">
@@ -143,6 +144,13 @@
         {{ $t('chunwan.buyTicket') }}
       </router-link>
     </div>
+
+    <!-- 图示弹窗 -->
+    <ImageModal
+      :show="showImageModal"
+      image-url="https://rvhcgiqfmsxhgvtudstm.supabase.co/storage/v1/object/public/assets/Auditorium%20Numbered%20Seating%20Plan.png"
+      @close="showImageModal = false"
+    />
   </div>
 </template>
 
@@ -156,6 +164,7 @@ import TicketCard from './components/TicketCard.vue'
 import HistoryCard from './components/HistoryCard.vue'
 import SponsorSection from './components/SponsorSection.vue'
 import OrganizerSection from './components/OrganizerSection.vue'
+import ImageModal from '@/components/ImageModal.vue'
 import { getSettings, getTickets, getHistory, getSponsors, getOrganizers, getAssetUrl } from '@/cms'
 
 export default {
@@ -166,7 +175,8 @@ export default {
     TicketCard,
     HistoryCard,
     SponsorSection,
-    OrganizerSection
+    OrganizerSection,
+    ImageModal
   },
   setup() {
     const route = useRoute()
@@ -182,6 +192,7 @@ export default {
     const history = ref([])
     const sponsors = ref([])
     const organizers = ref([])
+    const showImageModal = ref(false)
 
     // 从 Supabase 获取数据
     const fetchData = async () => {
@@ -293,6 +304,7 @@ export default {
       history,
       sponsors,
       organizers,
+      showImageModal,
       switchLocale
     }
   }

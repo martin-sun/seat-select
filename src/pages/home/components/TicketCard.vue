@@ -27,15 +27,15 @@
     </p>
 
     <!-- 购票按钮 -->
-    <router-link
-      :to="`/${$route.params.lang || 'zh'}/tickets`"
+    <button
+      @click="$emit('view-area')"
       :class="[
         'block w-full text-center py-3 rounded-lg font-semibold transition-all',
         buttonClasses
       ]"
     >
       {{ ticket.available ? $t('chunwan.ticketCard.select') : $t('chunwan.ticketCard.soldOut') }}
-    </router-link>
+    </button>
   </div>
 </template>
 
