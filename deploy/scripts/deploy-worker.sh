@@ -59,7 +59,7 @@ SSH_KEY="${WORKER_SSH_KEY:-}"
 USE_PASSWORD="${USE_PASSWORD:-false}"
 
 # 服务器上的部署目录和 compose 文件
-WORKER_DEPLOY_PATH="${WORKER_DEPLOY_PATH:-/home/msun/Projects/seat-select}"
+WORKER_DEPLOY_PATH="${WORKER_DEPLOY_PATH:-/home/msun/Projects/saskatoonsfc}"
 WORKER_COMPOSE_FILE="${WORKER_COMPOSE_FILE:-docker-compose.worker.yml}"
 
 # 镜像仓库配置
