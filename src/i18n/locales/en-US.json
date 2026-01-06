@@ -169,7 +169,6 @@
     "selectAtLeast": "Please select at least one seat",
     "noEmptySeat": "Please do not leave empty seats",
     "lockFailed": "Lock failed, amount is 0",
-    "maxSeats": "You can select up to {max} seats",
     "noSuitableSeat": "No suitable seats available",
     "enterName": "Please enter your name",
     "enterPhone": "Please enter phone number",

@@ -11,8 +11,8 @@
           <!--所有可以点击座位的数据会放入此插槽,此插槽可以缩放,拖动-->
         </slot>
       </div>
-        <!--座位左边栏-->
-      <div class="seat-tool-parent">
+        <!--座位左边栏 - 已移除，改为嵌入式行号-->
+      <!-- <div class="seat-tool-parent">
         <div class="seat-tool" :style="{marginTop:seatToolMargin+'px',
         fontSize:seatToolFontSize +'px'}">
             <div v-for="(item, index) in seatToolArr" :key="'seat-tool' + index" class="seat-tool-item"
@@ -20,7 +20,7 @@
                 {{item}}
             </div>
         </div>
-      </div>
+      </div> -->
     </div>
 </template>
 <script>

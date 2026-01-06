@@ -7,22 +7,26 @@ COLORS = {
     "green": {
         "grad_top": "#4ADE80", "grad_bot": "#22C55E",
         "cushion": "#16A34A", "armrest": "#15803D", "highlight": "#86EFAC",
-        "light_bg": "#DCFCE7", "light_cushion": "#BBF7D0", "light_arm": "#86EFAC"
+        "light_bg": "#DCFCE7", "light_cushion": "#BBF7D0", "light_arm": "#86EFAC",
+        "sel_check": "#FFF200" # Neon Yellow
     },
     "pink": { # Extra Light / Elegant Pink
         "grad_top": "#FCE7F3", "grad_bot": "#FBCFE8",
         "cushion": "#F9A8D4", "armrest": "#F472B6", "highlight": "#FFF1F2",
-        "light_bg": "#FDF2F8", "light_cushion": "#FCE7F3", "light_arm": "#FBCFE8"
+        "light_bg": "#FDF2F8", "light_cushion": "#FCE7F3", "light_arm": "#FBCFE8",
+        "sel_check": "#00F5FF" # Cyan
     },
     "red": {
         "grad_top": "#F87171", "grad_bot": "#EF4444",
         "cushion": "#DC2626", "armrest": "#B91C1C", "highlight": "#FCA5A5",
-        "light_bg": "#FEE2E2", "light_cushion": "#FECACA", "light_arm": "#FCA5A5"
+        "light_bg": "#FEE2E2", "light_cushion": "#FECACA", "light_arm": "#FCA5A5",
+        "sel_check": "#7CFFD6" # Mint Green
     },
     "purple": {
         "grad_top": "#C084FC", "grad_bot": "#A855F7",
         "cushion": "#9333EA", "armrest": "#7E22CE", "highlight": "#D8B4FE",
-        "light_bg": "#F3E8FF", "light_cushion": "#E9D5FF", "light_arm": "#D8B4FE"
+        "light_bg": "#F3E8FF", "light_cushion": "#E9D5FF", "light_arm": "#D8B4FE",
+        "sel_check": "#FFF200" # Neon Yellow
     }
 }
 
@@ -56,17 +60,30 @@ TEMPLATE_Selected = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 3
       <feComponentTransfer><feFuncA type="linear" slope="0.2"/></feComponentTransfer>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <!-- Dark Outline for the checkmark -->
+    <filter id="checkmark-outline" x="-50%" y="-50%" width="200%" height="200%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="0.8" result="dilated"/>
+      <feFlood flood-color="#000000" flood-opacity="0.7" result="outlineColor"/>
+      <feComposite in="outlineColor" in2="dilated" operator="in" result="outline"/>
+      <feMerge>
+        <feMergeNode in="outline"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
     <linearGradient id="seat-gradient-sel-{color}" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:{grad_top};stop-opacity:1" />
       <stop offset="100%" style="stop-color:{grad_bot};stop-opacity:1" />
     </linearGradient>
   </defs>
   <g filter="url(#soft-shadow-sel-{color})">
-    <path d="M7 6C7 3.5 9 2 16 2C23 2 25 3.5 25 6V16H7V6Z" fill="url(#seat-gradient-sel-{color})" stroke="white" stroke-width="1.5"/>
-    <rect x="5" y="15" width="22" height="10" rx="3" fill="{cushion}" stroke="white" stroke-width="1.5"/>
+    <path d="M7 6C7 3.5 9 2 16 2C23 2 25 3.5 25 6V16H7V6Z" fill="url(#seat-gradient-sel-{color})" stroke="white" stroke-width="1"/>
+    <rect x="5" y="15" width="22" height="10" rx="3" fill="{cushion}" stroke="white" stroke-width="1"/>
     <rect x="4" y="10" width="3" height="12" rx="1.5" fill="{armrest}"/>
     <rect x="25" y="10" width="3" height="12" rx="1.5" fill="{armrest}"/>
-    <path d="M11 12 L15 16 L21 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(0, 3)"/>
+    <!-- High-contrast Checkmark with Dark Outline -->
+    <g filter="url(#checkmark-outline)" transform="translate(0, 3)">
+      <path d="M11 12 L15 16 L21 8" stroke="{sel_check}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
   </g>
 </svg>"""
 

@@ -170,7 +170,6 @@
     "selectAtLeast": "请至少选择一个座位~",
     "noEmptySeat": "请不要留下空位~",
     "lockFailed": "锁座失败了~,金额为0",
-    "maxSeats": "最多只能选择{max}个座位哦~",
     "noSuitableSeat": "没有合适的座位~",
     "enterName": "请输入您的称呼",
     "enterPhone": "请输入手机号",

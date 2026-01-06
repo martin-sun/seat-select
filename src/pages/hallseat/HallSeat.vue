@@ -39,6 +39,15 @@
             >
               <img class="seatImgClass" :seatId="seatItem.id" :seatIndex="index" :src="seatItem.nowIcon" :title="getSeatTooltip(seatItem)"/>
             </div>
+
+          <!-- 嵌入座位图的行号 (过道位置) -->
+          <div v-for="aisleCol in aisleColumns" :key="'aisle-'+aisleCol" class="aisle-label-column"
+            :style="{ left: (aisleCol - xMin) * positionDistin + (width/2) + 'px', height: seatBoxHeight + 'px' }">
+            <div v-for="row in seatToolArrFull" :key="'aisle-'+aisleCol+'-'+row.gRow" class="aisle-row-label"
+              :style="{ top: (yMax - row.gRow) * positionDistin + 'px', height: height + 'px', lineHeight: height + 'px' }">
+              {{ row.label }}
+            </div>
+          </div>
           <!--Entrance and Exit 标记 - 位于中间区域-->
           <div class="entrance-exit-label" :style="{top: '0px', left: middleLine + 'px'}">
             <span>{{ $t('seatArea.entrance') }}</span>
@@ -103,7 +112,7 @@ export default {
       thumbnailPositionDistin: 10, // 缩略图每个座位偏移距离
       stageHeight: 150, // Stage 区域高度
       selectedSeatList: [], // 已选择座位
-      maxSelect: 10, // 最大选择座位数量 改动可改变最大选择座位数
+      maxSelect: 20, // 最大选择座位数量 改动可改变最大选择座位数
       load: true, // 加载dom的控制 (初始开启)
       showBookingModal: false, // 预订表单弹窗显示状态
       bookingTotalPrice: 0 // 预订总价
@@ -210,7 +219,7 @@ export default {
         this.eventId = event.id
         this.zonePrices = event.zone_prices || {}
         this.zoneConfig = event.zone_config || []
-        this.maxSelect = event.max_seats_per_booking || 4
+        this.maxSelect = event.max_seats_per_booking || 20
 
         // 获取座位数据
         const { data: seats, error: seatsError } = await supabase
@@ -320,11 +329,6 @@ export default {
     },
     // 处理未选择的座位（选择座位）
     processUnSelected: function (index) {
-      // Check if max seats limit reached
-      if (this.selectedSeatList.length >= this.maxSelect) {
-        alert(this.$t('alerts.maxSeats', { max: this.maxSelect }))
-        return
-      }
       // 改变座位图标为已选择图标
       this.seatList[index].nowIcon = this.seatList[index].selectedIcon
       // 记录 orgIndex属性 是原seatList数组中的下标值
@@ -505,6 +509,30 @@ export default {
         }
       }
       return seatToolArr
+    },
+    // 完整的行信息，包含 gRow 和 label，用于过道标签渲染
+    seatToolArrFull: function () {
+      let arr = []
+      for (let i = this.yMax; i >= this.yMin; i--) {
+        let el = this.seatList.find((item) => item.gRow === i)
+        if (el) {
+          arr.push({ gRow: i, label: el.row })
+        } else {
+          arr.push({ gRow: i, label: '' })
+        }
+      }
+      return arr
+    },
+    // 计算过道列 (没有座位的列)
+    aisleColumns: function () {
+      const cols = []
+      const seatCols = new Set(this.seatList.map(s => s.gCol))
+      for (let c = this.xMin; c <= this.xMax; c++) {
+        if (!seatCols.has(c)) {
+          cols.push(c)
+        }
+      }
+      return cols
     }
   }
 }
@@ -586,5 +614,17 @@ export default {
 
 .entrance-exit-label span {
   display: block;
+}
+
+/* Aisle labels */
+.aisle-label-column {
+  @apply absolute flex flex-col items-center pointer-events-none;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.aisle-row-label {
+  @apply absolute w-8 text-center text-black font-bold;
+  font-size: 14px;
 }
 </style>
