@@ -622,7 +622,7 @@ export default {
 /* Entrance and Exit label - positioned in the middle gap area */
 .entrance-exit-label {
   @apply absolute flex flex-col items-center justify-center text-gray-500 font-semibold;
-  transform: translateX(-80%);
+  transform: translateX(-100%);
   font-size: 14px;
   line-height: 1.4;
   height: 140px;
