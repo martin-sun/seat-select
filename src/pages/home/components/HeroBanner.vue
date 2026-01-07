@@ -17,8 +17,13 @@
     <div class="relative z-10 max-w-4xl mx-auto px-4 py-16 md:py-24 lg:py-32 text-center">
       <!-- 年份标签 -->
       <div class="inline-block mb-6">
-        <span class="bg-yellow-500 text-red-900 px-4 py-1 rounded-full text-sm font-bold tracking-wider">
-          {{ year }} {{ $t('chunwan.banner.yearLabel') }}
+        <span class="inline-block bg-yellow-500 text-red-900 px-6 py-4 rounded-lg
+                      md:bg-transparent md:text-yellow-400
+                      text-xl md:text-3xl lg:text-6xl
+                      font-bold leading-relaxed
+                      break-words max-w-full">
+          {{ year }} 
+          {{ $t('chunwan.banner.yearLabel') }}
         </span>
       </div>
 
