@@ -536,3 +536,53 @@ export async function deleteProgram(id) {
   if (error) throw error
 }
 
+// ============================================
+// Admin History Management
+// ============================================
+
+// Get all history items (for admin)
+export async function getAdminHistory() {
+  const { data, error } = await supabase
+    .from('chunwan_history')
+    .select('*')
+    .order('year', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
+// Create history item
+export async function createHistoryItem(item) {
+  const { data, error } = await supabase
+    .from('chunwan_history')
+    .insert(item)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// Update history item
+export async function updateHistoryItem(id, item) {
+  const { data, error } = await supabase
+    .from('chunwan_history')
+    .update(item)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// Delete history item
+export async function deleteHistoryItem(id) {
+  const { error } = await supabase
+    .from('chunwan_history')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+

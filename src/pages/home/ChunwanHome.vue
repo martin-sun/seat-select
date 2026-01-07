@@ -81,6 +81,7 @@
             :key="item.id"
             :item="item"
             class="w-full max-w-sm"
+            @play="playVideo"
           />
         </div>
       </div>
@@ -133,6 +134,13 @@
       image-url="https://rvhcgiqfmsxhgvtudstm.supabase.co/storage/v1/object/public/assets/Auditorium%20Numbered%20Seating%20Plan.png"
       @close="showImageModal = false"
     />
+
+    <!-- 视频弹窗 -->
+    <VideoModal
+      :show="showVideoModal"
+      :url="activeVideoUrl"
+      @close="closeVideoModal"
+    />
   </div>
 </template>
 
@@ -147,6 +155,7 @@ import HistoryCard from './components/HistoryCard.vue'
 // import SponsorSection from './components/SponsorSection.vue'
 import OrganizerSection from './components/OrganizerSection.vue'
 import ImageModal from '@/components/ImageModal.vue'
+import VideoModal from '@/components/VideoModal.vue'
 import { getSettings, getTickets, getHistory, getOrganizers, getAssetUrl } from '@/cms'
 
 export default {
@@ -158,7 +167,8 @@ export default {
     HistoryCard,
     // SponsorSection,
     OrganizerSection,
-    ImageModal
+    ImageModal,
+    VideoModal
   },
   setup() {
     const route = useRoute()
@@ -174,6 +184,8 @@ export default {
     const history = ref([])
     const organizers = ref([])
     const showImageModal = ref(false)
+    const showVideoModal = ref(false)
+    const activeVideoUrl = ref('')
 
     // 从 Supabase 获取数据
     const fetchData = async () => {
@@ -284,7 +296,17 @@ export default {
       history,
       organizers,
       showImageModal,
-      switchLocale
+      showVideoModal,
+      activeVideoUrl,
+      switchLocale,
+      playVideo(item) {
+        activeVideoUrl.value = item.video_url
+        showVideoModal.value = true
+      },
+      closeVideoModal() {
+        showVideoModal.value = false
+        activeVideoUrl.value = ''
+      }
     }
   }
 }

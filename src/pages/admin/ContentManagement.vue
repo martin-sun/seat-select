@@ -165,6 +165,54 @@
       </form>
     </div>
 
+    <!-- History Section -->
+    <div v-if="activeTab === 'history'" class="content-section">
+      <div class="section-header">
+        <h2>春晚历程管理</h2>
+        <button class="add-btn" @click="openHistoryModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          添加历程
+        </button>
+      </div>
+
+      <div v-if="loadingHistory" class="loading-state">
+        <div class="spinner"></div>
+        <span>加载中...</span>
+      </div>
+
+      <div v-else class="items-grid">
+        <div v-for="item in history" :key="item.id" class="item-card">
+          <div class="item-image">
+            <img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.title" />
+            <div v-else class="placeholder-image">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="item-info">
+            <div class="item-meta">
+              <span class="year-badge">{{ item.year }}</span>
+              <span class="sort-badge">排序: {{ item.sort }}</span>
+            </div>
+            <h3>{{ item.title }}</h3>
+            <p class="en-title">{{ item.title_en }}</p>
+          </div>
+          <div class="item-actions">
+            <button class="edit-btn" @click="openHistoryModal(item)">编辑</button>
+            <button class="delete-btn" @click="deleteHistoryItem(item)">删除</button>
+          </div>
+        </div>
+
+        <div v-if="history.length === 0" class="empty-state">
+          <p>暂无春晚历程</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Sponsors Section -->
     <div v-if="activeTab === 'sponsors'" class="content-section">
       <div class="section-header">
@@ -305,6 +353,54 @@
     </div>
 
     <!-- Organizer Modal -->
+    <div v-if="historyModal.show" class="modal-overlay" @click.self="closeHistoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>{{ historyModal.isEdit ? '编辑历程' : '添加历程' }}</h2>
+          <button class="close-btn" @click="closeHistoryModal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>年份 (如: 2025)</label>
+              <input v-model="historyModal.data.year" type="text" placeholder="2025" />
+            </div>
+            <div class="form-group">
+              <label>排序 (数字越小越靠前)</label>
+              <input v-model.number="historyModal.data.sort" type="number" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>标题（中文）</label>
+            <input v-model="historyModal.data.title" type="text" placeholder="输入名称" />
+          </div>
+          <div class="form-group">
+            <label>标题（英文）</label>
+            <input v-model="historyModal.data.title_en" type="text" placeholder="输入英文名称" />
+          </div>
+          <div class="form-group">
+            <label>封面图片链接</label>
+            <input v-model="historyModal.data.thumbnail" type="url" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>视频链接 (YouTube 等)</label>
+            <input v-model="historyModal.data.video_url" type="url" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="closeHistoryModal">取消</button>
+          <button class="submit-btn" @click="saveHistory" :disabled="historyModal.saving">
+            {{ historyModal.saving ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Organizer Modal -->
     <div v-if="organizerModal.show" class="modal-overlay" @click.self="closeOrganizerModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -362,7 +458,11 @@ import {
   getAdminOrganizers,
   createOrganizer,
   updateOrganizer,
-  deleteOrganizer
+  deleteOrganizer,
+  getAdminHistory,
+  createHistoryItem,
+  updateHistoryItem,
+  deleteHistoryItem
 } from '@/supabase'
 
 export default {
@@ -372,6 +472,7 @@ export default {
       activeTab: 'settings',
       tabs: [
         { key: 'settings', label: '全局设置', icon: 'svg' },
+        { key: 'history', label: '春晚历程', icon: 'svg' },
         { key: 'sponsors', label: '赞助商', icon: 'svg' },
         { key: 'organizers', label: '承办单位', icon: 'svg' }
       ],
@@ -396,11 +497,21 @@ export default {
         isEdit: false,
         saving: false,
         data: this.getEmptyOrganizer()
+      },
+      // History
+      history: [],
+      loadingHistory: false,
+      historyModal: {
+        show: false,
+        isEdit: false,
+        saving: false,
+        data: this.getEmptyHistory()
       }
     }
   },
   mounted() {
     this.loadSettings()
+    this.loadHistory()
     this.loadSponsors()
     this.loadOrganizers()
   },
@@ -410,6 +521,9 @@ export default {
     },
     getEmptyOrganizer() {
       return { name: '', name_en: '', type: 'organizer', logo: '', sort: 0 }
+    },
+    getEmptyHistory() {
+      return { year: '', title: '', title_en: '', thumbnail: '', video_url: '', sort: 0 }
     },
     async loadSettings() {
       this.loadingSettings = true
@@ -549,6 +663,57 @@ export default {
     getTypeText(type) {
       const map = { organizer: '主办单位', 'co-organizer': '协办单位' }
       return map[type] || type
+    },
+    // History Methods
+    async loadHistory() {
+      this.loadingHistory = true
+      try {
+        this.history = await getAdminHistory()
+      } catch (err) {
+        console.error('Failed to load history:', err)
+      } finally {
+        this.loadingHistory = false
+      }
+    },
+    openHistoryModal(item = null) {
+      if (item) {
+        this.historyModal.isEdit = true
+        this.historyModal.data = { ...item }
+      } else {
+        this.historyModal.isEdit = false
+        this.historyModal.data = this.getEmptyHistory()
+      }
+      this.historyModal.show = true
+    },
+    closeHistoryModal() {
+      this.historyModal.show = false
+    },
+    async saveHistory() {
+      this.historyModal.saving = true
+      try {
+        if (this.historyModal.isEdit) {
+          await updateHistoryItem(this.historyModal.data.id, this.historyModal.data)
+        } else {
+          await createHistoryItem(this.historyModal.data)
+        }
+        await this.loadHistory()
+        this.closeHistoryModal()
+      } catch (err) {
+        console.error('Failed to save history:', err)
+        alert('保存失败，请重试')
+      } finally {
+        this.historyModal.saving = false
+      }
+    },
+    async deleteHistoryItem(item) {
+      if (!confirm(`确定要删除 "${item.title}" 吗？`)) return
+      try {
+        await deleteHistoryItem(item.id)
+        await this.loadHistory()
+      } catch (err) {
+        console.error('Failed to delete history item:', err)
+        alert('删除失败，请重试')
+      }
     }
   }
 }
@@ -877,6 +1042,35 @@ export default {
 .type-badge.co-organizer {
   background: rgba(156, 39, 176, 0.15);
   color: #9c27b0;
+}
+
+.en-title {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+.item-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.year-badge {
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sort-badge {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
 }
 
 .item-actions {

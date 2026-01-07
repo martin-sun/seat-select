@@ -1,5 +1,8 @@
 <template>
-  <div class="history-card group relative overflow-hidden rounded-2xl bg-red-900/50 border border-red-700/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+  <div 
+    class="history-card group relative overflow-hidden rounded-2xl bg-red-900/50 border border-red-700/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
+    @click="openVideo"
+  >
     <!-- 缩略图 -->
     <div class="relative aspect-video overflow-hidden">
       <img
@@ -38,6 +41,13 @@ export default {
     item: {
       type: Object,
       required: true
+    }
+  },
+  methods: {
+    openVideo() {
+      if (this.item.video_url) {
+        this.$emit('play', this.item)
+      }
     }
   }
 }
