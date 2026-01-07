@@ -11,20 +11,13 @@
     "logout": "Logout"
   },
   "chunwan": {
-    "nav": {
-      "title": "2026 RBC New Year Night - Saskatoon Spring Festival Gala",
-      "about": "About",
-      "tickets": "Tickets",
-      "history": "Past Events",
-      "programs": "Programs"
-    },
     "banner": {
-      "yearLabel": "Chinese New Year Gala"
+      "yearLabel": "Saskatoon Spring Festival Celebration"
     },
     "buyTicket": "Buy Tickets",
     "viewPrograms": "View Programs",
     "eventInfo": {
-      "date": "Date & Time",
+      "date": "Date",
       "location": "Location",
       "aboutTitle": "About the Event"
     },
@@ -37,7 +30,7 @@
       "soldOut": "Sold Out"
     },
     "historySection": {
-      "title": "Past Events"
+      "title": ""
     },
     "historyCard": {
       "clickToWatch": "Click to watch highlights"

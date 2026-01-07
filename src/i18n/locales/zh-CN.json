@@ -11,20 +11,13 @@
     "logout": "退出"
   },
   "chunwan": {
-    "nav": {
-      "title": "2026年RBC新春之夜萨斯卡通春晚",
-      "about": "活动介绍",
-      "tickets": "票务信息",
-      "history": "往期回顾",
-      "programs": "节目单"
-    },
     "banner": {
-      "yearLabel": "春节联欢晚会"
+      "yearLabel": "萨斯卡通春晚"
     },
     "buyTicket": "立即购票",
     "viewPrograms": "查看节目单",
     "eventInfo": {
-      "date": "演出时间",
+      "date": "演出日期",
       "location": "演出地点",
       "aboutTitle": "活动介绍"
     },
@@ -37,7 +30,7 @@
       "soldOut": "已售罄"
     },
     "historySection": {
-      "title": "往期回顾"
+      "title": ""
     },
     "historyCard": {
       "clickToWatch": "点击观看精彩回顾"

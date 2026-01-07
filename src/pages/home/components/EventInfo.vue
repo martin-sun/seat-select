@@ -7,12 +7,14 @@
           <!-- 时间 -->
           <div class="flex items-start space-x-4">
             <div class="flex-shrink-0 w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
-              <span class="text-2xl">📅</span>
+              <div class="calendar-icon">
+                <div class="calendar-month">{{ iconMonth }}</div>
+                <div class="calendar-day">{{ iconDay }}</div>
+              </div>
             </div>
             <div>
               <h3 class="text-yellow-400 font-semibold mb-1">{{ $t('chunwan.eventInfo.date') }}</h3>
-              <p class="text-yellow-100 text-lg">{{ formattedDate }}</p>
-              <p class="text-yellow-100/70 text-sm">{{ formattedTime }}</p>
+              <p class="text-yellow-100 text-lg">{{ formattedDate }}</p>  
             </div>
           </div>
 
@@ -82,10 +84,58 @@ export default {
       return d.toLocaleTimeString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', options)
     })
 
+    const iconMonth = computed(() => {
+      const d = new Date(props.date)
+      if (isNaN(d.getTime())) return 'FEB'
+      return d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+    })
+
+    const iconDay = computed(() => {
+      const d = new Date(props.date)
+      if (isNaN(d.getTime())) return '14'
+      return d.getDate()
+    })
+
     return {
       formattedDate,
-      formattedTime
+      formattedTime,
+      iconMonth,
+      iconDay
     }
   }
 }
 </script>
+
+<style scoped>
+.calendar-icon {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar-month {
+  background: #e11d48; /* Crimson/Red */
+  color: white;
+  width: 100%;
+  font-size: 8px;
+  font-weight: 800;
+  text-align: center;
+  padding: 1px 0;
+  line-height: 1;
+}
+
+.calendar-day {
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-top: -1px;
+}
+</style>

@@ -3,23 +3,7 @@
     <!-- 导航栏 -->
     <nav class="sticky top-0 z-50 bg-red-900/95 backdrop-blur-sm border-b border-red-700/50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <div class="flex items-center space-x-2">
-            <span class="text-2xl">🏮</span>
-            <span class="text-xl font-bold text-yellow-400">{{ $t('chunwan.nav.title') }}</span>
-          </div>
-          <div class="hidden md:flex items-center space-x-6">
-            <a href="#about" class="text-yellow-100 hover:text-yellow-400 transition-colors">{{ $t('chunwan.nav.about') }}</a>
-            <a href="#tickets" class="text-yellow-100 hover:text-yellow-400 transition-colors">{{ $t('chunwan.nav.tickets') }}</a>
-            <a href="#history" class="text-yellow-100 hover:text-yellow-400 transition-colors">{{ $t('chunwan.nav.history') }}</a>
-            <router-link
-              v-if="settings.showProgramsLink"
-              :to="`/${lang}/programs`"
-              class="text-yellow-100 hover:text-yellow-400 transition-colors"
-            >
-              {{ $t('chunwan.nav.programs') }}
-            </router-link>
-          </div>
+        <div class="flex items-center justify-end h-16">
           <!-- 语言切换 -->
           <div class="flex items-center space-x-2">
             <button
@@ -91,18 +75,16 @@
     <section id="history" class="py-12 px-4 bg-red-950/50">
       <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl font-bold text-center text-yellow-400 mb-8">{{ $t('chunwan.historySection.title') }}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="flex flex-wrap justify-center gap-6">
           <HistoryCard
             v-for="item in history"
             :key="item.id"
             :item="item"
+            class="w-full max-w-sm"
           />
         </div>
       </div>
     </section>
-
-    <!-- 赞助商板块 -->
-    <SponsorSection :sponsors="sponsors" />
 
     <!-- 主办与协办单位 -->
     <OrganizerSection :items="organizers" />
@@ -162,10 +144,10 @@ import HeroBanner from './components/HeroBanner.vue'
 import EventInfo from './components/EventInfo.vue'
 import TicketCard from './components/TicketCard.vue'
 import HistoryCard from './components/HistoryCard.vue'
-import SponsorSection from './components/SponsorSection.vue'
+// import SponsorSection from './components/SponsorSection.vue'
 import OrganizerSection from './components/OrganizerSection.vue'
 import ImageModal from '@/components/ImageModal.vue'
-import { getSettings, getTickets, getHistory, getSponsors, getOrganizers, getAssetUrl } from '@/cms'
+import { getSettings, getTickets, getHistory, getOrganizers, getAssetUrl } from '@/cms'
 
 export default {
   name: 'ChunwanHome',
@@ -174,7 +156,7 @@ export default {
     EventInfo,
     TicketCard,
     HistoryCard,
-    SponsorSection,
+    // SponsorSection,
     OrganizerSection,
     ImageModal
   },
@@ -190,7 +172,6 @@ export default {
     const settings = ref({})
     const tickets = ref([])
     const history = ref([])
-    const sponsors = ref([])
     const organizers = ref([])
     const showImageModal = ref(false)
 
@@ -199,11 +180,10 @@ export default {
       loading.value = true
       error.value = null
       try {
-        const [settingsData, ticketsData, historyData, sponsorsData, organizersData] = await Promise.all([
+        const [settingsData, ticketsData, historyData, organizersData] = await Promise.all([
           getSettings(),
           getTickets(),
           getHistory(),
-          getSponsors(),
           getOrganizers()
         ])
 
@@ -249,13 +229,13 @@ export default {
           }))
         }
 
-        // 赞助商数据
-        if (sponsorsData) {
-          sponsors.value = sponsorsData.map(sponsor => ({
-            ...sponsor,
-            name: isEn ? (sponsor.name_en || sponsor.name) : sponsor.name
-          }))
-        }
+        // // 赞助商数据
+        // if (sponsorsData) {
+        //   sponsors.value = sponsorsData.map(sponsor => ({
+        //     ...sponsor,
+        //     name: isEn ? (sponsor.name_en || sponsor.name) : sponsor.name
+        //   }))
+        // }
 
         // 主办单位数据
         if (organizersData) {
@@ -302,7 +282,6 @@ export default {
       settings,
       tickets,
       history,
-      sponsors,
       organizers,
       showImageModal,
       switchLocale

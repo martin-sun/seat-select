@@ -35,7 +35,7 @@
       <!-- 装饰分隔线 -->
       <div class="flex items-center justify-center space-x-4 mb-8">
         <span class="w-16 h-0.5 bg-yellow-500/50"></span>
-        <span class="text-yellow-500 text-2xl">🐍</span>
+        <span class="text-yellow-500 text-2xl">🐎</span>
         <span class="w-16 h-0.5 bg-yellow-500/50"></span>
       </div>
 
@@ -64,7 +64,7 @@ export default {
     },
     year: {
       type: String,
-      default: '2025'
+      default: '2026'
     }
   }
 }
