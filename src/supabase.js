@@ -92,16 +92,56 @@ export function subscribeToSeats(eventId, callback) {
 }
 
 // ============================================
+// Edge Function Helper Functions
+// ============================================
+
+// Call Edge Function to send payment instructions via Resend
+export async function sendPaymentInstructions(reservationId, language = 'en-US') {
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const { data, error } = await supabase.functions.invoke('send-payment-instructions', {
+    body: { reservation_id: reservationId, language },
+    headers: session ? { Authorization: `Bearer ${session.access_token}` } : {}
+  })
+
+  if (error) throw error
+  return data
+}
+
+// Call Edge Function to send custom auth OTP via Resend
+export async function sendAuthOtp(email, language = 'en-US') {
+  const { data, error } = await supabase.functions.invoke('send-auth-otp', {
+    body: { email, language }
+  })
+
+  if (error) throw error
+  return data
+}
+
+// Call Edge Function to verify auth OTP
+export async function verifyAuthOtp(email, otpCode, language = 'en-US') {
+  const { data, error } = await supabase.functions.invoke('verify-auth-otp', {
+    body: { email, otpCode, language }
+  })
+
+  if (error) throw error
+  return data
+}
+
+// ============================================
 // Auth Helper Functions (Email OTP)
 // ============================================
 
-// Send OTP to email for login
-export async function sendOtpToEmail(email) {
+// Send OTP to email for login with language preference
+export async function sendOtpToEmail(email, userMetadata = {}) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${window.location.origin}/my-orders`
+      emailRedirectTo: `${window.location.origin}/my-orders`,
+      data: {
+        preferred_language: userMetadata.language || 'en-US'
+      }
     }
   })
   if (error) throw error

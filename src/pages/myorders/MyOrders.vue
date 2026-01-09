@@ -40,31 +40,43 @@
         </div>
       </div>
 
-      <!-- Step 2: 邮件已发送提示 -->
-      <div v-if="step === 'email-sent'" class="step-container">
+      <!-- Step 2: 输入验证码 -->
+      <div v-if="step === 'otp-input'" class="step-container">
         <div class="step-card">
           <div class="step-icon success-icon">
-            <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h2>{{ $t('myOrders.linkSent') }}</h2>
-          <p class="hint">{{ $t('myOrders.emailSentTo', { email: email }) }}</p>
-          <div class="email-notice">
-            <svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-            <span>{{ $t('myOrders.checkInbox') }}</span>
-          </div>
+          <h2>{{ $t('myOrders.enterOtp') }}</h2>
+          <p class="hint">{{ $t('myOrders.otpSentTo') }} <span class="email-display">{{ email }}</span></p>
+          <input
+            v-model="otpCode"
+            type="text"
+            maxlength="6"
+            :placeholder="$t('myOrders.otpPlaceholder')"
+            class="otp-input"
+            @keyup.enter="verifyOtp"
+            inputmode="numeric"
+            pattern="[0-9]*"
+          />
+          <button
+            @click="verifyOtp"
+            :disabled="verifying || otpCode.length !== 6"
+            class="submit-btn"
+          >
+            {{ verifying ? $t('myOrders.verifying') : $t('myOrders.verify') }}
+          </button>
           <button
             @click="resendOtp"
             :disabled="resendCooldown > 0 || sending"
-            class="submit-btn resend-btn"
+            class="link-btn resend-btn"
           >
             <template v-if="sending">{{ $t('myOrders.sending') }}</template>
             <template v-else-if="resendCooldown > 0">{{ $t('myOrders.resendCooldown', { time: formattedCooldown }) }}</template>
             <template v-else>{{ $t('myOrders.resend') }}</template>
           </button>
+          <button @click="backToEmail" class="link-btn">{{ $t('common.back') }}</button>
           <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
       </div>
@@ -135,16 +147,18 @@
 </template>
 
 <script>
-import { sendOtpToEmail, getReservationsByEmail, signOut, getSession } from '@/supabase'
+import { sendAuthOtp, verifyAuthOtp, getReservationsByEmail, signOut, getSession, supabase } from '@/supabase'
 
 export default {
   name: 'MyOrders',
   data () {
     return {
-      step: 'email', // 'email' | 'email-sent' | 'orders'
+      step: 'email', // 'email' | 'otp-input' | 'orders'
       email: '',
+      otpCode: '',
       reservations: [],
       sending: false,
+      verifying: false,
       loading: false,
       error: null,
       resendCooldown: 0, // 倒计时秒数
@@ -187,13 +201,47 @@ export default {
       this.sending = true
       this.error = null
       try {
-        await sendOtpToEmail(this.email)
-        this.step = 'email-sent'
+        const currentLocale = localStorage.getItem('locale') || 'en-US'
+        await sendAuthOtp(this.email.trim().toLowerCase(), currentLocale)
+        this.step = 'otp-input'
+        this.otpCode = ''
         this.startCooldown()
       } catch (err) {
         this.error = err.message || this.$t('alerts.sendLinkFailed')
       } finally {
         this.sending = false
+      }
+    },
+    backToEmail () {
+      this.step = 'email'
+      this.otpCode = ''
+      this.error = null
+    },
+    async verifyOtp () {
+      if (this.otpCode.length !== 6) return
+
+      this.verifying = true
+      this.error = null
+      try {
+        const currentLocale = localStorage.getItem('locale') || 'en-US'
+        const result = await verifyAuthOtp(this.email.trim().toLowerCase(), this.otpCode, currentLocale)
+
+        // Sign in with the temporary password
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: result.email,
+          password: result.tempPassword
+        })
+
+        if (signInError) {
+          throw new Error('Failed to create session: ' + signInError.message)
+        }
+
+        await this.loadOrders()
+        this.step = 'orders'
+      } catch (err) {
+        this.error = err.message || this.$t('alerts.verifyOtpFailed')
+      } finally {
+        this.verifying = false
       }
     },
     startCooldown () {
@@ -233,6 +281,7 @@ export default {
       }
       this.step = 'email'
       this.email = ''
+      this.otpCode = ''
       this.reservations = []
       this.resendCooldown = 0
       this.error = null
@@ -251,7 +300,9 @@ export default {
       this.sending = true
       this.error = null
       try {
-        await sendOtpToEmail(this.email)
+        const currentLocale = localStorage.getItem('locale') || 'en-US'
+        await sendAuthOtp(this.email.trim().toLowerCase(), currentLocale)
+        this.otpCode = ''
         this.startCooldown()
       } catch (err) {
         this.error = err.message || this.$t('alerts.sendLinkFailed')
@@ -361,6 +412,14 @@ export default {
   @apply outline-none border-primary ring-2 ring-primary ring-opacity-20;
 }
 
+.otp-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest font-mono mb-4;
+}
+
+.otp-input:focus {
+  @apply outline-none border-primary ring-2 ring-primary ring-opacity-20;
+}
+
 .submit-btn {
   @apply w-full py-3 bg-primary text-white rounded-lg font-medium;
 }
@@ -375,6 +434,10 @@ export default {
 
 .error-msg {
   @apply mt-3 text-red-500 text-sm;
+}
+
+.email-display {
+  @apply font-medium text-primary break-all;
 }
 
 /* Email Sent Notice */

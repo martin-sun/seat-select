@@ -51,12 +51,36 @@
           <input
             id="email"
             v-model="form.email"
+            @blur="onEmailBlur"
             type="email"
             :placeholder="$t('bookingForm.emailPlaceholder')"
             required
             class="form-input"
           />
           <p class="text-xs text-gray-500 mt-1">{{ $t('bookingForm.emailHint') }}</p>
+        </div>
+
+        <div class="form-group">
+          <label for="emailConfirm">
+            {{ $t('bookingForm.emailConfirm') }}
+            <span class="text-red-500">{{ $t('bookingForm.required') }}</span>
+          </label>
+          <input
+            id="emailConfirm"
+            v-model="form.emailConfirm"
+            type="email"
+            :placeholder="$t('bookingForm.emailConfirmPlaceholder')"
+            :class="{ 'border-red-500': form.emailConfirm && !emailsMatch }"
+            required
+            class="form-input"
+          />
+          <p v-if="form.emailConfirm && !emailsMatch"
+             class="text-xs text-red-500 mt-1">
+            {{ $t('alerts.emailsNotMatch') }}
+          </p>
+          <p class="text-xs text-orange-600 mt-2 bg-orange-50 p-2 rounded">
+            {{ $t('bookingForm.etransferNotice') }}
+          </p>
         </div>
 
         <!-- 错误提示 -->
@@ -67,7 +91,7 @@
         <!-- 提交按钮 -->
         <button
           type="submit"
-          :disabled="submitting"
+          :disabled="submitting || hasPendingOrder"
           class="submit-btn"
         >
           <span v-if="submitting">{{ $t('bookingForm.submitting') }}</span>
@@ -79,13 +103,66 @@
       <div class="notice">
         <p><strong>{{ $t('bookingForm.paymentNotice1') }}</strong></p>
         <p>{{ $t('bookingForm.paymentNotice2') }}</p>
+        <p>{{ $t('bookingForm.paymentNotice3') }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认对话框 -->
+  <div v-if="showConfirmDialog" class="confirm-dialog-overlay" @click.self="cancelConfirm">
+    <div class="confirm-dialog">
+      <h3 class="confirm-title">{{ $t('bookingForm.confirmTitle') }}</h3>
+
+      <div class="confirm-info">
+        <div class="info-item">
+          <span class="info-label">{{ $t('bookingForm.name') }}:</span>
+          <span class="info-value">{{ form.name }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ $t('bookingForm.phone') }}:</span>
+          <span class="info-value">{{ form.phone }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ $t('bookingForm.email') }}:</span>
+          <span class="info-value">{{ form.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ $t('bookingForm.totalAmount') }}:</span>
+          <span class="info-value">${{ totalPrice }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ $t('bookingForm.selectedSeats') }}:</span>
+          <span class="info-value">{{ selectedSeats.map(s => `${$t('seatArea.row')}${s.row}${$t('seatArea.seat')}${s.col}`).join(', ') }}</span>
+        </div>
+      </div>
+
+      <div class="confirm-checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="confirmChecked" />
+          <span>{{ $t('bookingForm.confirmCheckbox') }}</span>
+        </label>
+        <p class="memo-notice">{{ $t('bookingForm.memoNotice') }}</p>
+      </div>
+
+      <div class="confirm-actions">
+        <button @click="cancelConfirm" class="cancel-btn">
+          {{ $t('common.cancel') }}
+        </button>
+        <button
+          @click="finalSubmit"
+          :disabled="!confirmChecked || submitting"
+          class="confirm-btn"
+        >
+          {{ submitting ? $t('bookingForm.submitting') : $t('common.confirm') }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { createReservation } from '@/supabase'
+import { createReservation, sendPaymentInstructions, supabase } from '@/supabase'
+import { toast } from '@/utils/toast'
 
 export default {
   name: 'BookingForm',
@@ -113,10 +190,14 @@ export default {
       form: {
         name: '',
         phone: '',
-        email: ''
+        email: '',
+        emailConfirm: ''
       },
       submitting: false,
-      error: null
+      error: null,
+      showConfirmDialog: false,
+      confirmChecked: false,
+      hasPendingOrder: false
     }
   },
   computed: {
@@ -130,6 +211,11 @@ export default {
       // Supports: +1234567890, 123-456-7890, (123) 456-7890, 1234567890
       const phoneRegex = /^[\d\s\-+()]{7,20}$/
       return phoneRegex.test(this.form.phone.trim())
+    },
+    // Check if emails match
+    emailsMatch () {
+      if (!this.form.email || !this.form.emailConfirm) return true
+      return this.form.email.toLowerCase() === this.form.emailConfirm.toLowerCase()
     }
   },
   methods: {
@@ -153,6 +239,42 @@ export default {
       // Allow letters (including unicode), spaces, hyphens, apostrophes, 2-50 chars
       const nameRegex = /^[\p{L}\s\-']{2,50}$/u
       return nameRegex.test(trimmed)
+    },
+    async checkPendingOrders (email) {
+      if (!this.isValidEmail || !email) {
+        this.hasPendingOrder = false
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('reservations')
+          .select('id')
+          .eq('customer_email', email.trim().toLowerCase())
+          .eq('event_id', this.eventId)
+          .eq('status', 'pending')
+          .gt('expires_at', new Date().toISOString())
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          this.hasPendingOrder = true
+          toast.warning(
+            this.$t('alerts.existingPendingOrder'),
+            6000
+          )
+        } else {
+          this.hasPendingOrder = false
+        }
+      } catch (err) {
+        console.error('检查未付款订单失败:', err)
+        this.hasPendingOrder = false
+      }
+    },
+    async onEmailBlur () {
+      if (this.isValidEmail && this.form.email) {
+        await this.checkPendingOrders(this.form.email)
+      }
     },
     async submitBooking () {
       // Validate name
@@ -185,6 +307,26 @@ export default {
         return
       }
 
+      // Validate confirmation email
+      if (!this.form.emailConfirm.trim()) {
+        this.error = this.$t('alerts.enterEmailConfirm')
+        return
+      }
+      if (!this.emailsMatch) {
+        this.error = this.$t('alerts.emailsNotMatch')
+        return
+      }
+
+      // Show confirmation dialog instead of submitting directly
+      this.showConfirmDialog = true
+    },
+
+    cancelConfirm () {
+      this.showConfirmDialog = false
+      this.confirmChecked = false
+    },
+
+    async finalSubmit () {
       this.submitting = true
       this.error = null
 
@@ -200,6 +342,12 @@ export default {
           totalAmount: this.totalPrice
         })
 
+        // Send payment instructions via Edge Function (fire and forget)
+        const currentLocale = localStorage.getItem('locale') || 'en-US'
+        sendPaymentInstructions(reservation.id, currentLocale).catch(err => {
+          console.error('Failed to send payment instructions:', err)
+        })
+
         // Navigate to reservation status page
         const lang = this.$route.params.lang || 'zh'
         this.$router.push({
@@ -210,6 +358,8 @@ export default {
         this.$emit('success', reservation)
       } catch (err) {
         this.error = err.message || this.$t('alerts.bookingFailed')
+        this.showConfirmDialog = false
+        this.confirmChecked = false
       } finally {
         this.submitting = false
       }
@@ -219,8 +369,11 @@ export default {
     visible (val) {
       if (val) {
         // Reset form
-        this.form = { name: '', phone: '', email: '' }
+        this.form = { name: '', phone: '', email: '', emailConfirm: '' }
         this.error = null
+        this.showConfirmDialog = false
+        this.confirmChecked = false
+        this.hasPendingOrder = false
       }
     }
   }
@@ -288,5 +441,61 @@ export default {
 
 .notice p {
   @apply mb-1 last:mb-0;
+}
+
+.confirm-dialog-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4;
+}
+
+.confirm-dialog {
+  @apply bg-white rounded-lg w-full max-w-md p-6;
+}
+
+.confirm-title {
+  @apply text-lg font-bold mb-4 text-center;
+}
+
+.confirm-info {
+  @apply bg-gray-50 rounded p-4 mb-4 space-y-2;
+}
+
+.info-item {
+  @apply flex justify-between;
+}
+
+.info-label {
+  @apply text-gray-600 text-sm;
+}
+
+.info-value {
+  @apply font-medium text-sm;
+}
+
+.confirm-checkbox {
+  @apply mb-4;
+}
+
+.checkbox-label {
+  @apply flex items-start gap-2 text-sm cursor-pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  @apply mt-1 w-4 h-4 border border-gray-300 rounded text-primary focus:ring-primary;
+}
+
+.memo-notice {
+  @apply text-xs text-orange-600 mt-2 bg-orange-50 p-2 rounded;
+}
+
+.confirm-actions {
+  @apply flex gap-3;
+}
+
+.cancel-btn {
+  @apply flex-1 py-2 border border-gray-300 rounded hover:bg-gray-50;
+}
+
+.confirm-btn {
+  @apply flex-1 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 </style>
