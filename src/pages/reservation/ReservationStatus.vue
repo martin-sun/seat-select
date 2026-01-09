@@ -34,7 +34,7 @@
         <h3>{{ $t('reservation.seatInfo') }}</h3>
         <div class="seats-list">
           <span v-for="seat in seats" :key="seat.id" class="seat-tag">
-            {{ $t('seatArea.row') }} {{ seat.row }} {{ $t('seatArea.seat') }} {{ seat.col }}
+            {{ formatSeat(seat) }}
           </span>
         </div>
         <div class="total-amount">
@@ -122,6 +122,7 @@
 
 <script>
 import { supabase, getReservation } from '@/supabase'
+import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
   name: 'ReservationStatus',
@@ -182,6 +183,7 @@ export default {
     }
   },
   methods: {
+    formatSeat,
     async loadReservation () {
       this.loading = true
       this.error = null

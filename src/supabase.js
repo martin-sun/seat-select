@@ -128,6 +128,31 @@ export async function verifyAuthOtp(email, otpCode, language = 'en-US') {
   return data
 }
 
+// Call Edge Function to send payment confirmation email
+// @param {string} reservationId - The reservation ID
+// @param {boolean} useAuth - Whether to include auth token (default: true)
+export async function sendPaymentConfirmation(reservationId, useAuth = true) {
+  const headers = {}
+
+  if (useAuth) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      headers.Authorization = `Bearer ${session.access_token}`
+    }
+  }
+
+  const { data, error } = await supabase.functions.invoke('send-payment-confirmation', {
+    body: { reservation_id: reservationId },
+    headers
+  })
+
+  if (error) throw error
+  return data
+}
+
+// Alias for admin usage (no auth required)
+export const sendPaymentConfirmationAdmin = (reservationId) => sendPaymentConfirmation(reservationId, false)
+
 // ============================================
 // Auth Helper Functions (Email OTP)
 // ============================================

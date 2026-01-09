@@ -11,6 +11,9 @@
     "logout": "退出"
   },
   "chunwan": {
+    "nav": {
+      "title": "节目单"
+    },
     "banner": {
       "yearLabel": "萨斯卡通春晚"
     },
@@ -66,6 +69,37 @@
     "organizerSection": {
       "organizer": "主办单位",
       "coOrganizer": "协办单位"
+    },
+    "mobile": {
+      "header": {
+        "year": "2026",
+        "title": "RBC新春之夜",
+        "subtitle": "萨斯卡通春节联欢晚会"
+      },
+      "staff": {
+        "title": "工作人员",
+        "members": [
+          { "role": "总策划", "names": "李明, 王芳" },
+          { "role": "导演", "names": "张伟" },
+          { "role": "副导演", "names": "刘洋, 陈静" },
+          { "role": "舞台监督", "names": "赵强" },
+          { "role": "灯光设计", "names": "孙磊" },
+          { "role": "音响设计", "names": "周杰" }
+        ],
+        "artDirection": "艺术指导",
+        "artDirectors": [
+          { "name": "张艺谋", "org": "北京电影学院" },
+          { "name": "李安", "org": "纽约大学" }
+        ]
+      },
+      "footer": {
+        "blessing1": "新春大吉",
+        "blessing2": "万事如意",
+        "blessing3": "阖家幸福",
+        "copyright": "© 2026 萨斯卡通春节联欢晚会"
+      },
+      "swipeUp": "向上滑动",
+      "viewDesktop": "查看桌面版"
     }
   },
   "header": {
@@ -83,6 +117,7 @@
     "andExit": "and Exit",
     "row": "排",
     "seat": "座",
+    "format": "{row}排{col}座",
     "legend": {
       "available": "可选",
       "selected": "已选",

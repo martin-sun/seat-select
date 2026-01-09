@@ -13,7 +13,7 @@
         @click="cancelSelect(item)"
         class="text-sm py-2 px-3 my-1.5 text-gray-700 bg-gray-50 border border-gray-100 rounded-lg cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all flex justify-between items-center group"
       >
-        <span class="font-medium">{{ $t('seatArea.row') }} {{item.row}} {{ $t('seatArea.seat') }} {{item.col}}</span>
+        <span class="font-medium">{{ formatSeat(item) }}</span>
         <span class="text-gray-400 group-hover:text-red-500 transition-colors ml-2 text-lg">×</span>
       </li>
     </ul>
@@ -25,6 +25,8 @@
 </template>
 
 <script>
+import { formatSeat } from '@/composables/useSeatFormat'
+
 export default {
   components: {},
   props: {
@@ -46,6 +48,7 @@ export default {
     }
   },
   methods: {
+    formatSeat,
     cancelSelect: function (item) {
       this.$emit('cancelSelect', item.orgIndex)
     }

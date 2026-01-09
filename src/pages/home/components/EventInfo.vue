@@ -14,7 +14,10 @@
             </div>
             <div>
               <h3 class="text-yellow-400 font-semibold mb-1">{{ $t('chunwan.eventInfo.date') }}</h3>
-              <p class="text-yellow-100 text-lg">{{ formattedDate }}</p>  
+              <p class="text-yellow-100 whitespace-nowrap"
+                 style="font-size: clamp(0.875rem, 0.75rem + 0.3vw, 1.125rem);">
+                {{ formattedDate }}
+              </p>  
             </div>
           </div>
 
@@ -25,8 +28,14 @@
             </div>
             <div>
               <h3 class="text-yellow-400 font-semibold mb-1">{{ $t('chunwan.eventInfo.location') }}</h3>
-              <p class="text-yellow-100 text-lg">{{ location }}</p>
-              <p class="text-yellow-100/70 text-sm">{{ address }}</p>
+              <p class="text-yellow-100 whitespace-nowrap"
+                 style="font-size: clamp(0.875rem, 0.75rem + 0.3vw, 1.125rem);">
+                {{ location }}
+              </p>
+              <p class="text-yellow-100/70 whitespace-nowrap"
+                 style="font-size: clamp(0.75rem, 0.65rem + 0.25vw, 0.875rem);">
+                {{ address }}
+              </p>
             </div>
           </div>
         </div>
@@ -52,11 +61,11 @@ export default {
   props: {
     date: {
       type: String,
-      required: true
+      default: ''
     },
     location: {
       type: String,
-      required: true
+      default: ''
     },
     address: {
       type: String,

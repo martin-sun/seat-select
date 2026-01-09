@@ -133,7 +133,7 @@
                   :key="rs.seat_id"
                   class="seat-tag"
                 >
-                  {{ rs.seats.row }}排{{ rs.seats.col }}座
+                  {{ formatSeat(rs.seats) }}
                 </span>
                 <span v-if="order.reservation_seats.length > 3" class="seat-more">
                   +{{ order.reservation_seats.length - 3 }}
@@ -255,7 +255,7 @@
                 :key="rs.seat_id"
                 class="seat-tag-lg"
               >
-                {{ rs.seats.zone }} - {{ rs.seats.row }}排{{ rs.seats.col }}座
+                {{ formatSeat(rs.seats) }}
               </span>
             </div>
           </div>
@@ -287,7 +287,8 @@
 </template>
 
 <script>
-import { getAllReservations, updateReservationStatus } from '@/supabase'
+import { getAllReservations, updateReservationStatus, sendPaymentConfirmationAdmin } from '@/supabase'
+import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
   name: 'OrdersManagement',
@@ -333,6 +334,7 @@ export default {
     this.loadStats()
   },
   methods: {
+    formatSeat,
     async loadOrders() {
       this.loading = true
       try {
@@ -396,10 +398,22 @@ export default {
     },
     async confirmPayment(order) {
       if (!confirm(`确认将订单 #${order.id.substring(0, 8).toUpperCase()} 标记为已支付？`)) return
-      
+
       this.actionLoading = order.id
       try {
+        // 1. Update reservation status
         await updateReservationStatus(order.id, 'paid')
+
+        // 2. Send payment confirmation email
+        try {
+          await sendPaymentConfirmationAdmin(order.id)
+          console.log(`Payment confirmation email sent to ${order.customer_email}`)
+        } catch (emailError) {
+          console.error('Failed to send payment confirmation email:', emailError)
+          // Don't fail the entire operation if email sending fails
+        }
+
+        // 3. Refresh data
         await this.loadOrders()
         await this.loadStats()
       } catch (err) {

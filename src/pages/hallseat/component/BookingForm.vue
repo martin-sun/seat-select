@@ -12,7 +12,7 @@
         <div class="text-sm text-gray-600 mb-2">{{ $t('bookingForm.selectedSeats') }}</div>
         <div class="flex flex-wrap gap-2">
           <span v-for="seat in selectedSeats" :key="seat.id" class="seat-tag">
-            {{ $t('seatArea.row') }} {{ seat.row }} {{ $t('seatArea.seat') }} {{ seat.col }}
+            {{ formatSeat(seat) }}
           </span>
         </div>
         <div class="total-price">
@@ -132,7 +132,7 @@
         </div>
         <div class="info-item">
           <span class="info-label">{{ $t('bookingForm.selectedSeats') }}:</span>
-          <span class="info-value">{{ selectedSeats.map(s => `${$t('seatArea.row')}${s.row}${$t('seatArea.seat')}${s.col}`).join(', ') }}</span>
+          <span class="info-value">{{ selectedSeats.map(s => formatSeat(s)).join(', ') }}</span>
         </div>
       </div>
 
@@ -163,6 +163,7 @@
 <script>
 import { createReservation, sendPaymentInstructions, supabase } from '@/supabase'
 import { toast } from '@/utils/toast'
+import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
   name: 'BookingForm',
@@ -219,6 +220,7 @@ export default {
     }
   },
   methods: {
+    formatSeat,
     close () {
       this.error = null
       this.$emit('close')

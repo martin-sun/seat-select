@@ -119,7 +119,7 @@
               </div>
               <div class="order-seats">
                 <span v-for="rs in reservation.reservation_seats" :key="rs.seat_id" class="seat-tag">
-                  {{ rs.seats?.zone }} - {{ $t('seatArea.row') }} {{ rs.seats?.row }} {{ $t('seatArea.seat') }} {{ rs.seats?.col }}
+                  {{ formatSeat(rs.seats) }}
                 </span>
               </div>
               <!-- 待支付订单显示锁定截止时间 -->
@@ -148,6 +148,7 @@
 
 <script>
 import { sendAuthOtp, verifyAuthOtp, getReservationsByEmail, signOut, getSession, supabase } from '@/supabase'
+import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
   name: 'MyOrders',
@@ -195,6 +196,7 @@ export default {
     }
   },
   methods: {
+    formatSeat,
     async sendOtp () {
       if (!this.isValidEmail) return
 

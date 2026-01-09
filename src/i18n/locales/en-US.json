@@ -11,6 +11,9 @@
     "logout": "Logout"
   },
   "chunwan": {
+    "nav": {
+      "title": "Programs"
+    },
     "banner": {
       "yearLabel": "Saskatoon Spring Festival Celebration"
     },
@@ -66,6 +69,37 @@
     "organizerSection": {
       "organizer": "Hosts",
       "coOrganizer": "Co-hosts"
+    },
+    "mobile": {
+      "header": {
+        "year": "2026",
+        "title": "RBC Spring Festival Night",
+        "subtitle": "Saskatoon Spring Festival Celebration"
+      },
+      "staff": {
+        "title": "Staff",
+        "members": [
+          { "role": "Executive Producer", "names": "Li Ming, Wang Fang" },
+          { "role": "Director", "names": "Zhang Wei" },
+          { "role": "Associate Director", "names": "Liu Yang, Chen Jing" },
+          { "role": "Stage Manager", "names": "Zhao Qiang" },
+          { "role": "Lighting Designer", "names": "Sun Lei" },
+          { "role": "Sound Designer", "names": "Zhou Jie" }
+        ],
+        "artDirection": "Art Direction",
+        "artDirectors": [
+          { "name": "Zhang Yimou", "org": "Beijing Film Academy" },
+          { "name": "Ang Lee", "org": "New York University" }
+        ]
+      },
+      "footer": {
+        "blessing1": "Happy New Year",
+        "blessing2": "Best Wishes",
+        "blessing3": "Family Happiness",
+        "copyright": "© 2026 Saskatoon Spring Festival Celebration"
+      },
+      "swipeUp": "Swipe up",
+      "viewDesktop": "View Desktop Version"
     }
   },
   "header": {
@@ -83,6 +117,7 @@
     "andExit": "and Exit",
     "row": "Row",
     "seat": "Seat",
+    "format": "Row {row}, Seat {col}",
     "legend": {
       "available": "Available",
       "selected": "Selected",

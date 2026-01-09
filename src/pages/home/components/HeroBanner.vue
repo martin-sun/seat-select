@@ -19,21 +19,23 @@
       <div class="inline-block mb-6">
         <span class="inline-block bg-yellow-500 text-red-900 px-6 py-4 rounded-lg
                       md:bg-transparent md:text-yellow-400
-                      text-xl md:text-3xl lg:text-6xl
                       font-bold leading-relaxed
-                      break-words max-w-full">
-          {{ year }} 
+                      whitespace-nowrap"
+                      style="font-size: clamp(1rem, 0.5rem + 3vw, 3.75rem);">
+          {{ year }}
           {{ $t('chunwan.banner.yearLabel') }}
         </span>
       </div>
 
       <!-- 主标题 -->
-      <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold text-yellow-400 mb-4 leading-tight">
+      <h1 class="font-bold text-yellow-400 mb-4 leading-tight whitespace-nowrap"
+          style="font-size: clamp(1.125rem, 0.5rem + 2.5vw, 3.75rem);">
         {{ title }}
       </h1>
 
       <!-- 副标题 -->
-      <p class="text-lg md:text-2xl text-yellow-100/90 mb-8">
+      <p class="text-yellow-100/90 mb-8 whitespace-nowrap"
+         style="font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.5rem);">
         {{ subtitle }}
       </p>
 

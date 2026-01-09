@@ -1,5 +1,22 @@
 <template>
-  <div class="chunwan-programs min-h-screen bg-gradient-to-b from-red-900 via-red-800 to-red-900">
+  <!-- 加载状态 -->
+  <div v-if="loading" class="min-h-screen bg-gradient-to-b from-red-900 via-red-800 to-red-900 flex items-center justify-center">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent mb-4"></div>
+      <p class="text-yellow-100 text-lg">{{ $t('common.loading') }}</p>
+    </div>
+  </div>
+
+  <!-- 移动端全屏滚动视图 -->
+  <MobilePrograms
+    v-else-if="isMobile && programs && programs.length > 0"
+    :lang="lang"
+    :programs="programs"
+    :settings="settings"
+  />
+
+  <!-- 桌面端卡片列表视图 -->
+  <div v-else class="chunwan-programs min-h-screen bg-gradient-to-b from-red-900 via-red-800 to-red-900">
     <!-- 导航栏 -->
     <nav class="sticky top-0 z-50 bg-red-900/95 backdrop-blur-sm border-b border-red-700/50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,16 +100,20 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ProgramCard from './components/ProgramCard.vue'
+import MobilePrograms from './components/MobilePrograms.vue'
+import { useDevice } from '@/composables/useDevice'
 import { getPrograms, getSettings, getAssetUrl } from '@/cms'
 
 export default {
   name: 'ChunwanPrograms',
   components: {
-    ProgramCard
+    ProgramCard,
+    MobilePrograms
   },
   setup() {
     const route = useRoute()
     const { t } = useI18n()
+    const { isMobile } = useDevice()
 
     const lang = computed(() => route.params.lang || 'zh')
     const loading = ref(true)
@@ -168,7 +189,9 @@ export default {
       settings,
       activeType,
       programTypes,
-      filteredPrograms
+      filteredPrograms,
+      isMobile,
+      programs
     }
   }
 }
