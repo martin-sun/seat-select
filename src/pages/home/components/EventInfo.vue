@@ -28,10 +28,12 @@
             </div>
             <div>
               <h3 class="text-yellow-400 font-semibold mb-1">{{ $t('chunwan.eventInfo.location') }}</h3>
-              <p class="text-yellow-100 whitespace-nowrap"
+              <a href="https://www.google.com/maps/place/Lakeview+Church/@52.0863804,-106.5811565,17z/data=!3m1!4b1!4m6!3m5!1s0x5304f1803fe36201:0x70ecf16ef81613fa!8m2!3d52.0863804!4d-106.5811565!16s%2Fg%2F1tf_sjhf?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D"
+                 target="_blank" rel="noopener noreferrer"
+                 class="block text-yellow-100 hover:text-yellow-400 underline whitespace-nowrap"
                  style="font-size: clamp(0.875rem, 0.75rem + 0.3vw, 1.125rem);">
                 {{ location }}
-              </p>
+              </a>
               <p class="text-yellow-100/70 whitespace-nowrap"
                  style="font-size: clamp(0.75rem, 0.65rem + 0.25vw, 0.875rem);">
                 {{ address }}

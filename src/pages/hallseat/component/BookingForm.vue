@@ -79,7 +79,7 @@
             {{ $t('alerts.emailsNotMatch') }}
           </p>
           <p class="text-xs text-orange-600 mt-2 bg-orange-50 p-2 rounded">
-            {{ $t('bookingForm.etransferNotice') }}
+            {{ $t('bookingForm.etransferNotice') }}: {{ form.phone || '__________' }}
           </p>
         </div>
 
@@ -141,7 +141,7 @@
           <input type="checkbox" v-model="confirmChecked" />
           <span>{{ $t('bookingForm.confirmCheckbox') }}</span>
         </label>
-        <p class="memo-notice">{{ $t('bookingForm.memoNotice') }}</p>
+        <p class="memo-notice">{{ $t('bookingForm.memoNotice') }}: {{ form.phone }}</p>
       </div>
 
       <div class="confirm-actions">

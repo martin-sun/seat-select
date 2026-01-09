@@ -147,7 +147,7 @@
     "phonePlaceholder": "Enter phone number",
     "emailPlaceholder": "Email address you use for E-transfer",
     "emailHint": "This email must match your E-transfer email in your bank",
-    "confirmBooking": "Confirm Booking",
+    "confirmBooking": "Continue",
     "submitting": "Submitting...",
     "paymentNotice1": "Please complete E-transfer payment within 24 hours",
     "paymentNotice2": "Seats will be released if payment is not received",
@@ -157,8 +157,8 @@
     "emailConfirmPlaceholder": "Re-enter your email",
     "confirmTitle": "Confirm Booking Details",
     "confirmCheckbox": "I confirm this email is used for my E-transfer. I understand that payment notifications will be sent to this email.",
-    "etransferNotice": "Important: Please ensure this email matches your E-transfer email. Interac will use this email to send payment notifications, and we verify payments through this email. Please include your phone number in the memo: 3068505587",
-    "memoNotice": "Please include your phone number in the E-transfer memo: 3068505587",
+    "etransferNotice": "Important: Please ensure this email matches your E-transfer email. Interac will use this email to send payment notifications, and we verify payments through this email. Please include your phone number in the memo",
+    "memoNotice": "Please include your phone number in the E-transfer memo",
     "emailHelp": "Why is this email needed? This is the email you use when sending E-transfer, to receive payment notifications and verify your payment."
   },
   "selectedTab": {
