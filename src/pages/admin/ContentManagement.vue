@@ -120,11 +120,11 @@
           <div class="form-grid">
             <div class="form-group full-width">
               <label>活动介绍（中文）</label>
-              <textarea v-model="settings.about_content" rows="4"></textarea>
+              <MilkdownCrepeEditor v-model="settings.about_content" placeholder="输入中文活动介绍..." />
             </div>
             <div class="form-group full-width">
               <label>活动介绍（英文）</label>
-              <textarea v-model="settings.about_content_en" rows="4"></textarea>
+              <MilkdownCrepeEditor v-model="settings.about_content_en" placeholder="Enter English event description..." />
             </div>
           </div>
         </div>
@@ -449,6 +449,7 @@
 
 <script>
 import { getSettings } from '@/cms'
+import MilkdownCrepeEditor from '@/components/MilkdownCrepeEditor.vue'
 import { 
   updateChunwanSettings, 
   getAdminSponsors, 
@@ -467,6 +468,9 @@ import {
 
 export default {
   name: 'ContentManagement',
+  components: {
+    MilkdownCrepeEditor
+  },
   data() {
     return {
       activeTab: 'settings',

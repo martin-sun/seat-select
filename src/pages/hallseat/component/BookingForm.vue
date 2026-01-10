@@ -166,10 +166,16 @@
 
       <div class="confirm-checkbox">
         <label class="checkbox-label">
-          <input type="checkbox" v-model="confirmChecked" />
-          <span>{{ $t('bookingForm.confirmCheckbox') }}</span>
+          <input type="checkbox" v-model="confirmChecked" class="w-4 h-4" style="width: 13px; height: 16px;" />
+          <span class="font-semibold text-orange-600">{{ $t('bookingForm.confirmCheckbox') }}</span>
         </label>
-        <p class="memo-notice">{{ $t('bookingForm.memoNotice') }}: {{ form.phone }}</p>
+      </div>
+
+      <div class="confirm-checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="memoChecked" class="w-4 h-4" style="width: 13px; height: 16px;" />
+          <span class="font-semibold text-orange-600">{{ $t('bookingForm.memoNotice') }}: {{ form.phone }}</span>
+        </label>
       </div>
 
       <div class="confirm-actions">
@@ -178,7 +184,7 @@
         </button>
         <button
           @click="finalSubmit"
-          :disabled="!confirmChecked || submitting"
+          :disabled="!confirmChecked || !memoChecked || submitting"
           class="confirm-btn"
         >
           {{ submitting ? $t('bookingForm.submitting') : $t('common.confirm') }}
@@ -228,6 +234,7 @@ export default {
       error: null,
       showConfirmDialog: false,
       confirmChecked: false,
+      memoChecked: false,
       hasPendingOrder: false
     }
   },
@@ -396,6 +403,7 @@ export default {
     cancelConfirm () {
       this.showConfirmDialog = false
       this.confirmChecked = false
+      this.memoChecked = false
     },
 
     async finalSubmit () {
@@ -439,6 +447,7 @@ export default {
         this.error = err.message || this.$t('alerts.bookingFailed')
         this.showConfirmDialog = false
         this.confirmChecked = false
+        this.memoChecked = false
       } finally {
         this.submitting = false
       }
@@ -460,6 +469,7 @@ export default {
         this.error = null
         this.showConfirmDialog = false
         this.confirmChecked = false
+        this.memoChecked = false
         this.hasPendingOrder = false
       }
     }

@@ -55,11 +55,12 @@
       </div>
 
       <!-- 活动介绍 -->
-      <div class="mt-8 text-center">
-        <h2 class="text-2xl md:text-3xl font-bold text-yellow-400 mb-6">{{ $t('chunwan.eventInfo.aboutTitle') }}</h2>
-        <p class="text-yellow-100/90 text-lg leading-relaxed max-w-3xl mx-auto">
-          {{ aboutContent }}
-        </p>
+      <div class="mt-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-yellow-400 mb-6 text-center">{{ $t('chunwan.eventInfo.aboutTitle') }}</h2>
+        <MarkdownRenderer
+          :content="aboutContent"
+          class="text-yellow-100/90 text-lg leading-relaxed max-w-3xl mx-auto"
+        />
       </div>
     </div>
   </section>
@@ -68,9 +69,13 @@
 <script>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
 export default {
   name: 'EventInfo',
+  components: {
+    MarkdownRenderer
+  },
   props: {
     date: {
       type: String,
