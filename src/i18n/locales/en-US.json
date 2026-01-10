@@ -80,19 +80,49 @@
       "staff": {
         "title": "Staff",
         "members": [
-          { "role": "Event Planning", "names": "Yang Wen / Wang Fen / Liu Wengang / Haifeng" },
-          { "role": "Program Directors", "names": "Wang Fen / Yang Wen" },
-          { "role": "Director Assistant", "names": "Sophia Wang" },
-          { "role": "Technical Support", "names": "Haifeng / Chen Yu" },
-          { "role": "Music/Video", "names": "Wang Fen" },
-          { "role": "Outreach", "names": "Zhao Dan" },
-          { "role": "Business/Publicity", "names": "Feng Weisi / Chu Min / Liu Wengang" }
+          {
+            "role": "Event Planning",
+            "names": "Yang Wen / Wang Fen / Liu Wengang / Haifeng"
+          },
+          {
+            "role": "Program Directors",
+            "names": "Wang Fen / Yang Wen"
+          },
+          {
+            "role": "Director Assistant",
+            "names": "Sophia Wang"
+          },
+          {
+            "role": "Technical Support",
+            "names": "Haifeng / Chen Yu"
+          },
+          {
+            "role": "Music/Video",
+            "names": "Wang Fen"
+          },
+          {
+            "role": "Outreach",
+            "names": "Zhao Dan"
+          },
+          {
+            "role": "Business/Publicity",
+            "names": "Feng Weisi / Chu Min / Liu Wengang"
+          }
         ],
         "artDirection": "Art Direction",
         "artDirectors": [
-          { "name": "Yan Jia", "org": "Saskatchewan Chinese Dance School" },
-          { "name": "Zeng Guojun / Zhou Hong", "org": "Chunzhi Sheng Choir" },
-          { "name": "Wang Fen", "org": "Canada Yucai School" }
+          {
+            "name": "Yan Jia",
+            "org": "Saskatchewan Chinese Dance School"
+          },
+          {
+            "name": "Zeng Guojun / Zhou Hong",
+            "org": "Chunzhi Sheng Choir"
+          },
+          {
+            "name": "Wang Fen",
+            "org": "Canada Yucai School"
+          }
         ]
       },
       "footer": {
@@ -148,8 +178,8 @@
     "email": "E-transfer Email",
     "namePlaceholder": "Enter your name",
     "phonePlaceholder": "Enter phone number",
-    "emailPlaceholder": "Email address you use for E-transfer",
-    "emailHint": "This email must match your E-transfer email in your bank",
+    "emailPlaceholder": "Email address registered with your Interac e-Transfer",
+    "emailHint": "This email must match your Interac e-Transfer registered email",
     "confirmBooking": "Continue",
     "submitting": "Submitting...",
     "paymentNotice1": "Please complete E-transfer payment within 24 hours",
@@ -159,10 +189,10 @@
     "emailConfirm": "Confirm Email",
     "emailConfirmPlaceholder": "Re-enter your email",
     "confirmTitle": "Confirm Booking Details",
-    "confirmCheckbox": "I confirm this email is used for my E-transfer. I understand that payment notifications will be sent to this email.",
-    "etransferNotice": "Important: Please ensure this email matches your E-transfer email. Interac will use this email to send payment notifications, and we verify payments through this email. Please include your phone number in the memo",
+    "confirmCheckbox": "I confirm this email is registered with my Interac e-Transfer account. I understand payment notifications will be sent to this email.",
+    "etransferNotice": "Important: Please ensure this email matches your Interac e-Transfer registered email. Interac will send payment notifications to this email, and we verify payments through it. Please include your phone number in the memo",
     "memoNotice": "Please include your phone number in the E-transfer memo",
-    "emailHelp": "Why is this email needed? This is the email you use when sending E-transfer, to receive payment notifications and verify your payment."
+    "emailHelp": "Why is this email needed? This is the email registered with your Interac e-Transfer account, used to receive payment notifications and verify your payment."
   },
   "selectedTab": {
     "selected": "Selected ({count})"

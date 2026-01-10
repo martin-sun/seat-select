@@ -24,6 +24,7 @@ interface Reservation {
   total_amount: number
   seat_ids?: string[]
   payment_confirmed_at?: string
+  preferred_language?: string
 }
 
 serve(async (req) => {
@@ -85,62 +86,31 @@ serve(async (req) => {
       })
     }
 
-    // 4. Get user language preference from auth.users
-    const normalizedEmail = customerEmail.toLowerCase().trim()
-    let foundUser = null
-    let page = 1
-    const perPage = 1000
-
-    // Paginate through users to find matching email
-    while (!foundUser) {
-      const { data: usersData, error: listError } = await supabase.auth.admin.listUsers({
-        page,
-        perPage
-      })
-
-      if (listError) {
-        console.error('Error listing users:', listError)
-        break
-      }
-
-      foundUser = usersData.users.find(u => u.email.toLowerCase() === normalizedEmail)
-
-      // If no user found and there are more pages, continue; otherwise stop
-      if (!foundUser && usersData.users.length === perPage) {
-        page++
-      } else {
-        break
-      }
-    }
-
-    // Get language preference, default to 'en-US' if user not found
-    const language = foundUser?.user_metadata?.preferred_language || 'en-US'
+    // 4. Get language preference from reservation (saved at booking time)
+    const language = res.preferred_language || 'en-US'
     const isChinese = language.toLowerCase().startsWith('zh')
     const locale = isChinese ? 'zh-CN' : 'en-US'
 
-    console.log(`User language preference: ${language}, locale: ${locale}`)
+    console.log(`Reservation language preference: ${language}, locale: ${locale}`)
 
-    // 6. Get seat information
+    // 5. Get seat information - via reservation_seats junction table
+    const { data: reservationSeats } = await supabase
+      .from('reservation_seats')
+      .select('seat_id')
+      .eq('reservation_id', reservation_id)
+
     let seatsList: string[] = []
-    const seatIds = res.seat_ids || []
-
-    if (seatIds.length > 0) {
+    if (reservationSeats && reservationSeats.length > 0) {
+      const seatIds = reservationSeats.map((rs: { seat_id: string }) => rs.seat_id)
       const { data: seats } = await supabase
         .from('seats')
         .select('row, col')
         .in('id', seatIds)
 
-      seatsList = seats?.map(s => `${s.row}${s.col}`) || []
-    } else {
-      const { data: seats } = await supabase
-        .from('seats')
-        .select('row, col')
-        .eq('reservation_id', reservation_id)
-
-      seatsList = seats?.map(s => `${s.row}${s.col}`) || []
+      seatsList = seats?.map((s: { row: string; col: string }) => `${s.row}${s.col}`) || []
     }
 
-    // 7. Generate email HTML based on language
+    // 6. Generate email HTML based on language
     const emailContent = generatePaymentConfirmationEmail({
       locale,
       customerName: res.customer_name || 'Valued Customer',
@@ -150,7 +120,7 @@ serve(async (req) => {
       confirmedAt: res.payment_confirmed_at || new Date().toISOString()
     })
 
-    // 8. Send email via Resend
+    // 7. Send email via Resend
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {

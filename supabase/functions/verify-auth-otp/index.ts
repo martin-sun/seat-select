@@ -55,33 +55,17 @@ serve(async (req) => {
       .delete()
       .eq('id', otpRecord.id)
 
-    // 5. Check if user exists using getUserByEmail
+    // 5. Check if user exists by directly querying auth.users table
     const normalizedEmail = email.toLowerCase().trim()
-    let foundUser = null
-    let page = 1
-    const perPage = 1000
 
-    // Paginate through users to find matching email
-    while (!foundUser) {
-      const { data: usersData, error: listError } = await supabase.auth.admin.listUsers({
-        page,
-        perPage
-      })
+    // Direct query to auth.users table using service role privileges
+    const { data: userData } = await supabase
+      .from('auth.users')
+      .select('id, user_metadata')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
 
-      if (listError) {
-        console.error('Error listing users:', listError)
-        break
-      }
-
-      foundUser = usersData.users.find(u => u.email.toLowerCase() === normalizedEmail)
-
-      // If no user found and there are more pages, continue; otherwise stop
-      if (!foundUser && usersData.users.length === perPage) {
-        page++
-      } else {
-        break
-      }
-    }
+    const foundUser = userData
 
     // 6. Generate a temporary password for login
     const tempPassword = crypto.randomUUID().substring(0, 32)

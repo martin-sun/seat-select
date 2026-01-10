@@ -133,24 +133,21 @@ serve(async (req) => {
       })
     }
 
-    // 6. Get seat information
-    let seatsList: string[] = []
-    const seatIds = res.seat_ids || []
+    // 6. Get seat information - via reservation_seats junction table
+    const { data: reservationSeats } = await supabase
+      .from('reservation_seats')
+      .select('seat_id')
+      .eq('reservation_id', reservation_id)
 
-    if (seatIds.length > 0) {
+    let seatsList: string[] = []
+    if (reservationSeats && reservationSeats.length > 0) {
+      const seatIds = reservationSeats.map((rs: { seat_id: string }) => rs.seat_id)
       const { data: seats } = await supabase
         .from('seats')
         .select('row, col')
         .in('id', seatIds)
 
-      seatsList = seats?.map(s => `${s.row}${s.col}`) || []
-    } else {
-      const { data: seats } = await supabase
-        .from('seats')
-        .select('row, col')
-        .eq('reservation_id', reservation_id)
-
-      seatsList = seats?.map(s => `${s.row}${s.col}`) || []
+      seatsList = seats?.map((s: { row: string; col: string }) => `${s.row}${s.col}`) || []
     }
 
     // 7. Generate email HTML based on language

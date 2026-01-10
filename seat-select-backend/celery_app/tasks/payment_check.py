@@ -1,22 +1,15 @@
 import re
-import requests
 from datetime import datetime, timezone
 from celery_app.celery import app
 from src.database import supabase
 from src.utils.gmail.gmail_api import get_gmail_api
-from src.config import settings
+from src.utils.gmail.templates import get_payment_confirmation_html
 
 
-def invoke_supabase_function(function_name: str, payload: dict) -> dict:
-    """调用 Supabase Edge Function"""
-    url = f"{settings.SUPABASE_URL}/functions/v1/{function_name}"
-    headers = {
-        'Authorization': f'Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}',
-        'Content-Type': 'application/json'
-    }
-    response = requests.post(url, json=payload, headers=headers, timeout=30)
-    response.raise_for_status()
-    return response.json()
+def get_user_locale_sync(reservation) -> str:
+    """直接从预约记录获取语言偏好"""
+    return reservation.get("preferred_language", "en-US")
+
 
 @app.task
 def check_payments():
@@ -69,6 +62,34 @@ def check_payments():
             if not msg_detail:
                 continue
 
+            # Email time validation: ensure email was received after reservation was created
+            email_date_ms = int(msg_detail.get('internalDate', 0))
+            if email_date_ms == 0:
+                print(f"Message {msg_id} has no internalDate, skipping.")
+                continue
+
+            email_date = datetime.fromtimestamp(email_date_ms / 1000, tz=timezone.utc)
+            reservation_created_str = res.get('created_at')
+
+            if not reservation_created_str:
+                print(f"Reservation {res_id} has no created_at, skipping.")
+                continue
+
+            # Handle ISO format time string
+            if reservation_created_str.endswith('Z'):
+                reservation_created_str = reservation_created_str[:-1] + '+00:00'
+            reservation_created = datetime.fromisoformat(reservation_created_str)
+            # Normalize naive timestamps to UTC to avoid aware/naive comparison errors
+            if reservation_created.tzinfo is None:
+                reservation_created = reservation_created.replace(tzinfo=timezone.utc)
+
+            # Verify email was received after reservation was created
+            if email_date < reservation_created:
+                print(f"⚠️ Email {msg_id} received {email_date.isoformat()} BEFORE reservation {res_id} created {reservation_created.isoformat()}, skipping.")
+                continue
+
+            print(f"✅ Email {msg_id} time validation passed: received {email_date.isoformat()}")
+
             headers = msg_detail.get('payload', {}).get('headers', [])
             
             # Check Reply-To header
@@ -83,32 +104,69 @@ def check_payments():
                 # 3. Mark reservation as paid
                 supabase.table("reservations") \
                     .update({
-                        "status": "paid", 
+                        "status": "paid",
                         "payment_confirmed_at": datetime.now(timezone.utc).isoformat(),
                         "payment_message_id": msg_id, # Record the Gmail message ID
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }) \
                     .eq("id", res_id) \
                     .execute()
-                
-                # 4. Update seats to 'sold'
-                supabase.table("seats") \
-                    .update({
-                        "status": "sold",
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }) \
+
+                # 4. Update seats to 'sold' - via reservation_seats junction table
+                seat_ids_res = supabase.table("reservation_seats") \
+                    .select("seat_id") \
                     .eq("reservation_id", res_id) \
                     .execute()
-                
+
+                if seat_ids_res.data:
+                    seat_ids = [s["seat_id"] for s in seat_ids_res.data]
+                    supabase.table("seats") \
+                        .update({
+                            "status": "sold",
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }) \
+                        .in_("id", seat_ids) \
+                        .execute()
+
                 # 5. Move email to Processed folder and remove from INBOX
                 gmail.mark_as_processed(msg_id, label_name='Processed')
                 print(f"✅ Payment matched and processed for Reservation {res_id}")
 
-                # 6. Send Confirmation Email to Customer via Edge Function
+                # 6. Send Confirmation Email to Customer via Gmail
                 try:
-                    invoke_supabase_function('send-payment-confirmation', {
-                        'reservation_id': res_id
-                    })
+                    # Get seat information for the email - via reservation_seats junction table
+                    seat_ids_res = supabase.table("reservation_seats") \
+                        .select("seat_id") \
+                        .eq("reservation_id", res_id) \
+                        .execute()
+
+                    if seat_ids_res.data:
+                        seat_ids = [s["seat_id"] for s in seat_ids_res.data]
+                        seats_res = supabase.table("seats") \
+                            .select("row, col") \
+                            .in_("id", seat_ids) \
+                            .execute()
+                        seats_list = [f"{s['row']}{s['col']}" for s in seats_res.data]
+                    else:
+                        seats_list = []
+
+                    # Get locale from reservation record
+                    locale = get_user_locale_sync(res)
+
+                    # Generate confirmation email with locale
+                    subject, html_body = get_payment_confirmation_html(
+                        customer_name=res.get('customer_name', 'Valued Customer'),
+                        order_id=res.get('order_id', res_id),
+                        amount=res['total_amount'],
+                        seats=seats_list,
+                        locale=locale
+                    )
+                    gmail.send_email(
+                        to=customer_email,
+                        subject=subject,
+                        body=html_body,
+                        body_type='html'
+                    )
                     print(f"📧 Confirmation email sent to {customer_email}")
                 except Exception as e:
                     print(f"⚠️ Failed to send confirmation email for {res_id}: {e}")

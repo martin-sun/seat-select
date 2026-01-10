@@ -9,11 +9,15 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "*")
+    SUPPORT_PHONE: str = os.getenv("SUPPORT_PHONE", "N/A")
+
     GMAIL_CREDENTIALS_PATH: str = os.getenv("GMAIL_CREDENTIALS_PATH", "./src/utils/gmail/creds/credentials.json")
     GMAIL_TOKEN_PATH: str = os.getenv("GMAIL_TOKEN_PATH", "./src/utils/gmail/creds/token.pickle")
     ETRANSFER_RECEIVE_EMAIL: str = os.getenv("ETRANSFER_RECEIVE_EMAIL", "")
-    
+
+    API_KEY: str = os.getenv("API_KEY", "")
+
     RESERVATION_EXPIRY_HOURS: int = int(os.getenv("RESERVATION_EXPIRY_HOURS", "24"))
 
 settings = Settings()

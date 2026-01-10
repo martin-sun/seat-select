@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Seat-Select Celery 服务停止脚本 (根目录版)
+# Seat-Select Backend 服务停止脚本 (FastAPI + Celery)
 set -e
 
 GREEN='\033[0;32m'
@@ -10,7 +10,7 @@ NC='\033[0m'
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo -e "${BLUE}🛑 停止 Seat-Select Celery 服务...${NC}"
+echo -e "${BLUE}🛑 停止 Seat-Select Backend 服务...${NC}"
 
 cd "$PROJECT_ROOT"
 

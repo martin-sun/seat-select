@@ -32,14 +32,15 @@ export async function getEventWithSeats(eventId) {
 }
 
 // Helper function to create a reservation using atomic RPC
-export async function createReservation({ eventId, customerName, customerPhone, customerEmail, seatIds, totalAmount }) {
+export async function createReservation({ eventId, customerName, customerPhone, customerEmail, seatIds, totalAmount, preferredLanguage = 'en-US' }) {
   const { data, error } = await supabase.rpc('create_reservation_atomic', {
     p_event_id: eventId,
     p_customer_name: customerName,
     p_customer_phone: customerPhone,
     p_customer_email: customerEmail,
     p_seat_ids: seatIds,
-    p_total_amount: totalAmount
+    p_total_amount: totalAmount,
+    p_preferred_language: preferredLanguage
   })
 
   if (error) throw error
@@ -95,17 +96,47 @@ export function subscribeToSeats(eventId, callback) {
 // Edge Function Helper Functions
 // ============================================
 
-// Call Edge Function to send payment instructions via Resend
+// Call Backend API to send payment instructions via Gmail
 export async function sendPaymentInstructions(reservationId, language = 'en-US') {
   const { data: { session } } = await supabase.auth.getSession()
 
-  const { data, error } = await supabase.functions.invoke('send-payment-instructions', {
-    body: { reservation_id: reservationId, language },
-    headers: session ? { Authorization: `Bearer ${session.access_token}` } : {}
+  const backendUrl = process.env.VUE_APP_BACKEND_API_URL || 'http://localhost:8010'
+  const response = await fetch(`${backendUrl}/api/mail/send-instructions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': process.env.VUE_APP_API_KEY || '',
+      ...(session ? { Authorization: `Bearer ${session.access_token}` } : {})
+    },
+    body: JSON.stringify({ reservation_id: reservationId, language })
   })
 
-  if (error) throw error
-  return data
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Failed to send payment instructions')
+  }
+
+  return await response.json()
+}
+
+// Call Backend API to send payment confirmation email via Gmail
+export async function sendPaymentConfirmationBackend(reservationId) {
+  const backendUrl = process.env.VUE_APP_BACKEND_API_URL || 'http://localhost:8010'
+  const response = await fetch(`${backendUrl}/api/mail/send-confirmation`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': process.env.VUE_APP_API_KEY || ''
+    },
+    body: JSON.stringify({ reservation_id: reservationId })
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Failed to send payment confirmation')
+  }
+
+  return await response.json()
 }
 
 // Call Edge Function to send custom auth OTP via Resend
@@ -669,3 +700,32 @@ export async function deleteHistoryItem(id) {
   if (error) throw error
 }
 
+// ============================================
+// Revenue Statistics Functions
+// ============================================
+
+// 获取指定状态的总收入（使用 SQL 聚合）
+export async function getTotalRevenueByStatus(status) {
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('total:total_amount.sum()')
+    .eq('status', status)
+    .single()
+
+  if (error) throw error
+
+  return data?.total ? parseFloat(data.total) : 0
+}
+
+// 获取多个状态的总收入
+export async function getTotalRevenueByStatuses(statuses) {
+  const { data, error } = await supabase
+    .from('reservations')
+    .select('total:total_amount.sum()')
+    .in('status', statuses)
+    .single()
+
+  if (error) throw error
+
+  return data?.total ? parseFloat(data.total) : 0
+}

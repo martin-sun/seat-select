@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" class="booking-overlay" @click.self="close">
+  <div v-if="visible" class="booking-overlay">
     <div class="booking-modal">
       <!-- 头部 -->
       <div class="modal-header">
@@ -137,7 +137,7 @@
   </div>
 
   <!-- 确认对话框 -->
-  <div v-if="showConfirmDialog" class="confirm-dialog-overlay" @click.self="cancelConfirm">
+  <div v-if="showConfirmDialog" class="confirm-dialog-overlay">
     <div class="confirm-dialog">
       <h3 class="confirm-title">{{ $t('bookingForm.confirmTitle') }}</h3>
 
@@ -191,6 +191,9 @@
 <script>
 import { createReservation, sendPaymentInstructions, supabase } from '@/supabase'
 import { formatSeat } from '@/composables/useSeatFormat'
+
+// localStorage key for saving form data
+const BOOKING_FORM_STORAGE_KEY = 'seatselect_booking_form'
 
 export default {
   name: 'BookingForm',
@@ -250,8 +253,47 @@ export default {
       return this.form.email.toLowerCase() === this.form.emailConfirm.toLowerCase()
     }
   },
+  mounted () {
+    // Load saved form data from localStorage (excluding email fields for security)
+    this.loadFormData()
+  },
   methods: {
     formatSeat,
+    // Load form data from localStorage (excluding email fields for security)
+    loadFormData () {
+      try {
+        const saved = localStorage.getItem(BOOKING_FORM_STORAGE_KEY)
+        if (saved) {
+          const data = JSON.parse(saved)
+          if (data.name) this.form.name = data.name
+          if (data.phone) this.form.phone = data.phone
+          // Intentionally NOT loading email fields for security reasons
+        }
+      } catch (e) {
+        console.error('Failed to load saved form data:', e)
+      }
+    },
+    // Save form data to localStorage (excluding email fields for security)
+    saveFormData () {
+      try {
+        const dataToSave = {
+          name: this.form.name,
+          phone: this.form.phone
+          // Intentionally NOT saving email fields for security reasons
+        }
+        localStorage.setItem(BOOKING_FORM_STORAGE_KEY, JSON.stringify(dataToSave))
+      } catch (e) {
+        console.error('Failed to save form data:', e)
+      }
+    },
+    // Clear saved form data from localStorage
+    clearSavedFormData () {
+      try {
+        localStorage.removeItem(BOOKING_FORM_STORAGE_KEY)
+      } catch (e) {
+        console.error('Failed to clear saved form data:', e)
+      }
+    },
     goToMyOrders () {
       const lang = this.$route.params.lang || 'en'
       this.$router.push({ name: 'MyOrders', params: { lang } })
@@ -363,14 +405,21 @@ export default {
       try {
         const seatIds = this.selectedSeats.map(s => s.id)
 
+        // Get current UI language from i18n
+        const preferredLanguage = this.$i18n?.locale || 'zh-CN'
+
         const reservation = await createReservation({
           eventId: this.eventId,
           customerName: this.sanitizeInput(this.form.name),
           customerPhone: this.sanitizeInput(this.form.phone),
           customerEmail: this.form.email.trim().toLowerCase(),
           seatIds,
-          totalAmount: this.totalPrice
+          totalAmount: this.totalPrice,
+          preferredLanguage
         })
+
+        // Clear saved form data after successful booking
+        this.clearSavedFormData()
 
         // Send payment instructions via Edge Function (fire and forget)
         const currentLocale = localStorage.getItem('locale') || 'en-US'
@@ -396,10 +445,18 @@ export default {
     }
   },
   watch: {
+    // Save form data to localStorage when name or phone changes (excluding emails for security)
+    'form.name' () {
+      this.saveFormData()
+    },
+    'form.phone' () {
+      this.saveFormData()
+    },
     visible (val) {
       if (val) {
-        // Reset form
-        this.form = { name: '', phone: '', email: '', emailConfirm: '' }
+        // Reset only email fields for security, keep name/phone from localStorage
+        this.form.email = ''
+        this.form.emailConfirm = ''
         this.error = null
         this.showConfirmDialog = false
         this.confirmChecked = false

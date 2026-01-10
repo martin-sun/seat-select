@@ -7,6 +7,25 @@ services:
     volumes:
       - redis_data:/data
 
+  api:
+    build:
+      context: ./seat-select-backend
+      dockerfile: Dockerfile
+    container_name: seat-select-api
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8010
+    ports:
+      - "8010:8010"
+    depends_on:
+      - redis
+    env_file:
+      - ./seat-select-backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/10
+    volumes:
+      - ./seat-select-backend/src:/app/src
+      - ./seat-select-backend/src/utils/gmail/creds:/app/src/utils/gmail/creds
+    restart: always
+
   worker:
     build:
       context: ./seat-select-backend

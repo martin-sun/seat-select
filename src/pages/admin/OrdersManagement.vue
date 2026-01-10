@@ -287,7 +287,7 @@
 </template>
 
 <script>
-import { getAllReservations, updateReservationStatus, sendPaymentConfirmationAdmin } from '@/supabase'
+import { getAllReservations, updateReservationStatus, sendPaymentConfirmationBackend, getTotalRevenueByStatuses } from '@/supabase'
 import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
@@ -369,13 +369,9 @@ export default {
         this.stats.expired = expired.count || 0
         this.stats.cancelled = cancelled.count || 0
 
-        // Calculate total revenue from paid or picked_up orders
-        const [paidOrders, pickedUpOrders] = await Promise.all([
-          getAllReservations({ status: 'paid', pageSize: 1000 }),
-          getAllReservations({ status: 'picked_up', pageSize: 1000 })
-        ])
-        const allPaid = [...(paidOrders.data || []), ...(pickedUpOrders.data || [])]
-        this.stats.totalRevenue = allPaid.reduce((sum, o) => sum + parseFloat(o.total_amount), 0).toFixed(2)
+        // Calculate total revenue using SQL aggregation
+        const totalRevenue = await getTotalRevenueByStatuses(['paid', 'picked_up'])
+        this.stats.totalRevenue = totalRevenue.toFixed(2)
       } catch (err) {
         console.error('Failed to load stats:', err)
       }
@@ -406,7 +402,7 @@ export default {
 
         // 2. Send payment confirmation email
         try {
-          await sendPaymentConfirmationAdmin(order.id)
+          await sendPaymentConfirmationBackend(order.id)
           console.log(`Payment confirmation email sent to ${order.customer_email}`)
         } catch (emailError) {
           console.error('Failed to send payment confirmation email:', emailError)

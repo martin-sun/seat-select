@@ -14,6 +14,7 @@ app = Celery(
     include=[
         "celery_app.tasks.payment_check",
         "celery_app.tasks.reservation_cleanup",
+        "celery_app.tasks.instruction_sender",
     ]
 )
 
@@ -31,6 +32,10 @@ app.conf.beat_schedule = {
     "cleanup-expired-reservations-every-10-minutes": {
         "task": "celery_app.tasks.reservation_cleanup.cleanup_reservations",
         "schedule": crontab(minute="*/10"),
+    },
+    "send-payment-instructions-every-5-minutes": {
+        "task": "celery_app.tasks.instruction_sender.send_payment_instructions",
+        "schedule": 300.0,  # every 5 minutes
     },
 }
 

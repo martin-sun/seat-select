@@ -121,7 +121,8 @@ CREATE OR REPLACE FUNCTION create_reservation_atomic(
   p_customer_phone TEXT,
   p_customer_email TEXT,
   p_seat_ids TEXT[],
-  p_total_amount DECIMAL(10,2)
+  p_total_amount DECIMAL(10,2),
+  p_preferred_language TEXT DEFAULT 'en-US'
 )
 RETURNS JSON
 LANGUAGE plpgsql
@@ -215,7 +216,8 @@ BEGIN
     customer_email,
     total_amount,
     status,
-    expires_at
+    expires_at,
+    preferred_language
   ) VALUES (
     p_event_id,
     p_customer_name,
@@ -223,7 +225,8 @@ BEGIN
     p_customer_email,
     p_total_amount,
     'pending',
-    v_expires_at
+    v_expires_at,
+    p_preferred_language
   )
   RETURNING id INTO v_reservation_id;
 
