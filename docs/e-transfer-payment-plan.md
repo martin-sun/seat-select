@@ -112,7 +112,7 @@ seat-select/seat-select-backend/
   "status": "pending",
   "total_amount": 138.00,
   "expires_at": "2026-01-02T15:30:00Z",
-  "etransfer_email": "your-business@email.com",
+  "etransfer_email": "Saskatoonsfc@gmail.com",
   "message": "Please send E-transfer of $138.00 within 24 hours"
 }
 ```
@@ -232,7 +232,7 @@ SUPABASE_KEY=your-service-role-key
 DATABASE_URL=postgresql://...
 REDIS_URL=redis://localhost:6379/0
 GMAIL_CREDENTIALS_PATH=./src/utils/gmail/creds/credentials.json
-ETRANSFER_RECEIVE_EMAIL=your-business@email.com
+ETRANSFER_RECEIVE_EMAIL=Saskatoonsfc@gmail.com
 RESERVATION_EXPIRY_HOURS=24
 CORS_ORIGINS=http://localhost:8080
 ```
