@@ -1,0 +1,96 @@
+# Seat-Select Backend Deployment Configuration
+# 内网服务器部署 - FastAPI + Celery Worker + Celery Beat
+# ==============================================================================
+
+# ==================== Networks & Volumes ====================
+networks:
+  seat-select-network:
+    driver: bridge
+
+# ==================== Services ====================
+services:
+  # ==================== FastAPI Service ====================
+  api:
+    image: ${REGISTRY_URL:-registry.woohelps.com}/seat-select/backend:${VERSION:-latest}
+    container_name: seat-select-api
+    restart: always
+    networks:
+      - seat-select-network
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./src/utils/gmail/creds:/app/src/utils/gmail/creds
+    env_file:
+      - .env.production
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8010
+
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  # ==================== Celery Worker ====================
+  worker:
+    image: ${REGISTRY_URL:-registry.woohelps.com}/seat-select/backend:${VERSION:-latest}
+    container_name: seat-select-worker
+    restart: always
+    networks:
+      - seat-select-network
+    volumes:
+      - ./src/utils/gmail/creds:/app/src/utils/gmail/creds
+    env_file:
+      - .env.production
+    command: celery -A celery_app.celery worker --loglevel=info
+
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+    healthcheck:
+      test: [ "CMD-SHELL", "celery -A celery_app.celery inspect ping" ]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # ==================== Celery Beat ====================
+  celery-beat:
+    image: ${REGISTRY_URL:-registry.woohelps.com}/seat-select/backend:${VERSION:-latest}
+    container_name: seat-select-beat
+    restart: always
+    networks:
+      - seat-select-network
+    volumes:
+      - ./src/utils/gmail/creds:/app/src/utils/gmail/creds
+    env_file:
+      - .env.production
+    command: celery -A celery_app.celery beat --loglevel=info
+
+  # ==================== Cloudflare Tunnel ====================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: saskatoonsfc-tunnel
+    restart: always
+    networks:
+      - seat-select-network
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/8615f6bf-4d75-4a3b-88c9-176d472bd2c1.json:/etc/cloudflared/8615f6bf-4d75-4a3b-88c9-176d472bd2c1.json:ro
+    command: tunnel --config /etc/cloudflared/config.yml run
+
+    healthcheck:
+      test: [ "CMD", "cloudflared", "--version" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3

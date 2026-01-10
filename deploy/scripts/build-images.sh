@@ -22,13 +22,13 @@ PROJECT_ROOT="$(dirname "$DEPLOY_DIR")"
 BACKEND_DIR="${PROJECT_ROOT}/seat-select-backend"
 
 # 加载配置 (优先从 deploy 目录加载，兼容 scripts 目录)
-if [ -f "$DEPLOY_DIR/.env.deploy.worker" ]; then
-    source "$DEPLOY_DIR/.env.deploy.worker"
-elif [ -f "$SCRIPT_DIR/.env.deploy.worker" ]; then
-    source "$SCRIPT_DIR/.env.deploy.worker"
+if [ -f "$DEPLOY_DIR/.env.deploy.backend" ]; then
+    source "$DEPLOY_DIR/.env.deploy.backend"
+elif [ -f "$SCRIPT_DIR/.env.deploy.backend" ]; then
+    source "$SCRIPT_DIR/.env.deploy.backend"
 else
-    echo -e "${RED}错误: 找不到 .env.deploy.worker 配置文件${NC}"
-    echo -e "${YELLOW}请复制 deploy/.env.deploy.worker.example 为 deploy/.env.deploy.worker 并填写配置${NC}"
+    echo -e "${RED}错误: 找不到 .env.deploy.backend 配置文件${NC}"
+    echo -e "${YELLOW}请复制 deploy/.env.deploy.backend.example 为 deploy/.env.deploy.backend 并填写配置${NC}"
     exit 1
 fi
 
@@ -114,7 +114,7 @@ echo -e "  ${GREEN}${IMAGE_NAME}:latest${NC}"
 if [[ -n "$PUSH_FLAG" ]]; then
     echo ""
     echo -e "${GREEN}镜像已自动推送到仓库!${NC}"
-    echo -e "下一步: 运行 ${YELLOW}./deploy-worker.sh${NC} 部署到内网服务器"
+    echo -e "下一步: 运行 ${YELLOW}./deploy-backend.sh${NC} 部署到内网服务器"
 else
     echo ""
     echo -e "下一步: 运行 ${YELLOW}./push-images.sh${NC} 推送镜像到仓库"
