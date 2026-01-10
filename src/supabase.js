@@ -297,6 +297,24 @@ export async function getAllReservations({ page = 1, pageSize = 20, status = nul
   return { data, count, page, pageSize }
 }
 
+// Cancel reservation with ownership verification
+// Only allows cancellation if the user's email matches the reservation and status is 'pending'
+export async function cancelReservation(reservationId, userEmail) {
+  const { data, error } = await supabase.rpc('cancel_reservation', {
+    p_reservation_id: reservationId,
+    p_user_email: userEmail
+  })
+
+  if (error) throw error
+
+  if (!data.success) {
+    const err = new Error(data.error || 'Failed to cancel reservation')
+    throw err
+  }
+
+  return data
+}
+
 // Update reservation status
 export async function updateReservationStatus(reservationId, status) {
   const updateData = { status }

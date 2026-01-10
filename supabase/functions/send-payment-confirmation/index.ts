@@ -266,7 +266,11 @@ function generatePaymentConfirmationEmail(params: {
       </div>
 
       <p style="color: #666; font-size: 14px; margin-top: 20px;">
-        📧 请保存此邮件作为支付凭证。活动当天请凭订单号取票。
+        📧 请保存此邮件作为支付凭证。<br><br>
+        <strong>【取票信息】</strong><br>
+        地点：紫龙腾餐馆，129 Ave I South<br>
+        时间：每天中午12:00之后（周二不营业）<br>
+        凭证：请出示此凭证取票
       </p>
     </div>
     <div class="footer">
@@ -335,7 +339,11 @@ function generatePaymentConfirmationEmail(params: {
       </div>
 
       <p style="color: #666; font-size: 14px; margin-top: 20px;">
-        📧 Please save this email as proof of payment. Present your order ID to pick up your tickets on the event day.
+        📧 Please save this email as proof of payment.<br><br>
+        <strong>[Ticket Pickup Information]</strong><br>
+        Location: Dragon Emperor Dim Sum, 129 Ave I South<br>
+        Time: Daily after 12:00 PM (closed Tuesdays)<br>
+        Required: Present this email to pick up tickets
       </p>
     </div>
     <div class="footer">

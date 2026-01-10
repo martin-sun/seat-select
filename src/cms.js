@@ -99,6 +99,23 @@ export async function getOrganizers() {
 }
 
 /**
+ * 获取活动信息（演出时间等）
+ */
+export async function getEvent() {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching event from Supabase:', error)
+    return null
+  }
+  return data
+}
+
+/**
  * 获取资源 URL (Supabase 存储或其他)
  */
 export function getAssetUrl(fileId) {

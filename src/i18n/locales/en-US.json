@@ -15,7 +15,11 @@
       "title": "Programs"
     },
     "banner": {
-      "yearLabel": "Saskatoon Spring Festival Celebration"
+      "yearLabel": "Saskatoon Spring Festival Celebration",
+      "schedule": {
+        "afternoon": "14:00 - Garden Activities & Cultural Exhibition",
+        "admission": "18:30 - Doors Open"
+      }
     },
     "buyTicket": "Buy Tickets",
     "viewPrograms": "View Programs",
@@ -43,19 +47,21 @@
       "contact": "Contact us: {email}"
     },
     "programs": {
-      "title": "Program List",
-      "subtitle": "Amazing performances await you",
-      "liveNow": "Live Now",
       "backToHome": "Back to Home",
-      "performers": "Performers",
-      "types": {
-        "all": "All",
-        "song": "Song",
-        "dance": "Dance",
-        "skit": "Comedy",
-        "opera": "Opera",
-        "acrobatics": "Acrobatics"
-      }
+      "performers": "Performers"
+    },
+    "countdown": {
+      "title": "Program Countdown",
+      "unlockDate": "Unlock Time: February 14, 2026 at 6:30 PM",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m",
+      "seconds": "s"
+    },
+    "debug": {
+      "passwordTitle": "Enter Password",
+      "passwordSubtitle": "Please enter debug password to view programs directly",
+      "passwordPlaceholder": "Enter password"
     },
     "sponsorSection": {
       "title": "Special Thanks to Our Sponsors",
@@ -71,25 +77,22 @@
       "coOrganizer": "Co-hosts"
     },
     "mobile": {
-      "header": {
-        "year": "2026",
-        "title": "RBC Spring Festival Night",
-        "subtitle": "Saskatoon Spring Festival Celebration"
-      },
       "staff": {
         "title": "Staff",
         "members": [
-          { "role": "Executive Producer", "names": "Li Ming, Wang Fang" },
-          { "role": "Director", "names": "Zhang Wei" },
-          { "role": "Associate Director", "names": "Liu Yang, Chen Jing" },
-          { "role": "Stage Manager", "names": "Zhao Qiang" },
-          { "role": "Lighting Designer", "names": "Sun Lei" },
-          { "role": "Sound Designer", "names": "Zhou Jie" }
+          { "role": "Event Planning", "names": "Yang Wen / Wang Fen / Liu Wengang / Haifeng" },
+          { "role": "Program Directors", "names": "Wang Fen / Yang Wen" },
+          { "role": "Director Assistant", "names": "Sophia Wang" },
+          { "role": "Technical Support", "names": "Haifeng / Chen Yu" },
+          { "role": "Music/Video", "names": "Wang Fen" },
+          { "role": "Outreach", "names": "Zhao Dan" },
+          { "role": "Business/Publicity", "names": "Feng Weisi / Chu Min / Liu Wengang" }
         ],
         "artDirection": "Art Direction",
         "artDirectors": [
-          { "name": "Zhang Yimou", "org": "Beijing Film Academy" },
-          { "name": "Ang Lee", "org": "New York University" }
+          { "name": "Yan Jia", "org": "Saskatchewan Chinese Dance School" },
+          { "name": "Zeng Guojun / Zhou Hong", "org": "Chunzhi Sheng Choir" },
+          { "name": "Wang Fen", "org": "Canada Yucai School" }
         ]
       },
       "footer": {
@@ -181,7 +184,14 @@
     "resendCooldown": "Resend ({time})",
     "noOrders": "No orders found",
     "seatLockUntil": "Seats locked until: {time}",
-    "event": "Event"
+    "event": "Event",
+    "cancelSeat": "Cancel Selection",
+    "cancelConfirm": "Confirm Cancellation",
+    "cancelConfirmMessage": "This will release your selected seats and you will need to select seats again. Are you sure?",
+    "cancelling": "Cancelling...",
+    "cancelSuccess": "Seat selection cancelled",
+    "cancelFailed": "Cancellation failed, please try again",
+    "viewDetails": "View Details"
   },
   "reservation": {
     "title": "Reservation Details",
@@ -203,6 +213,12 @@
     "bookingTime": "Booking Time:",
     "backToSelect": "Back to Seat Selection",
     "remainingTime": "Time Remaining:"
+  },
+  "support": {
+    "title": "Contact Support",
+    "phone": "Support Phone",
+    "contactUs": "Contact support for any issues",
+    "hours": "Service Hours: 9:00-17:00"
   },
   "status": {
     "pending": "Pending Payment",
@@ -232,7 +248,10 @@
     "copyFailed": "Copy failed, please copy manually",
     "enterEmailConfirm": "Please enter your email again",
     "emailsNotMatch": "Emails do not match",
-    "existingPendingOrder": "You have an unpaid order for this event. Please check My Orders for details or wait for it to expire"
+    "existingPendingOrder": "You have an unpaid order for this event. Please check My Orders for details or wait for it to expire",
+    "existingPendingOrderTitle": "You have an unpaid order",
+    "existingPendingOrderHint": "Please check your existing order or wait for it to expire before making a new booking.",
+    "viewMyOrders": "View My Orders"
   },
   "time": {
     "hoursMinutesLater": "{hours}h {minutes}m remaining",

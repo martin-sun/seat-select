@@ -6,15 +6,6 @@
         {{ String(index).padStart(2, '0') }}
       </div>
 
-      <!-- 缩略图 -->
-      <div class="sm:w-32 h-24 sm:h-auto flex-shrink-0">
-        <img
-          :src="program.thumbnail"
-          :alt="program.title"
-          class="w-full h-full object-cover"
-        />
-      </div>
-
       <!-- 内容 -->
       <div class="flex-1 p-4">
         <div class="flex items-start justify-between">
@@ -22,10 +13,6 @@
             <!-- 移动端序号 -->
             <span class="sm:hidden text-yellow-500 text-sm font-bold mr-2">
               #{{ index }}
-            </span>
-            <!-- 节目类型标签 -->
-            <span :class="['inline-block px-2 py-0.5 rounded text-xs font-medium', typeClasses]">
-              {{ typeLabel }}
             </span>
           </div>
         </div>
@@ -50,9 +37,6 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-
 export default {
   name: 'ProgramCard',
   props: {
@@ -65,28 +49,8 @@ export default {
       required: true
     }
   },
-  setup(props) {
-    const { t } = useI18n()
-
-    const typeClasses = computed(() => {
-      const classes = {
-        song: 'bg-blue-500/20 text-blue-300',
-        dance: 'bg-pink-500/20 text-pink-300',
-        skit: 'bg-green-500/20 text-green-300',
-        opera: 'bg-purple-500/20 text-purple-300',
-        acrobatics: 'bg-orange-500/20 text-orange-300'
-      }
-      return classes[props.program.type] || 'bg-gray-500/20 text-gray-300'
-    })
-
-    const typeLabel = computed(() => {
-      return t(`chunwan.programs.types.${props.program.type}`)
-    })
-
-    return {
-      typeClasses,
-      typeLabel
-    }
+  setup() {
+    return {}
   }
 }
 </script>

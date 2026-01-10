@@ -15,12 +15,16 @@
       "title": "节目单"
     },
     "banner": {
-      "yearLabel": "萨斯卡通春晚"
+      "yearLabel": "萨斯卡通春晚",
+      "schedule": {
+        "afternoon": "14:00 - 游园活动和文化展示",
+        "admission": "18:30 - 入场"
+      }
     },
     "buyTicket": "立即购票",
     "viewPrograms": "查看节目单",
     "eventInfo": {
-      "date": "演出日期",
+      "date": "日期",
       "location": "演出地点",
       "aboutTitle": "活动介绍"
     },
@@ -43,19 +47,21 @@
       "contact": "联系我们：{email}"
     },
     "programs": {
-      "title": "节目单",
-      "subtitle": "精彩节目，不容错过",
-      "liveNow": "正在直播",
       "backToHome": "返回首页",
-      "performers": "表演者",
-      "types": {
-        "all": "全部",
-        "song": "歌曲",
-        "dance": "舞蹈",
-        "skit": "小品",
-        "opera": "戏曲",
-        "acrobatics": "杂技"
-      }
+      "performers": "表演者"
+    },
+    "countdown": {
+      "title": "节目单解锁倒计时",
+      "unlockDate": "解锁时间：2026年2月14日 18:30",
+      "days": "天",
+      "hours": "时",
+      "minutes": "分",
+      "seconds": "秒"
+    },
+    "debug": {
+      "passwordTitle": "输入密码",
+      "passwordSubtitle": "请输入调试密码以直接查看节目单",
+      "passwordPlaceholder": "请输入密码"
     },
     "sponsorSection": {
       "title": "特别鸣谢我们的赞助商",
@@ -71,25 +77,22 @@
       "coOrganizer": "协办单位"
     },
     "mobile": {
-      "header": {
-        "year": "2026",
-        "title": "RBC新春之夜",
-        "subtitle": "萨斯卡通春节联欢晚会"
-      },
       "staff": {
         "title": "工作人员",
         "members": [
-          { "role": "总策划", "names": "李明, 王芳" },
-          { "role": "导演", "names": "张伟" },
-          { "role": "副导演", "names": "刘洋, 陈静" },
-          { "role": "舞台监督", "names": "赵强" },
-          { "role": "灯光设计", "names": "孙磊" },
-          { "role": "音响设计", "names": "周杰" }
+          { "role": "活动策划", "names": "杨文/王芬/刘文刚/海风" },
+          { "role": "节目导演", "names": "王芬/杨文" },
+          { "role": "导演助理", "names": "Sophia Wang" },
+          { "role": "技术支持", "names": "海风/陈宇" },
+          { "role": "音乐/视频", "names": "王芬" },
+          { "role": "对外联络", "names": "赵丹" },
+          { "role": "商务/宣传", "names": "冯唯思/褚敏/刘文刚" }
         ],
         "artDirection": "艺术指导",
         "artDirectors": [
-          { "name": "张艺谋", "org": "北京电影学院" },
-          { "name": "李安", "org": "纽约大学" }
+          { "name": "颜佳", "org": "萨省中国舞蹈学校" },
+          { "name": "曾国军/周弘", "org": "春之声合唱团" },
+          { "name": "王芬", "org": "加拿大育才学校" }
         ]
       },
       "footer": {
@@ -181,7 +184,14 @@
     "resendCooldown": "重新发送 ({time})",
     "noOrders": "暂无订单记录",
     "seatLockUntil": "座位锁定至: {time}",
-    "event": "活动"
+    "event": "活动",
+    "cancelSeat": "取消选座",
+    "cancelConfirm": "确认取消选座",
+    "cancelConfirmMessage": "取消后将释放所选座位，您需要重新选座购票。确认取消吗？",
+    "cancelling": "取消中...",
+    "cancelSuccess": "已取消选座",
+    "cancelFailed": "取消失败，请稍后重试",
+    "viewDetails": "查看详情"
   },
   "reservation": {
     "title": "预订详情",
@@ -203,6 +213,12 @@
     "bookingTime": "预订时间：",
     "backToSelect": "返回选座",
     "remainingTime": "剩余支付时间："
+  },
+  "support": {
+    "title": "客服联系",
+    "phone": "客服电话",
+    "contactUs": "如有问题请联系客服",
+    "hours": "服务时间：9:00-17:00"
   },
   "status": {
     "pending": "待支付",
@@ -233,7 +249,10 @@
     "copyFailed": "复制失败，请手动复制",
     "enterEmailConfirm": "请输入确认邮箱",
     "emailsNotMatch": "两次输入的邮箱不一致",
-    "existingPendingOrder": "您在此活动中已有未付款订单，请前往「查询订单」查看详情或等待订单过期"
+    "existingPendingOrder": "您在此活动中已有未付款订单，请前往「查询订单」查看详情或等待订单过期",
+    "existingPendingOrderTitle": "您有未付款订单",
+    "existingPendingOrderHint": "请先查看现有订单或等待订单过期后再进行新的预订。",
+    "viewMyOrders": "查看我的订单"
   },
   "time": {
     "hoursMinutesLater": "{hours}小时{minutes}分钟后",

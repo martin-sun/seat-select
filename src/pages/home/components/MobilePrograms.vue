@@ -3,15 +3,56 @@
     <!-- Language Switcher -->
     <MobileLanguageSwitcher />
 
-    <!-- Page Indicator -->
+    <!-- Page Indicator (only show when unlocked) -->
     <PageIndicator
+      v-if="!isLocked"
       :total="pages.length"
       :current="currentSection"
       @navigate="scrollToSection"
     />
 
     <!-- Scroll Snap Container -->
-    <div ref="container" class="scroll-container">
+    <div ref="container" :class="['scroll-container', { 'scroll-locked': isLocked }]">
+      <!-- Countdown Section (only shown when locked) -->
+      <section v-if="isLocked && countdown !== null" class="snap-section countdown-section">
+        <div class="countdown-content">
+          <div class="countdown-icon">🏮</div>
+
+          <h2 class="countdown-title">{{ $t('chunwan.countdown.title') }}</h2>
+
+          <p class="unlock-date">{{ formattedUnlockDate }}</p>
+
+          <!-- 倒计时数字 -->
+          <div class="countdown-display">
+            <div class="countdown-unit">
+              <span class="countdown-number">{{ formattedCountdown.days }}</span>
+              <span class="countdown-label">{{ $t('chunwan.countdown.days') }}</span>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-unit">
+              <span class="countdown-number">{{ formattedCountdown.hours }}</span>
+              <span class="countdown-label">{{ $t('chunwan.countdown.hours') }}</span>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-unit">
+              <span class="countdown-number">{{ formattedCountdown.minutes }}</span>
+              <span class="countdown-label">{{ $t('chunwan.countdown.minutes') }}</span>
+            </div>
+            <span class="countdown-separator">:</span>
+            <div class="countdown-unit">
+              <span class="countdown-number">{{ formattedCountdown.seconds }}</span>
+              <span class="countdown-label">{{ $t('chunwan.countdown.seconds') }}</span>
+            </div>
+          </div>
+
+          <div class="countdown-footer">
+            <span>🧧</span>
+            <span>🐎</span>
+            <span>🏮</span>
+          </div>
+        </div>
+      </section>
+
       <!-- Cover Section -->
       <section class="snap-section cover-section">
         <div class="cover-background">
@@ -19,9 +60,9 @@
         </div>
 
         <div class="cover-content">
-          <span class="year-badge">{{ $t('chunwan.mobile.header.year') }}</span>
-          <h1 class="cover-title brush-font">{{ $t('chunwan.mobile.header.title') }}</h1>
-          <p class="cover-subtitle">{{ $t('chunwan.mobile.header.subtitle') }}</p>
+          <span class="year-badge">{{ settings.eventYear }}</span>
+          <h1 class="cover-title brush-font">{{ settings.eventTheme }}</h1>
+          <p class="cover-subtitle">{{ settings.siteTitle }}</p>
         </div>
 
         <div class="scroll-hint">
@@ -127,7 +168,7 @@
 
             <div class="blessing-emojis">
               <span>🏮</span>
-              <span>🐍</span>
+              <span>🐎</span>
               <span>🧧</span>
             </div>
 
@@ -141,6 +182,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MobileLanguageSwitcher from './MobileLanguageSwitcher.vue'
 import PageIndicator from './PageIndicator.vue'
 
@@ -162,11 +204,60 @@ export default {
     settings: {
       type: Object,
       default: () => ({})
+    },
+    isLocked: {
+      type: Boolean,
+      default: false
+    },
+    countdown: {
+      type: Number,
+      default: null
+    },
+    unlockDate: {
+      type: String,
+      default: null
     }
   },
   setup(props) {
+    const { locale } = useI18n()
     const container = ref(null)
     const currentSection = ref(0)
+
+    // Format countdown for display
+    const formattedCountdown = computed(() => {
+      if (props.countdown === null || props.countdown <= 0) {
+        return { days: '00', hours: '00', minutes: '00', seconds: '00' }
+      }
+
+      const totalSeconds = props.countdown
+      const days = Math.floor(totalSeconds / 86400)
+      const hours = Math.floor((totalSeconds % 86400) / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const seconds = totalSeconds % 60
+
+      return {
+        days: days.toString().padStart(2, '0'),
+        hours: hours.toString().padStart(2, '0'),
+        minutes: minutes.toString().padStart(2, '0'),
+        seconds: seconds.toString().padStart(2, '0')
+      }
+    })
+
+    // Format unlock date for display
+    const formattedUnlockDate = computed(() => {
+      if (!props.unlockDate) {
+        return locale.value.startsWith('zh')
+          ? '解锁时间：2026年2月14日 18:30'
+          : 'Unlock Time: February 14, 2026 at 6:30 PM'
+      }
+
+      const date = new Date(props.unlockDate)
+      const localeStr = locale.value.startsWith('zh') ? 'zh-CN' : 'en-US'
+
+      return locale.value.startsWith('zh')
+        ? `解锁时间：${date.toLocaleString(localeStr, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+        : `Unlock Time: ${date.toLocaleString(localeStr, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+    })
 
     // Check if program is the finale (last non-prize program)
     const isFinaleProgram = (program) => {
@@ -195,14 +286,19 @@ export default {
       return regularPrograms.length > 0 ? regularPrograms[regularPrograms.length - 1] : null
     })
 
-    // Total pages: cover + staff + programs/prizes + finale
+    // Total pages: countdown (if locked) + cover + staff + programs/prizes + finale
     const pages = computed(() => {
-      return [
+      const basePages = [
         { type: 'cover' },
         { type: 'staff' },
         ...programPages.value,
         { type: 'finale' }
       ]
+      // Only add countdown page if locked and countdown is available
+      if (props.isLocked && props.countdown !== null) {
+        return [{ type: 'countdown' }, ...basePages]
+      }
+      return basePages
     })
 
     // Scroll to section
@@ -268,6 +364,8 @@ export default {
       pages,
       programPages,
       finaleProgram,
+      formattedCountdown,
+      formattedUnlockDate,
       scrollToSection
     }
   }
@@ -299,6 +397,12 @@ export default {
   background: linear-gradient(to bottom, #7f1d1d, #991b1b, #7f1d1d);
 }
 
+/* Locked state - disable scrolling */
+.scroll-locked {
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+
 /* Each section snaps to viewport */
 .snap-section {
   min-height: 100vh;
@@ -308,6 +412,7 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
+  padding-right: calc(1.5rem + 1rem);
   padding-top: max(1.5rem, env(safe-area-inset-top));
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   position: relative;
@@ -707,5 +812,91 @@ export default {
 .copyright {
   font-size: 0.875rem;
   color: rgba(245, 158, 11, 0.6);
+}
+
+/* Countdown section */
+.countdown-section {
+  background: linear-gradient(to bottom, #7f1d1d, #991b1b, #7f1d1d);
+}
+
+.countdown-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.countdown-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  animation: swing 3s ease-in-out infinite;
+}
+
+@keyframes swing {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+.countdown-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 1rem;
+}
+
+.unlock-date {
+  font-size: 1rem;
+  color: rgba(253, 230, 138, 0.9);
+  margin-bottom: 2rem;
+}
+
+.countdown-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.countdown-number {
+  font-family: 'Courier New', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  line-height: 1;
+}
+
+.countdown-label {
+  font-size: 0.75rem;
+  color: #fcd34d;
+  margin-top: 0.25rem;
+}
+
+.countdown-separator {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0 0.25rem;
+}
+
+.countdown-footer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 1.5rem;
 }
 </style>

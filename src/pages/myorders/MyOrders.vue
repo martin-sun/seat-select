@@ -105,10 +105,12 @@
             v-for="reservation in reservations"
             :key="reservation.id"
             class="order-card"
-            @click="viewOrder(reservation.id)"
           >
             <div class="order-header">
               <span class="order-id">#{{ reservation.id.substring(0, 8).toUpperCase() }}</span>
+            </div>
+            <div class="order-divider"></div>
+            <div class="order-status-row">
               <span :class="['order-status', getStatusClass(reservation.status)]">
                 {{ getStatusText(reservation.status) }}
               </span>
@@ -129,29 +131,71 @@
                 </svg>
                 <span>{{ $t('myOrders.seatLockUntil', { time: formatExpiry(reservation.expires_at) }) }}</span>
               </div>
-              <div class="order-footer">
+            </div>
+            <div class="order-divider"></div>
+            <div class="order-footer-actions">
+              <div class="order-info">
                 <span class="order-amount">${{ reservation.total_amount }}</span>
                 <span class="order-date">{{ formatDate(reservation.created_at) }}</span>
               </div>
-            </div>
-            <div class="order-arrow">
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
+              <div class="order-buttons">
+                <!-- 取消选座按钮 - 仅待支付状态显示 -->
+                <button
+                  v-if="reservation.status === 'pending'"
+                  @click="showCancelDialog(reservation.id, $event)"
+                  class="action-btn cancel-btn"
+                >
+                  {{ $t('myOrders.cancelSeat') }}
+                </button>
+                <!-- 查看详情按钮 - 所有状态显示 -->
+                <button
+                  @click="viewOrder(reservation.id)"
+                  class="action-btn detail-btn"
+                >
+                  {{ $t('myOrders.viewDetails') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- 订单列表页的返回按钮 -->
+        <div v-if="step === 'orders' && !loading && reservations.length > 0" class="bottom-back-btn">
+          <button @click="goBack" class="back-action-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            {{ $t('common.back') }}
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- 取消选座确认对话框 -->
+    <ConfirmModal
+      :show="cancelDialogVisible"
+      type="danger"
+      :title="$t('myOrders.cancelConfirm')"
+      :message="$t('myOrders.cancelConfirmMessage')"
+      :confirm-text="$t('common.confirm')"
+      :cancel-text="$t('common.cancel')"
+      @confirm="confirmCancel"
+      @cancel="closeCancelDialog"
+    />
   </div>
 </template>
 
 <script>
-import { sendAuthOtp, verifyAuthOtp, getReservationsByEmail, signOut, getSession, supabase } from '@/supabase'
+import { sendAuthOtp, verifyAuthOtp, getReservationsByEmail, signOut, getSession, supabase, cancelReservation } from '@/supabase'
 import { formatSeat } from '@/composables/useSeatFormat'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import toast from '@/utils/toast'
 
 export default {
   name: 'MyOrders',
+  components: {
+    ConfirmModal
+  },
   data () {
     return {
       step: 'email', // 'email' | 'otp-input' | 'orders'
@@ -163,7 +207,9 @@ export default {
       loading: false,
       error: null,
       resendCooldown: 0, // 倒计时秒数
-      cooldownTimer: null // 定时器引用
+      cooldownTimer: null, // 定时器引用
+      cancelDialogVisible: false,
+      cancellingOrderId: null
     }
   },
   computed: {
@@ -293,8 +339,7 @@ export default {
       this.$router.push({ name: 'ReservationStatus', params: { lang, id } })
     },
     goBack () {
-      const lang = this.$route.params.lang || 'zh'
-      this.$router.push(`/${lang}`)
+      this.$router.back()
     },
     async resendOtp () {
       if (this.resendCooldown > 0 || this.sending) return
@@ -355,6 +400,30 @@ export default {
         return this.$t('time.hoursMinutesLater', { hours, minutes })
       }
       return this.$t('time.minutesLater', { minutes })
+    },
+    showCancelDialog (reservationId, event) {
+      event.stopPropagation()
+      this.cancellingOrderId = reservationId
+      this.cancelDialogVisible = true
+    },
+    async confirmCancel () {
+      if (!this.cancellingOrderId) return
+
+      try {
+        await cancelReservation(this.cancellingOrderId, this.email)
+        await this.loadOrders()
+        toast.success(this.$t('myOrders.cancelSuccess'))
+      } catch (err) {
+        console.error('取消选座失败:', err)
+        toast.error(this.$t('myOrders.cancelFailed'))
+      } finally {
+        this.cancelDialogVisible = false
+        this.cancellingOrderId = null
+      }
+    },
+    closeCancelDialog () {
+      this.cancelDialogVisible = false
+      this.cancellingOrderId = null
     }
   }
 }
@@ -482,19 +551,23 @@ export default {
 }
 
 .order-card {
-  @apply bg-white rounded-lg p-4 shadow flex items-center cursor-pointer;
-}
-
-.order-card:active {
-  @apply bg-gray-50;
+  @apply bg-white rounded-lg p-4 shadow;
 }
 
 .order-header {
-  @apply flex justify-between items-center mb-2;
+  @apply flex justify-between items-center;
+}
+
+.order-divider {
+  @apply border-t border-gray-100 my-3;
 }
 
 .order-id {
   @apply text-xs text-gray-500 font-mono;
+}
+
+.order-status-row {
+  @apply flex items-center;
 }
 
 .order-status {
@@ -518,11 +591,11 @@ export default {
 }
 
 .order-body {
-  @apply flex-1;
+  @apply my-3;
 }
 
 .order-event {
-  @apply font-medium text-gray-800 mb-1;
+  @apply font-medium text-gray-800 mb-2;
 }
 
 .order-seats {
@@ -534,22 +607,50 @@ export default {
 }
 
 .order-expires {
-  @apply flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded mb-2;
+  @apply flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded;
 }
 
-.order-footer {
-  @apply flex justify-between items-center text-sm;
+.order-footer-actions {
+  @apply flex justify-between items-center;
+}
+
+.order-info {
+  @apply flex flex-col;
 }
 
 .order-amount {
-  @apply text-primary font-bold;
+  @apply text-primary font-bold text-base;
 }
 
 .order-date {
-  @apply text-gray-400 text-xs;
+  @apply text-gray-400 text-xs mt-0.5;
 }
 
-.order-arrow {
-  @apply ml-2;
+.order-buttons {
+  @apply flex gap-2;
+}
+
+.action-btn {
+  @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-colors;
+}
+
+.cancel-btn {
+  @apply border border-red-500 text-red-500 bg-white hover:bg-red-50;
+}
+
+.detail-btn {
+  @apply bg-primary text-white hover:opacity-90;
+}
+
+.bottom-back-btn {
+  @apply py-4;
+}
+
+.back-action-btn {
+  @apply w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium flex items-center justify-center gap-2;
+}
+
+.back-action-btn:active {
+  @apply bg-gray-200;
 }
 </style>

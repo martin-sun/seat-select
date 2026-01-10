@@ -9,6 +9,7 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || ''
 const RESEND_FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'noreply@yourdomain.com'
 // Internal API key for authentication between services
 const INTERNAL_API_KEY = Deno.env.get('INTERNAL_API_KEY') || ''
+const SUPPORT_PHONE = Deno.env.get('SUPPORT_PHONE') || 'N/A'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
@@ -159,7 +160,8 @@ serve(async (req) => {
       orderId: res.order_id || reservation_id,
       amount: res.total_amount,
       seats: seatsList,
-      customerPhone: res.customer_phone || 'N/A'
+      customerPhone: res.customer_phone || 'N/A',
+      supportPhone: SUPPORT_PHONE
     })
 
     // 8. Send email via Resend
@@ -223,8 +225,9 @@ function generatePaymentInstructionEmail(params: {
   amount: number
   seats: string[]
   customerPhone: string
+  supportPhone: string
 }): { subject: string; html: string } {
-  const { locale, customerName, orderId, amount, seats, customerPhone } = params
+  const { locale, customerName, orderId, amount, seats, customerPhone, supportPhone } = params
   const seatsStr = seats.join(', ')
 
   if (locale === 'zh-CN') {
@@ -281,6 +284,7 @@ function generatePaymentInstructionEmail(params: {
     </div>
     <div class="footer">
       <p>&copy; 2026 Saskatoon SFC - 选座系统</p>
+      <p>客服电话：${supportPhone}</p>
       <p>此为系统自动发送，请勿直接回复。</p>
     </div>
   </div>
@@ -342,6 +346,7 @@ function generatePaymentInstructionEmail(params: {
     </div>
     <div class="footer">
       <p>&copy; 2026 Saskatoon SFC - Seat Select System</p>
+      <p>Support Phone: ${supportPhone}</p>
       <p>This is an automated message, please do not reply directly.</p>
     </div>
   </div>

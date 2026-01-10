@@ -17,7 +17,18 @@
               <p class="text-yellow-100 whitespace-nowrap"
                  style="font-size: clamp(0.875rem, 0.75rem + 0.3vw, 1.125rem);">
                 {{ formattedDate }}
-              </p>  
+              </p>
+              <!-- 时间安排 -->
+              <div class="mt-2 space-y-1">
+                <p class="text-yellow-200/70"
+                   style="font-size: clamp(0.625rem, 0.5rem + 0.3vw, 0.875rem);">
+                  {{ $t('chunwan.banner.schedule.afternoon') }}
+                </p>
+                <p class="text-yellow-200/70"
+                   style="font-size: clamp(0.625rem, 0.5rem + 0.3vw, 0.875rem);">
+                  {{ $t('chunwan.banner.schedule.admission') }}
+                </p>
+              </div>  
             </div>
           </div>
 

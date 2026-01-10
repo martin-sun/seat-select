@@ -84,6 +84,15 @@
         <div class="payment-notice">
           <p>{{ $t('reservation.paymentWaiting') }}</p>
           <p>{{ $t('reservation.contactSupport') }}</p>
+          <div class="support-phone-section">
+            <a :href="'tel:' + supportPhone" class="support-phone-link">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              {{ supportPhone }}
+            </a>
+            <p class="support-hours-text">{{ $t('support.hours') }}</p>
+          </div>
         </div>
       </div>
 
@@ -114,7 +123,7 @@
 
       <!-- 返回按钮 -->
       <div class="actions">
-        <button @click="goBack" class="back-btn">{{ $t('reservation.backToSelect') }}</button>
+        <button @click="goBack" class="back-btn">{{ $t('common.back') }}</button>
       </div>
     </div>
   </div>
@@ -135,7 +144,8 @@ export default {
       countdown: null,
       countdownInterval: null,
       subscription: null,
-      etransferEmail: process.env.VUE_APP_ETRANSFER_EMAIL || 'payment@example.com'
+      etransferEmail: process.env.VUE_APP_ETRANSFER_EMAIL || 'payment@example.com',
+      supportPhone: process.env.VUE_APP_SUPPORT_PHONE || '+1-306-XXX-XXXX'
     }
   },
   computed: {
@@ -274,8 +284,7 @@ export default {
       })
     },
     goBack () {
-      const lang = this.$route.params.lang || 'zh'
-      this.$router.push(`/${lang}`)
+      this.$router.back()
     }
   }
 }
@@ -411,6 +420,18 @@ export default {
 
 .payment-notice p {
   @apply mb-1 last:mb-0;
+}
+
+.support-phone-section {
+  @apply mt-3 pt-3 border-t border-yellow-200;
+}
+
+.support-phone-link {
+  @apply flex items-center text-primary font-bold text-base hover:underline;
+}
+
+.support-hours-text {
+  @apply mt-1 text-xs text-yellow-700;
 }
 
 .info-row {

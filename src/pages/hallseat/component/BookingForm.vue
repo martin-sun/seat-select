@@ -20,6 +20,22 @@
         </div>
       </div>
 
+      <!-- 未支付订单警告卡片 -->
+      <div v-if="hasPendingOrder" class="pending-order-alert">
+        <div class="alert-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="alert-content">
+          <h4 class="alert-title">{{ $t('alerts.existingPendingOrderTitle') }}</h4>
+          <p class="alert-message">{{ $t('alerts.existingPendingOrderHint') }}</p>
+        </div>
+        <button @click="goToMyOrders" class="alert-action">
+          {{ $t('alerts.viewMyOrders') }}
+        </button>
+      </div>
+
       <!-- 表单 -->
       <form @submit.prevent="submitBooking" class="booking-form">
         <div class="form-group">
@@ -105,6 +121,18 @@
         <p>{{ $t('bookingForm.paymentNotice2') }}</p>
         <p>{{ $t('bookingForm.paymentNotice3') }}</p>
       </div>
+
+      <!-- 客服联系方式 -->
+      <div class="support-contact">
+        <p class="support-title">{{ $t('support.contactUs') }}</p>
+        <a :href="'tel:' + supportPhone" class="support-phone">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+          {{ supportPhone }}
+        </a>
+        <p class="support-hours">{{ $t('support.hours') }}</p>
+      </div>
     </div>
   </div>
 
@@ -162,7 +190,6 @@
 
 <script>
 import { createReservation, sendPaymentInstructions, supabase } from '@/supabase'
-import { toast } from '@/utils/toast'
 import { formatSeat } from '@/composables/useSeatFormat'
 
 export default {
@@ -202,6 +229,10 @@ export default {
     }
   },
   computed: {
+    // Support phone from environment variable
+    supportPhone () {
+      return process.env.VUE_APP_SUPPORT_PHONE || '+1-306-XXX-XXXX'
+    },
     // Email validation regex
     isValidEmail () {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -221,6 +252,10 @@ export default {
   },
   methods: {
     formatSeat,
+    goToMyOrders () {
+      const lang = this.$route.params.lang || 'en'
+      this.$router.push({ name: 'MyOrders', params: { lang } })
+    },
     close () {
       this.error = null
       this.$emit('close')
@@ -259,15 +294,8 @@ export default {
 
         if (error) throw error
 
-        if (data && data.length > 0) {
-          this.hasPendingOrder = true
-          toast.warning(
-            this.$t('alerts.existingPendingOrder'),
-            6000
-          )
-        } else {
-          this.hasPendingOrder = false
-        }
+        // 只设置状态，不再显示 toast
+        this.hasPendingOrder = !!(data && data.length > 0)
       } catch (err) {
         console.error('检查未付款订单失败:', err)
         this.hasPendingOrder = false
@@ -445,6 +473,22 @@ export default {
   @apply mb-1 last:mb-0;
 }
 
+.support-contact {
+  @apply p-4 bg-blue-50 text-blue-900 text-sm border-t;
+}
+
+.support-title {
+  @apply font-semibold mb-2;
+}
+
+.support-phone {
+  @apply flex items-center text-primary font-bold text-base hover:underline;
+}
+
+.support-hours {
+  @apply mt-2 text-xs text-blue-700;
+}
+
 .confirm-dialog-overlay {
   @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4;
 }
@@ -499,5 +543,32 @@ export default {
 
 .confirm-btn {
   @apply flex-1 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* 未支付订单警告卡片 */
+.pending-order-alert {
+  @apply mx-4 mt-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg;
+  @apply flex items-start gap-3;
+}
+
+.alert-icon {
+  @apply flex-shrink-0 text-amber-500 mt-0.5;
+}
+
+.alert-content {
+  @apply flex-1 min-w-0;
+}
+
+.alert-title {
+  @apply text-amber-800 font-semibold text-sm mb-1;
+}
+
+.alert-message {
+  @apply text-amber-700 text-sm;
+}
+
+.alert-action {
+  @apply flex-shrink-0 px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded;
+  @apply hover:bg-amber-600 transition-colors whitespace-nowrap;
 }
 </style>
