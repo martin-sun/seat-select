@@ -67,7 +67,8 @@ def send_payment_instructions():
                 seats=seats_list,
                 customer_phone=res.get('customer_phone', ''),
                 support_phone=settings.SUPPORT_PHONE,
-                locale=locale
+                locale=locale,
+                etransfer_email=settings.ETRANSFER_RECEIVE_EMAIL
             )
 
             # 5. 发送邮件

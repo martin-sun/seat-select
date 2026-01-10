@@ -50,6 +50,7 @@
           </div>
           <h2>{{ $t('myOrders.enterOtp') }}</h2>
           <p class="hint">{{ $t('myOrders.otpSentTo') }} <span class="email-display">{{ email }}</span></p>
+          <p class="hint check-inbox">{{ $t('myOrders.checkInbox') }}</p>
           <input
             v-model="otpCode"
             type="text"
@@ -509,6 +510,10 @@ export default {
 
 .email-display {
   @apply font-medium text-primary break-all;
+}
+
+.check-inbox {
+  @apply text-orange-500;
 }
 
 /* Email Sent Notice */

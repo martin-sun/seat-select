@@ -114,7 +114,8 @@ async def send_instructions(req: SendInstructionsRequest):
             seats=seats_list,
             customer_phone=res.get('customer_phone', ''),
             support_phone=settings.SUPPORT_PHONE,
-            locale=locale
+            locale=locale,
+            etransfer_email=settings.ETRANSFER_RECEIVE_EMAIL
         )
 
         gmail.send_email(
