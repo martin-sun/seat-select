@@ -30,6 +30,13 @@
           {{ tab.label }}
           <span v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</span>
         </button>
+        <button class="export-btn" @click="exportToCSV" :disabled="loading || orders.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          导出 CSV
+        </button>
       </div>
     </div>
 
@@ -442,6 +449,52 @@ export default {
       if (!dateStr) return ''
       const date = new Date(dateStr)
       return date.toLocaleString('zh-CN')
+    },
+    exportToCSV() {
+      if (this.orders.length === 0) return
+
+      const headers = ['订单编号', '客户姓名', '客户邮箱', '客户电话', '座位', '金额', '状态', '创建时间']
+
+      const rows = this.orders.map(order => [
+        order.id.substring(0, 8).toUpperCase(),
+        order.customer_name,
+        order.customer_email,
+        order.customer_phone,
+        (order.reservation_seats || []).map(rs => formatSeat(rs.seats)).join('; '),
+        order.total_amount,
+        this.getStatusText(order.status),
+        this.formatDateTime(order.created_at)
+      ])
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => {
+          // 如果包含逗号、引号或换行符，用引号包裹并转义引号
+          const cellStr = String(cell || '')
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`
+          }
+          return cellStr
+        }).join(','))
+      ].join('\n')
+
+      // 添加 BOM 以支持 Excel 正确识别中文
+      const BOM = '\uFEFF'
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+
+      const now = new Date()
+      const dateStr = now.toISOString().slice(0, 10)
+      const timeStr = now.toTimeString().slice(0, 5).replace(':', '-')
+      link.download = `订单数据_${dateStr}_${timeStr}.csv`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
     }
   }
 }
@@ -551,6 +604,36 @@ export default {
 
 .filter-tab.active .tab-count {
   background: rgba(76, 175, 80, 0.3);
+}
+
+.export-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.25);
+  transform: translateY(-1px);
+}
+
+.export-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.export-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Stats Grid */
