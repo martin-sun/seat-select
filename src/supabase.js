@@ -726,3 +726,110 @@ export async function getTotalRevenueByStatuses(statuses) {
 
   return data ? parseFloat(data) : 0
 }
+
+// ============================================
+// Ticket Clerk Helper Functions
+// ============================================
+
+const CLERK_SESSION_KEY = 'clerk_session'
+
+// Clerk login
+export async function clerkLogin(email, password) {
+  const { data, error } = await supabase.rpc('verify_ticket_clerk_login', {
+    p_email: email,
+    p_password: password
+  })
+
+  if (error) throw error
+
+  if (data.success) {
+    localStorage.setItem(CLERK_SESSION_KEY, JSON.stringify({
+      ...data.clerk,
+      loginTime: new Date().toISOString()
+    }))
+  }
+
+  return data
+}
+
+// Get clerk session from localStorage
+export function getClerkSession() {
+  const sessionStr = localStorage.getItem(CLERK_SESSION_KEY)
+  if (!sessionStr) return null
+
+  try {
+    return JSON.parse(sessionStr)
+  } catch {
+    return null
+  }
+}
+
+// Clerk logout
+export function clerkLogout() {
+  localStorage.removeItem(CLERK_SESSION_KEY)
+}
+
+// Check if clerk is logged in
+export function isClerkLoggedIn() {
+  return getClerkSession() !== null
+}
+
+// Get reservations for ticket clerks (only paid and picked_up)
+export async function getClerkReservations({ page = 1, pageSize = 20, status = null, search = '' } = {}) {
+  let query = supabase
+    .from('reservations')
+    .select(`
+      *,
+      events (name, hall_name, show_time),
+      reservation_seats (
+        seat_id,
+        seats (row, col, zone)
+      )
+    `, { count: 'exact' })
+
+  // Build query conditions
+  // Note: We need to combine status and search conditions to avoid .or() override
+  if (search) {
+    // When searching, use a single .or() that combines all conditions
+    // Format: (status='paid' AND search) OR (status='paid' AND search) OR (status='picked_up' AND search)...
+    const searchFields = ['customer_name', 'customer_email', 'customer_phone']
+    const statusList = status && ['paid', 'picked_up'].includes(status) ? [status] : ['paid', 'picked_up']
+
+    // Build combinations: status='paid' AND (name OR email OR phone), status='picked_up' AND (name OR email OR phone)
+    const combinations = []
+    for (const s of statusList) {
+      for (const field of searchFields) {
+        combinations.push(`${field}.ilike.%${search}%,status.eq.${s}`)
+      }
+    }
+    query = query.or(combinations.join(','))
+  } else {
+    // No search, just filter by status
+    if (status && ['paid', 'picked_up'].includes(status)) {
+      query = query.eq('status', status)
+    } else {
+      // Default to showing both statuses
+      query = query.in('status', ['paid', 'picked_up'])
+    }
+  }
+
+  const { data, error, count } = await query
+    .order('created_at', { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1)
+
+  if (error) throw error
+  return { data, count, page, pageSize }
+}
+
+// Pick up ticket (mark as picked_up)
+export async function pickUpTicket(reservationId) {
+  const { data, error } = await supabase
+    .from('reservations')
+    .update({ status: 'picked_up' })
+    .eq('id', reservationId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}

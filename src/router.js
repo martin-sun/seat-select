@@ -3,7 +3,7 @@ import HallSeat from '@/pages/hallseat/HallSeat'
 import ReservationStatus from '@/pages/reservation/ReservationStatus'
 import MyOrders from '@/pages/myorders/MyOrders'
 import i18n, { setLocale } from '@/i18n'
-import { isAdminLoggedIn } from '@/supabase'
+import { isAdminLoggedIn, isClerkLoggedIn } from '@/supabase'
 
 const ChunwanHome = () => import('@/pages/home/ChunwanHome.vue')
 const ChunwanPrograms = () => import('@/pages/home/ChunwanPrograms.vue')
@@ -15,6 +15,11 @@ const OrdersManagement = () => import('@/pages/admin/OrdersManagement.vue')
 const ContentManagement = () => import('@/pages/admin/ContentManagement.vue')
 const SeatsManagement = () => import('@/pages/admin/SeatsManagement.vue')
 const ProgramsManagement = () => import('@/pages/admin/ProgramsManagement.vue')
+
+// Ticket Clerk pages (lazy loaded)
+const ClerkLogin = () => import('@/pages/clerk/ClerkLogin.vue')
+const ClerkLayout = () => import('@/pages/clerk/ClerkLayout.vue')
+const ClerkOrders = () => import('@/pages/clerk/ClerkOrders.vue')
 
 const supportedLocales = ['zh', 'en']
 
@@ -54,6 +59,29 @@ const routes = [
         path: 'seats',
         name: 'AdminSeats',
         component: SeatsManagement
+      }
+    ]
+  },
+  // Ticket Clerk routes (no language prefix)
+  {
+    path: '/clerk/login',
+    name: 'ClerkLogin',
+    component: ClerkLogin,
+    meta: { isClerk: true, requiresAuth: false }
+  },
+  {
+    path: '/clerk',
+    component: ClerkLayout,
+    meta: { isClerk: true, requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/clerk/orders'
+      },
+      {
+        path: 'orders',
+        name: 'ClerkOrders',
+        component: ClerkOrders
       }
     ]
   },
@@ -106,11 +134,11 @@ const routes = [
     }
   },
   {
-    // 捕获旧的无语言前缀路由，重定向（排除 admin 路由）
+    // 捕获旧的无语言前缀路由，重定向（排除 admin 和 clerk 路由）
     path: '/:pathMatch(.*)*',
     redirect: to => {
-      // 不要重定向 admin 路由
-      if (to.fullPath.startsWith('/admin')) {
+      // 不要重定向 admin 和 clerk 路由
+      if (to.fullPath.startsWith('/admin') || to.fullPath.startsWith('/clerk')) {
         return to.fullPath
       }
       const stored = localStorage.getItem('locale')
@@ -133,6 +161,15 @@ router.beforeEach((to, from, next) => {
       return next('/admin/login')
     }
     // Admin routes don't need language handling
+    return next()
+  }
+
+  // Clerk routes authentication check
+  if (to.meta.isClerk) {
+    if (to.meta.requiresAuth && !isClerkLoggedIn()) {
+      return next('/clerk/login')
+    }
+    // Clerk routes don't need language handling
     return next()
   }
 
