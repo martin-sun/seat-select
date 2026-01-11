@@ -717,15 +717,12 @@ export async function getTotalRevenueByStatus(status) {
   return data?.total ? parseFloat(data.total) : 0
 }
 
-// 获取多个状态的总收入
+// 获取多个状态的总收入 - 使用 RPC 函数避免 REST API 聚合限制
 export async function getTotalRevenueByStatuses(statuses) {
   const { data, error } = await supabase
-    .from('reservations')
-    .select('total:total_amount.sum()')
-    .in('status', statuses)
-    .single()
+    .rpc('get_total_revenue_by_statuses', { p_statuses: statuses })
 
   if (error) throw error
 
-  return data?.total ? parseFloat(data.total) : 0
+  return data ? parseFloat(data) : 0
 }
