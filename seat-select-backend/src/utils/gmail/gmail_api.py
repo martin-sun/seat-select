@@ -29,13 +29,25 @@ class GmailAPI:
         
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
+                try:
+                    creds.refresh(Request())
+                except Exception as e:
+                    print(f"Error refreshing token: {e}")
+                    # Delete invalid token and trigger re-auth
+                    os.remove(settings.GMAIL_TOKEN_PATH)
+                    creds = None
+            if not creds:
                 if not os.path.exists(settings.GMAIL_CREDENTIALS_PATH):
                     raise FileNotFoundError(f"Credentials file not found at {settings.GMAIL_CREDENTIALS_PATH}")
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    settings.GMAIL_CREDENTIALS_PATH, SCOPES)
-                creds = flow.run_local_server(port=0)
+                    settings.GMAIL_CREDENTIALS_PATH,
+                    SCOPES,
+                    redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+                creds = flow.run_local_server(
+                    port=0,
+                    access_type='offline',  # Get refresh_token for offline access
+                    prompt='consent',       # Force consent screen to ensure refresh_token is returned
+                    include_granted_scopes='true')
             
             with open(settings.GMAIL_TOKEN_PATH, 'wb') as token:
                 pickle.dump(creds, token)
