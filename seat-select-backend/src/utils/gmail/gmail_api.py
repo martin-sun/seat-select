@@ -21,20 +21,30 @@ class GmailAPI:
     def __init__(self):
         self.service = self._get_service()
 
+    def _save_token(self, creds):
+        token_path = settings.GMAIL_TOKEN_PATH
+        tmp_path = f"{token_path}.tmp"
+        with open(tmp_path, 'wb') as token:
+            pickle.dump(creds, token)
+        os.replace(tmp_path, token_path)
+
     def _get_service(self):
         creds = None
         if os.path.exists(settings.GMAIL_TOKEN_PATH):
-            with open(settings.GMAIL_TOKEN_PATH, 'rb') as token:
-                creds = pickle.load(token)
+            try:
+                with open(settings.GMAIL_TOKEN_PATH, 'rb') as token:
+                    creds = pickle.load(token)
+            except Exception as e:
+                print(f"Error loading token: {e}")
+                creds = None
         
         if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
+            if creds and creds.refresh_token:
                 try:
                     creds.refresh(Request())
                 except Exception as e:
                     print(f"Error refreshing token: {e}")
-                    # Delete invalid token and trigger re-auth
-                    os.remove(settings.GMAIL_TOKEN_PATH)
+                    # Refresh failed; fall back to OAuth to obtain a new token.
                     creds = None
             if not creds:
                 if not os.path.exists(settings.GMAIL_CREDENTIALS_PATH):
@@ -48,9 +58,8 @@ class GmailAPI:
                     access_type='offline',  # Get refresh_token for offline access
                     prompt='consent',       # Force consent screen to ensure refresh_token is returned
                     include_granted_scopes='true')
-            
-            with open(settings.GMAIL_TOKEN_PATH, 'wb') as token:
-                pickle.dump(creds, token)
+            if creds:
+                self._save_token(creds)
 
         return build('gmail', 'v1', credentials=creds)
 

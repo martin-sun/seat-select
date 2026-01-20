@@ -30,3 +30,5 @@ seat-select-backend/celerybeat-schedule.db
 seat-select-backend/__pycache__/
 seat-select-backend/**/*.pyc
 seat-select-backend/.venv/
+
+/deploy/
