@@ -12,36 +12,58 @@
     />
 
     <!-- Scroll Snap Container -->
-    <div ref="container" :class="['scroll-container', { 'scroll-locked': isLocked }]">
+    <div
+      ref="container"
+      :class="['scroll-container', { 'scroll-locked': isLocked }]"
+    >
       <!-- Countdown Section (only shown when locked) -->
-      <section v-if="isLocked && countdown !== null" class="snap-section countdown-section">
+      <section
+        v-if="isLocked && countdown !== null"
+        class="snap-section countdown-section"
+      >
         <div class="countdown-content">
           <div class="countdown-icon">🏮</div>
 
-          <h2 class="countdown-title">{{ $t('chunwan.countdown.title') }}</h2>
+          <h2 class="countdown-title">{{ $t("chunwan.countdown.title") }}</h2>
 
           <p class="unlock-date">{{ formattedUnlockDate }}</p>
 
           <!-- 倒计时数字 -->
           <div class="countdown-display">
             <div class="countdown-unit">
-              <span class="countdown-number">{{ formattedCountdown.days }}</span>
-              <span class="countdown-label">{{ $t('chunwan.countdown.days') }}</span>
+              <span class="countdown-number">{{
+                formattedCountdown.days
+              }}</span>
+              <span class="countdown-label">{{
+                $t("chunwan.countdown.days")
+              }}</span>
             </div>
             <span class="countdown-separator">:</span>
             <div class="countdown-unit">
-              <span class="countdown-number">{{ formattedCountdown.hours }}</span>
-              <span class="countdown-label">{{ $t('chunwan.countdown.hours') }}</span>
+              <span class="countdown-number">{{
+                formattedCountdown.hours
+              }}</span>
+              <span class="countdown-label">{{
+                $t("chunwan.countdown.hours")
+              }}</span>
             </div>
             <span class="countdown-separator">:</span>
             <div class="countdown-unit">
-              <span class="countdown-number">{{ formattedCountdown.minutes }}</span>
-              <span class="countdown-label">{{ $t('chunwan.countdown.minutes') }}</span>
+              <span class="countdown-number">{{
+                formattedCountdown.minutes
+              }}</span>
+              <span class="countdown-label">{{
+                $t("chunwan.countdown.minutes")
+              }}</span>
             </div>
             <span class="countdown-separator">:</span>
             <div class="countdown-unit">
-              <span class="countdown-number">{{ formattedCountdown.seconds }}</span>
-              <span class="countdown-label">{{ $t('chunwan.countdown.seconds') }}</span>
+              <span class="countdown-number">{{
+                formattedCountdown.seconds
+              }}</span>
+              <span class="countdown-label">{{
+                $t("chunwan.countdown.seconds")
+              }}</span>
             </div>
           </div>
 
@@ -66,9 +88,17 @@
         </div>
 
         <div class="scroll-hint">
-          <span class="scroll-hint-text">{{ $t('chunwan.mobile.swipeUp') }}</span>
+          <span class="scroll-hint-text">{{
+            $t("chunwan.mobile.swipeUp")
+          }}</span>
           <div class="scroll-arrow">
-            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              width="32"
+              height="32"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -83,21 +113,43 @@
       <!-- Staff Section -->
       <section class="snap-section staff-section">
         <div class="staff-content">
-          <h2 class="staff-title brush-font">{{ $t('chunwan.mobile.staff.title') }}</h2>
+          <h2 class="staff-title brush-font">
+            {{ $t("chunwan.mobile.staff.title") }}
+          </h2>
 
           <div class="staff-list">
-            <div v-for="(member, index) in $tm('chunwan.mobile.staff.members')" :key="index" class="staff-item">
+            <div
+              v-for="(member, index) in $tm('chunwan.mobile.staff.members')"
+              :key="index"
+              class="staff-item"
+            >
               <span class="staff-role">{{ member.role }}</span>
-              <span class="staff-name">{{ member.names }}</span>
+              <div class="staff-names-grid">
+                <span
+                  v-for="(name, nIndex) in splitNames(member.names)"
+                  :key="nIndex"
+                  class="staff-name-pill"
+                >
+                  {{ name }}
+                </span>
+              </div>
             </div>
           </div>
 
           <div class="art-directors">
-            <h3 class="art-directors-title">{{ $t('chunwan.mobile.staff.artDirection') }}</h3>
+            <h3 class="art-directors-title">
+              {{ $t("chunwan.mobile.staff.artDirection") }}
+            </h3>
             <div class="art-directors-list">
-              <div v-for="(director, index) in $tm('chunwan.mobile.staff.artDirectors')" :key="index" class="director-item">
+              <div
+                v-for="(director, index) in $tm(
+                  'chunwan.mobile.staff.artDirectors'
+                )"
+                :key="index"
+                class="director-item"
+              >
                 <span class="director-name">{{ director.name }}</span>
-                <span class="director-org"> · {{ director.org }}</span>
+                <span class="director-org">{{ director.org }}</span>
               </div>
             </div>
           </div>
@@ -107,14 +159,27 @@
       <!-- Programs and Prizes -->
       <template v-for="(page, index) in programPages" :key="`program-${index}`">
         <!-- Program Section -->
-        <section v-if="page.type === 'program'" class="snap-section program-section">
+        <section
+          v-if="page.type === 'program'"
+          class="snap-section program-section"
+        >
           <div class="program-content">
+            <div class="program-number-center">
+              {{ getProgramNumber(page.program) }}
+            </div>
             <div class="program-header">
-              <div class="program-number">{{ page.program.sort }}</div>
-              <div>
-                <h2 class="program-title">{{ page.program.title }}</h2>
-                <p v-if="page.program.subtitle" class="program-subtitle">{{ page.program.subtitle }}</p>
-              </div>
+              <h2 class="program-title">
+                {{ formatTitle(page.program.title).main }}
+                <span
+                  v-if="formatTitle(page.program.title).sub"
+                  class="title-sub-text"
+                >
+                  {{ formatTitle(page.program.title).sub }}
+                </span>
+              </h2>
+              <p v-if="page.program.subtitle" class="program-subtitle">
+                {{ page.program.subtitle }}
+              </p>
             </div>
 
             <p v-if="page.program.description" class="program-description">
@@ -122,20 +187,29 @@
             </p>
 
             <div v-if="page.program.performers" class="performers-list">
-              <div class="performer-item">
-                <span class="performer-label">{{ $t('chunwan.programs.performers') }}</span>
-                <span class="performer-names">{{ page.program.performers }}</span>
+              <div
+                v-for="(segment, index) in splitPerformers(
+                  page.program.performers
+                )"
+                :key="index"
+                class="performer-item"
+              >
+                <span class="performer-names">{{ segment }}</span>
               </div>
             </div>
           </div>
         </section>
 
         <!-- Prize Section -->
-        <section v-else-if="page.type === 'prize'" class="snap-section prize-section">
+        <section
+          v-else-if="page.type === 'prize'"
+          class="snap-section prize-section"
+        >
           <div class="prize-content">
             <div class="prize-card">
               <div class="prize-emoji">🎁</div>
               <h2 class="prize-title brush-font">{{ page.program.title }}</h2>
+              <p class="prize-text">{{ page.program.performers }}</p>
               <p class="prize-text">{{ page.program.description }}</p>
             </div>
           </div>
@@ -147,24 +221,45 @@
         <div class="finale-content">
           <div v-if="finaleProgram" class="finale-program-card">
             <div class="finale-header">
-              <div class="finale-number">{{ finaleProgram.sort }}</div>
+              <div class="finale-number">{{ getFinaleNumber() }}</div>
               <div>
-                <h2 class="finale-title">{{ finaleProgram.title }}</h2>
-                <p v-if="finaleProgram.subtitle" class="finale-subtitle">{{ finaleProgram.subtitle }}</p>
+                <h2 class="finale-title">
+                  {{ formatTitle(finaleProgram.title).main }}
+                  <span
+                    v-if="formatTitle(finaleProgram.title).sub"
+                    class="title-sub-text finale-sub-text"
+                  >
+                    {{ formatTitle(finaleProgram.title).sub }}
+                  </span>
+                </h2>
+                <p v-if="finaleProgram.subtitle" class="finale-subtitle">
+                  {{ finaleProgram.subtitle }}
+                </p>
               </div>
             </div>
             <div v-if="finaleProgram.performers" class="finale-performers">
-              <div class="finale-performer">
-                <span class="finale-performer-role">{{ $t('chunwan.programs.performers') }}</span>
-                <span class="finale-performer-names">{{ finaleProgram.performers }}</span>
+              <div
+                v-for="(segment, index) in splitPerformers(
+                  finaleProgram.performers
+                )"
+                :key="index"
+                class="finale-performer"
+              >
+                <span class="finale-performer-names">{{ segment }}</span>
               </div>
             </div>
           </div>
 
           <div class="blessings">
-            <p class="blessing-1 brush-font">{{ $t('chunwan.mobile.footer.blessing1') }}</p>
-            <p class="blessing-2">{{ $t('chunwan.mobile.footer.blessing2') }}</p>
-            <p class="blessing-3">{{ $t('chunwan.mobile.footer.blessing3') }}</p>
+            <p class="blessing-1 brush-font">
+              {{ $t("chunwan.mobile.footer.blessing1") }}
+            </p>
+            <p class="blessing-2">
+              {{ $t("chunwan.mobile.footer.blessing2") }}
+            </p>
+            <p class="blessing-3">
+              {{ $t("chunwan.mobile.footer.blessing3") }}
+            </p>
 
             <div class="blessing-emojis">
               <span>🏮</span>
@@ -172,7 +267,7 @@
               <span>🧧</span>
             </div>
 
-            <p class="copyright">{{ $t('chunwan.mobile.footer.copyright') }}</p>
+            <p class="copyright">{{ $t("chunwan.mobile.footer.copyright") }}</p>
           </div>
         </div>
       </section>
@@ -181,182 +276,258 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import MobileLanguageSwitcher from './MobileLanguageSwitcher.vue'
-import PageIndicator from './PageIndicator.vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+import MobileLanguageSwitcher from "./MobileLanguageSwitcher.vue";
+import PageIndicator from "./PageIndicator.vue";
 
 export default {
-  name: 'MobilePrograms',
+  name: "MobilePrograms",
   components: {
     MobileLanguageSwitcher,
-    PageIndicator
+    PageIndicator,
   },
   props: {
     lang: {
       type: String,
-      default: 'zh'
+      default: "zh",
     },
     programs: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     settings: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     isLocked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     countdown: {
       type: Number,
-      default: null
+      default: null,
     },
     unlockDate: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   setup(props) {
-    const { locale } = useI18n()
-    const container = ref(null)
-    const currentSection = ref(0)
+    const { locale } = useI18n();
+    const container = ref(null);
+    const currentSection = ref(0);
 
     // Format countdown for display
     const formattedCountdown = computed(() => {
       if (props.countdown === null || props.countdown <= 0) {
-        return { days: '00', hours: '00', minutes: '00', seconds: '00' }
+        return { days: "00", hours: "00", minutes: "00", seconds: "00" };
       }
 
-      const totalSeconds = props.countdown
-      const days = Math.floor(totalSeconds / 86400)
-      const hours = Math.floor((totalSeconds % 86400) / 3600)
-      const minutes = Math.floor((totalSeconds % 3600) / 60)
-      const seconds = totalSeconds % 60
+      const totalSeconds = props.countdown;
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
 
       return {
-        days: days.toString().padStart(2, '0'),
-        hours: hours.toString().padStart(2, '0'),
-        minutes: minutes.toString().padStart(2, '0'),
-        seconds: seconds.toString().padStart(2, '0')
-      }
-    })
+        days: days.toString().padStart(2, "0"),
+        hours: hours.toString().padStart(2, "0"),
+        minutes: minutes.toString().padStart(2, "0"),
+        seconds: seconds.toString().padStart(2, "0"),
+      };
+    });
 
     // Format unlock date for display
     const formattedUnlockDate = computed(() => {
       if (!props.unlockDate) {
-        return locale.value.startsWith('zh')
-          ? '解锁时间：2026年2月14日 18:30'
-          : 'Unlock Time: February 14, 2026 at 6:30 PM'
+        return locale.value.startsWith("zh")
+          ? "解锁时间：2026年2月14日 18:30"
+          : "Unlock Time: February 14, 2026 at 6:30 PM";
       }
 
-      const date = new Date(props.unlockDate)
-      const localeStr = locale.value.startsWith('zh') ? 'zh-CN' : 'en-US'
+      const date = new Date(props.unlockDate);
+      const localeStr = locale.value.startsWith("zh") ? "zh-CN" : "en-US";
 
-      return locale.value.startsWith('zh')
-        ? `解锁时间：${date.toLocaleString(localeStr, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
-        : `Unlock Time: ${date.toLocaleString(localeStr, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
-    })
+      return locale.value.startsWith("zh")
+        ? `解锁时间：${date.toLocaleString(localeStr, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}`
+        : `Unlock Time: ${date.toLocaleString(localeStr, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })}`;
+    });
 
     // Check if program is the finale (last non-prize program)
     const isFinaleProgram = (program) => {
-      if (program.type === 'prize') return false
-      const regularPrograms = props.programs.filter(p => p.type !== 'prize')
-      return regularPrograms.length > 0 && program === regularPrograms[regularPrograms.length - 1]
-    }
+      if (program.type === "prize") return false;
+      const regularPrograms = props.programs.filter((p) => p.type !== "prize");
+      return (
+        regularPrograms.length > 0 &&
+        program === regularPrograms[regularPrograms.length - 1]
+      );
+    };
+
+    // Get program display number (skip prizes)
+    const getProgramNumber = (program) => {
+      let count = 0;
+      for (const p of props.programs) {
+        if (p.type === "prize") continue;
+        count++;
+        if (p.id === program.id) break;
+      }
+      return count;
+    };
+
+    // Get finale program number
+    const getFinaleNumber = () => {
+      const regularPrograms = props.programs.filter((p) => p.type !== "prize");
+      return regularPrograms.length;
+    };
+
+    // Split performers by | for better mobile display
+    const splitPerformers = (performersText) => {
+      if (!performersText) return [];
+      return performersText
+        .split("|")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    };
+
+    // Split staff names by / for better mobile display
+    const splitNames = (namesText) => {
+      if (!namesText) return [];
+      return namesText
+        .split("/")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    };
+
+    // Format title to split main and sub (parentheses)
+    const formatTitle = (title) => {
+      if (!title) return { main: "", sub: null };
+
+      // Match content in () or （） at the end of string
+      // Explanation:
+      // ^(.+?) -> Capture group 1 (Main): standard chars
+      // \s* -> optional whitespace
+      // [（(] -> Open parenthesis (Chinese or English)
+      // (.*) -> Capture group 2 (Sub): Content inside parens
+      // [）)]$ -> Close parenthesis (Chinese or English) at end of string
+      const regex = /^(.+?)\s*[（(](.*)[）)]$/;
+      const match = title.match(regex);
+
+      if (match) {
+        return {
+          main: match[1],
+          sub: match[2],
+        };
+      }
+
+      return { main: title, sub: null };
+    };
 
     // Build program pages (exclude finale and prizes)
     const programPages = computed(() => {
-      const pages = []
+      const pages = [];
 
       for (const program of props.programs) {
-        if (program.type === 'prize') {
-          pages.push({ type: 'prize', program })
+        if (program.type === "prize") {
+          pages.push({ type: "prize", program });
         } else if (!isFinaleProgram(program)) {
-          pages.push({ type: 'program', program })
+          pages.push({ type: "program", program });
         }
       }
-      return pages
-    })
+      return pages;
+    });
 
     // Get finale program
     const finaleProgram = computed(() => {
-      const regularPrograms = props.programs.filter(p => p.type !== 'prize')
-      return regularPrograms.length > 0 ? regularPrograms[regularPrograms.length - 1] : null
-    })
+      const regularPrograms = props.programs.filter((p) => p.type !== "prize");
+      return regularPrograms.length > 0
+        ? regularPrograms[regularPrograms.length - 1]
+        : null;
+    });
 
     // Total pages: countdown (if locked) + cover + staff + programs/prizes + finale
     const pages = computed(() => {
       const basePages = [
-        { type: 'cover' },
-        { type: 'staff' },
+        { type: "cover" },
+        { type: "staff" },
         ...programPages.value,
-        { type: 'finale' }
-      ]
+        { type: "finale" },
+      ];
       // Only add countdown page if locked and countdown is available
       if (props.isLocked && props.countdown !== null) {
-        return [{ type: 'countdown' }, ...basePages]
+        return [{ type: "countdown" }, ...basePages];
       }
-      return basePages
-    })
+      return basePages;
+    });
 
     // Scroll to section
     const scrollToSection = (index) => {
-      if (!container.value) return
-      const sections = container.value.querySelectorAll('.snap-section')
+      if (!container.value) return;
+      const sections = container.value.querySelectorAll(".snap-section");
       sections[index]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-    }
+        behavior: "smooth",
+        block: "start",
+      });
+    };
 
     // Setup intersection observer for animations
-    let observer = null
+    let observer = null;
 
     const setupObserver = () => {
-      if (!container.value) return
+      if (!container.value) return;
 
-      const sections = container.value.querySelectorAll('.snap-section')
+      const sections = container.value.querySelectorAll(".snap-section");
 
       // Make first section visible immediately
       if (sections[0]) {
-        sections[0].classList.add('visible')
+        sections[0].classList.add("visible");
       }
 
       observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
-              entry.target.classList.add('visible')
+              entry.target.classList.add("visible");
 
               // Update current section
-              const index = Array.from(sections).indexOf(entry.target)
+              const index = Array.from(sections).indexOf(entry.target);
               if (index !== -1) {
-                currentSection.value = index
+                currentSection.value = index;
               }
             }
-          })
+          });
         },
         {
           root: container.value,
-          threshold: 0.3
+          threshold: 0.3,
         }
-      )
+      );
 
-      sections.forEach((section) => observer.observe(section))
-    }
+      sections.forEach((section) => observer.observe(section));
+    };
 
     onMounted(async () => {
-      await nextTick()
-      setupObserver()
-    })
+      await nextTick();
+      setupObserver();
+    });
 
     onUnmounted(() => {
       if (observer) {
-        observer.disconnect()
+        observer.disconnect();
       }
-    })
+    });
 
     return {
       container,
@@ -366,16 +537,21 @@ export default {
       finaleProgram,
       formattedCountdown,
       formattedUnlockDate,
-      scrollToSection
-    }
-  }
-}
+      scrollToSection,
+      getProgramNumber,
+      getFinaleNumber,
+      splitPerformers,
+      splitNames,
+      formatTitle,
+    };
+  },
+};
 </script>
 
 <style scoped>
 /* Brush font */
 .brush-font {
-  font-family: 'Ma Shan Zheng', cursive;
+  font-family: "Ma Shan Zheng", cursive;
 }
 
 /* Mobile container */
@@ -424,7 +600,7 @@ export default {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .snap-section.visible {
@@ -446,7 +622,12 @@ export default {
 .cover-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(127, 29, 29, 0.6), transparent, rgba(127, 29, 29, 0.8));
+  background: linear-gradient(
+    to bottom,
+    rgba(127, 29, 29, 0.6),
+    transparent,
+    rgba(127, 29, 29, 0.8)
+  );
 }
 
 .cover-content {
@@ -511,18 +692,32 @@ export default {
 }
 
 @keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes bounceUp {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 /* Staff section */
 .staff-section {
-  background: linear-gradient(135deg, rgba(127, 29, 29, 0.9), rgba(153, 27, 27, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(127, 29, 29, 0.9),
+    rgba(153, 27, 27, 0.9)
+  );
   padding-top: 4rem;
 }
 
@@ -548,49 +743,73 @@ export default {
 
 .staff-item {
   display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.25rem;
   font-size: 1rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
 }
 
 .staff-role {
-  flex-shrink: 0;
+  font-size: 0.9rem;
   color: #f59e0b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
 }
 
-.staff-name {
-  color: rgba(255, 251, 235, 0.9);
+.staff-names-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.staff-name-pill {
+  color: #fef3c7;
+  font-weight: 500;
 }
 
 .art-directors {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .art-directors-title {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   font-size: 1.125rem;
   font-weight: 600;
   color: #fbbf24;
+  text-align: center;
 }
 
 .art-directors-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .director-item {
-  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
 }
 
 .director-name {
   color: #fef3c7;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
 .director-org {
-  color: rgba(245, 158, 11, 0.7);
+  color: rgba(254, 243, 199, 0.7);
+  font-size: 0.9rem;
 }
 
 /* Program section */
@@ -607,17 +826,14 @@ export default {
 }
 
 .program-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.program-number {
+.program-number-center {
   display: flex;
   width: 3.5rem;
   height: 3.5rem;
-  flex-shrink: 0;
+  margin: 0 auto 1rem;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
@@ -629,9 +845,11 @@ export default {
 }
 
 .program-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
   font-weight: 700;
   color: #fef3c7;
+  margin-bottom: 0.25rem;
 }
 
 .program-subtitle {
@@ -669,7 +887,11 @@ export default {
 
 /* Prize section */
 .prize-section {
-  background: radial-gradient(ellipse at center, rgba(127, 29, 29, 1), rgba(69, 10, 10, 1));
+  background: radial-gradient(
+    ellipse at center,
+    rgba(127, 29, 29, 1),
+    rgba(69, 10, 10, 1)
+  );
 }
 
 .prize-content {
@@ -686,8 +908,7 @@ export default {
   border-radius: 1rem;
   border: 2px solid #f59e0b;
   background: linear-gradient(to bottom right, #991b1b, #7f1d1d);
-  box-shadow: 0 0 30px rgba(245, 158, 11, 0.3),
-              0 0 60px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.3), 0 0 60px rgba(245, 158, 11, 0.1);
 }
 
 .prize-emoji {
@@ -702,6 +923,7 @@ export default {
 }
 
 .prize-text {
+  margin-bottom: 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
   color: #fef3c7;
@@ -709,7 +931,11 @@ export default {
 
 /* Finale section */
 .finale-section {
-  background: linear-gradient(180deg, rgba(127, 29, 29, 0.95), rgba(69, 10, 10, 1));
+  background: linear-gradient(
+    180deg,
+    rgba(127, 29, 29, 0.95),
+    rgba(69, 10, 10, 1)
+  );
   padding-top: 4rem;
 }
 
@@ -835,7 +1061,8 @@ export default {
 }
 
 @keyframes swing {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(-5deg);
   }
   50% {
@@ -872,7 +1099,7 @@ export default {
 }
 
 .countdown-number {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 2.5rem;
   font-weight: 700;
   color: #fbbf24;
@@ -898,5 +1125,17 @@ export default {
   justify-content: center;
   gap: 1rem;
   font-size: 1.5rem;
+}
+
+.title-sub-text {
+  display: block;
+  font-size: 0.75em;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-top: 0.1rem;
+}
+
+.finale-sub-text {
+  color: #fbbf24;
 }
 </style>

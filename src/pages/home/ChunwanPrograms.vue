@@ -141,7 +141,7 @@
           v-for="(program, index) in programs"
           :key="program.id"
           :program="program"
-          :index="index + 1"
+          :index="getProgramNumber(index)"
         />
       </div>
     </section>
@@ -224,6 +224,17 @@ export default {
       passwordError.value = ''
     }
 
+    // 计算节目编号（跳过抽奖类型）
+    const getProgramNumber = (currentIndex) => {
+      let count = 0
+      for (let i = 0; i <= currentIndex; i++) {
+        if (programs.value[i].type !== 'prize') {
+          count++
+        }
+      }
+      return count
+    }
+
     // 从 Supabase 获取数据
     const fetchData = async () => {
       loading.value = true
@@ -293,7 +304,8 @@ export default {
       passwordError,
       debugUnlocked,
       verifyPassword,
-      cancelPassword
+      cancelPassword,
+      getProgramNumber
     }
   }
 }

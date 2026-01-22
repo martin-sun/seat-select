@@ -47,8 +47,7 @@
       "contact": "Contact us: {email}"
     },
     "programs": {
-      "backToHome": "Back to Home",
-      "performers": "Performers"
+      "backToHome": "Back to Home"
     },
     "countdown": {
       "title": "Program Countdown",
@@ -81,7 +80,7 @@
         "title": "Staff",
         "members": [
           {
-            "role": "Event Planning",
+            "role": "Event Planners",
             "names": "Yang Wen / Wang Fen / Liu Wengang / Haifeng"
           },
           {
@@ -90,7 +89,7 @@
           },
           {
             "role": "Director Assistant",
-            "names": "Sophia Wang"
+            "names": "Jiang Liu/Sophia Wang"
           },
           {
             "role": "Technical Support",
@@ -102,26 +101,30 @@
           },
           {
             "role": "Outreach",
-            "names": "Zhao Dan"
+            "names": "Zhao Dan/ Zhang Teng"
           },
           {
             "role": "Business/Publicity",
             "names": "Feng Weisi / Chu Min / Liu Wengang"
+          },
+          {
+            "role": "General Affairs",
+            "names": "Liu Wengang"
           }
         ],
-        "artDirection": "Art Direction",
+        "artDirection": "Art Instructors",
         "artDirectors": [
           {
             "name": "Yan Jia",
-            "org": "Saskatchewan Chinese Dance School"
+            "org": "Chinese Dance School of Saskatchewan"
           },
           {
             "name": "Zeng Guojun / Zhou Hong",
-            "org": "Chunzhi Sheng Choir"
+            "org": "Saskatoon Spring Choir"
           },
           {
             "name": "Wang Fen",
-            "org": "Canada Yucai School"
+            "org": "Bright Horizons Chinese School"
           }
         ]
       },

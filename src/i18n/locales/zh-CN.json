@@ -47,8 +47,7 @@
       "contact": "联系我们：{email}"
     },
     "programs": {
-      "backToHome": "返回首页",
-      "performers": "表演者"
+      "backToHome": "返回首页"
     },
     "countdown": {
       "title": "节目单解锁倒计时",
@@ -90,7 +89,7 @@
           },
           {
             "role": "导演助理",
-            "names": "Sophia Wang"
+            "names": "姜柳/Sophia Wang"
           },
           {
             "role": "技术支持",
@@ -102,11 +101,15 @@
           },
           {
             "role": "对外联络",
-            "names": "赵丹"
+            "names": "赵丹/张腾"
           },
           {
             "role": "商务/宣传",
             "names": "冯唯思/褚敏/刘文刚"
+          },
+          {
+            "role": "总务",
+            "names": "刘文刚"
           }
         ],
         "artDirection": "艺术指导",
