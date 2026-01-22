@@ -124,15 +124,11 @@
               class="staff-item"
             >
               <span class="staff-role">{{ member.role }}</span>
-              <div class="staff-names-grid">
-                <span
-                  v-for="(name, nIndex) in splitNames(member.names)"
-                  :key="nIndex"
-                  class="staff-name-pill"
-                >
-                  {{ name }}
-                </span>
-              </div>
+              <span class="staff-name-pill">
+                <template v-for="(name, nIndex) in splitNames(member.names)" :key="nIndex">
+                  <span>{{ nIndex > 0 ? ' / ' : '' }}{{ name }}</span>
+                </template>
+              </span>
             </div>
           </div>
 
