@@ -175,13 +175,11 @@ class GmailAPI:
                 return base64.urlsafe_b64decode(data).decode('utf-8')
         return ""
 
-gmail_api = None
 def get_gmail_api():
-    global gmail_api
-    if not gmail_api:
-        try:
-            gmail_api = GmailAPI()
-        except Exception as e:
-            print(f"Failed to initialize Gmail API: {e}")
-            return None
-    return gmail_api
+    """Get Gmail API instance, reinitializing if token is expired."""
+    try:
+        # Always create a new instance to ensure token is checked/refreshed
+        return GmailAPI()
+    except Exception as e:
+        print(f"Failed to initialize Gmail API: {e}")
+        return None
